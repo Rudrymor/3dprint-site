@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DArtStudio — 3D-печать на заказ</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'JetBrains Mono',monospace;background:#0a1929;color:#e0f2fe;line-height:1.6;background-image:linear-gradient(rgba(59,130,246,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.06) 1px,transparent 1px);background-size:40px 40px}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+nav{padding:24px 0;border-bottom:1px solid rgba(59,130,246,.2);position:sticky;top:0;background:rgba(10,25,41,.95);backdrop-filter:blur(10px);z-index:10}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:700;font-size:18px;color:#60a5fa;letter-spacing:1px;text-decoration:none}
+.logo::before{content:"> "}
+.nav-links{display:flex;gap:32px;list-style:none;font-size:13px}
+.nav-links a{color:#cbd5e1;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:#60a5fa}
+.nav-cta{padding:12px 24px;background:#3b82f6;color:#0a1929;border-radius:2px;text-decoration:none;font-size:13px;font-weight:500;letter-spacing:.5px;transition:all .2s}
+.nav-cta:hover{background:#60a5fa}
+
+.hero{position:relative;min-height:65vh;display:flex;align-items:center}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.15}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,25,41,.6),#0a1929 85%)}
+.hero-inner{position:relative;z-index:1;padding:120px 0 80px}
+.hero-label{display:inline-block;padding:6px 14px;border:1px solid #3b82f6;border-radius:2px;font-size:11px;letter-spacing:2px;color:#60a5fa;text-transform:uppercase;margin-bottom:32px}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.1;margin-bottom:24px;color:#f0f9ff}
+.hero h1 .accent{color:#3b82f6}
+.hero-sub{font-family:'Inter',sans-serif;font-size:17px;color:#94a3b8;max-width:560px;font-weight:400}
+
+section{padding:80px 0}
+.section-header{display:flex;justify-content:space-between;align-items:end;margin-bottom:48px}
+.section-title{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#60a5fa;font-weight:500}
+.section-title::before{content:"// "}
+.section-count{font-family:'Inter',sans-serif;font-size:13px;color:#64748b}
+
+.projects-empty{text-align:center;padding:80px 40px;background:rgba(15,35,55,.6);border:1px dashed rgba(59,130,246,.3);border-radius:4px}
+.projects-empty .icon{font-size:60px;margin-bottom:24px;opacity:.4}
+.projects-empty h3{font-size:22px;font-weight:500;margin-bottom:12px;color:#f0f9ff}
+.projects-empty p{font-size:15px;color:#94a3b8;max-width:400px;margin:0 auto}
+
+.services{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.service{padding:32px;background:rgba(15,35,55,.4);border:1px solid rgba(59,130,246,.15);border-radius:4px;transition:all .2s}
+.service:hover{border-color:#3b82f6}
+.service-icon{font-size:28px;color:#3b82f6;margin-bottom:20px}
+.service h3{font-family:'Inter',sans-serif;font-size:18px;font-weight:500;color:#f0f9ff;margin-bottom:12px}
+.service p{font-family:'Inter',sans-serif;font-size:14px;color:#94a3b8;line-height:1.6}
+
+.process-steps{list-style:none;max-width:800px}
+.process-steps li{display:grid;grid-template-columns:60px 1fr;gap:24px;padding:24px 0;border-top:1px solid rgba(59,130,246,.2);align-items:start}
+.process-steps li:last-child{border-bottom:1px solid rgba(59,130,246,.2)}
+.process-steps .n{font-size:13px;color:#60a5fa;font-weight:500;padding-top:2px}
+.process-steps h4{font-family:'Inter',sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;color:#f0f9ff}
+.process-steps p{font-family:'Inter',sans-serif;font-size:14px;color:#94a3b8;line-height:1.5}
+
+footer{padding:40px 0;border-top:1px solid rgba(59,130,246,.2);text-align:center;font-size:12px;color:#64748b;letter-spacing:1px}
+
+@media(max-width:768px){
+  .services{grid-template-columns:1fr}
+  .hero-inner{padding:80px 0 60px}
+  .nav-links{gap:20px}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">3DArtStudio</a>
+    <ul class="nav-links">
+      <li><a href="#projects">ПРОЕКТЫ</a></li>
+      <li><a href="#services">УСЛУГИ</a></li>
+      <li><a href="#process">ПРОЦЕСС</a></li>
+    </ul>
+    <a href="order.html" class="nav-cta">ЗАКАЗАТЬ ПРОЕКТ →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"><img src="../images/hero-main.jpg" alt="3D печать"></div>
+  <div class="container hero-inner">
+    <div class="hero-label">// КАСТОМНАЯ 3D-ПЕЧАТЬ FDM/SLA</div>
+    <h1>Функциональные детали<br><span class="accent">по вашим чертежам</span></h1>
+    <p class="hero-sub">Печатаю кронштейны, корпуса, переходники, запчасти и игрушки. Точность до 0.1 мм. От одной штуки до малых серий.</p>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Проекты</div>
+      <div class="section-count">// работы</div>
+    </div>
+    <div class="projects-empty">
+      <div class="icon">🖨️</div>
+      <h3>Скоро здесь появятся работы</h3>
+      <p>Проекты будут добавляться по мере их выполнения.</p>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Услуги</div>
+    </div>
+    <div class="services">
+      <div class="service">
+        <div class="service-icon">◆</div>
+        <h3>Функциональные детали</h3>
+        <p>Кронштейны, крепления, переходники. PETG, ABS, Nylon.</p>
+      </div>
+      <div class="service">
+        <div class="service-icon">◇</div>
+        <h3>Корпуса для электроники</h3>
+        <p>Arduino, Raspberry Pi, DIY. С отверстиями под разъёмы.</p>
+      </div>
+      <div class="service">
+        <div class="service-icon">◈</div>
+        <h3>Редкие запчасти и игрушки</h3>
+        <p>Шестерни, клипсы, фигурки. То, что не купить — но можно напечатать.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">Процесс</div>
+    </div>
+    <ul class="process-steps">
+      <li><span class="n">01</span><div><h4>Заявка и обсуждение</h4><p>Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову цену.</p></div></li>
+      <li><span class="n">02</span><div><h4>3D-модель или чертёж</h4><p>Если есть модель — печатаю. Если нет — спроектирую по размерам.</p></div></li>
+      <li><span class="n">03</span><div><h4>Печать и контроль</h4><p>Подбираю материал, печатаю с контролем качества на каждом этапе.</p></div></li>
+      <li><span class="n">04</span><div><h4>Доставка или самовывоз</h4><p>Отправлю по Москве и области. Самовывоз — по договорённости.</p></div></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="container">// 3DArtStudio © 2026 · Кастомная 3D-печать · Москва</div>
+</footer>
+</body>
+</html>

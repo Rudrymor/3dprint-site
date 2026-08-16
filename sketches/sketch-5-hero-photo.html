@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Печать на заказ — Инженерные решения</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1a1a1a;
+            background: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 48px;
+            transition: background 0.3s, padding 0.3s;
+        }
+
+        nav.scrolled {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            padding: 16px 48px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+        }
+
+        .nav-logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+            transition: color 0.3s;
+        }
+
+        nav.scrolled .nav-logo {
+            color: #1a1a1a;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav.scrolled .nav-links a {
+            color: #555;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        nav.scrolled .nav-links a:hover {
+            color: #1a1a1a;
+        }
+
+        .nav-phone {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav.scrolled .nav-phone {
+            color: #1a1a1a;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            height: 100vh;
+            min-height: 700px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: url('../images/hero-bg.jpg') center/cover no-repeat;
+        }
+
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(0,0,0,0.85) 0%,
+                rgba(0,0,0,0.3) 40%,
+                rgba(0,0,0,0.1) 100%
+            );
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 48px 80px;
+            max-width: 800px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.08;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: clamp(16px, 1.8vw, 20px);
+            font-weight: 400;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.6;
+            margin-bottom: 36px;
+            max-width: 560px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            padding: 16px 36px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            background: #2563eb;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            padding: 16px 36px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 32px;
+            right: 48px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .scroll-hint .line {
+            width: 1px;
+            height: 40px;
+            background: rgba(255,255,255,0.3);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+
+        /* ── CAPABILITIES STRIP ── */
+        .capabilities {
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            padding: 20px 48px;
+            text-align: center;
+        }
+
+        .capabilities span {
+            font-size: 14px;
+            font-weight: 500;
+            color: #888;
+            letter-spacing: 0.5px;
+        }
+
+        .capabilities span strong {
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        /* ── GALLERY ── */
+        .gallery-section {
+            padding: 80px 48px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 3vw, 40px);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 48px;
+            color: #1a1a1a;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 280px;
+            gap: 12px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .gallery-item.tall {
+            grid-row: span 2;
+        }
+
+        .gallery-item.wide {
+            grid-column: span 2;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .gallery-overlay h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .gallery-overlay span {
+            font-size: 13px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ── SERVICES ── */
+        .services-section {
+            padding: 80px 48px;
+            background: #fafafa;
+        }
+
+        .service-card {
+            display: flex;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid #f0f0f0;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+
+        .service-card:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .service-img {
+            width: 380px;
+            min-height: 220px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .service-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .service-text {
+            padding: 40px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .service-text h3 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .service-text p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .service-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        /* ── FORM ── */
+        .form-section {
+            padding: 80px 48px;
+        }
+
+        .form-wrap {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .form-wrap .section-label,
+        .form-wrap .section-title {
+            text-align: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            padding: 14px 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            background: #fafafa;
+            color: #1a1a1a;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+            background: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-submit {
+            margin-top: 8px;
+        }
+
+        .form-submit .btn-primary {
+            width: 100%;
+            justify-content: center;
+            padding: 18px;
+            font-size: 16px;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid #eee;
+            padding: 32px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        footer .footer-copy {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        footer .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        footer .footer-links a {
+            font-size: 13px;
+            color: #999;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer .footer-links a:hover {
+            color: #1a1a1a;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-auto-rows: 240px;
+            }
+            .gallery-item.wide {
+                grid-column: span 1;
+            }
+            .service-img {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 20px 24px; }
+            nav.scrolled { padding: 14px 24px; }
+            .nav-links { display: none; }
+            .hero-content { padding: 0 24px 60px; }
+            .capabilities { padding: 16px 24px; }
+            .gallery-section { padding: 60px 24px; }
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: 260px;
+            }
+            .gallery-item.tall { grid-row: span 1; }
+            .services-section { padding: 60px 24px; }
+            .service-card { flex-direction: column; }
+            .service-img { width: 100%; min-height: 200px; }
+            .service-text { padding: 28px; }
+            .form-section { padding: 60px 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            footer { flex-direction: column; gap: 16px; text-align: center; padding: 28px 24px; }
+            .scroll-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+    <div class="nav-logo">3DPrint Studio</div>
+    <ul class="nav-links">
+        <li><a href="#gallery">Работы</a></li>
+        <li><a href="#services">Услуги</a></li>
+        <li><a href="#contact">Контакты</a></li>
+    </ul>
+    <a href="tel:+79001234567" class="nav-phone">+7 900 123-45-67</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <h1>3D печать на заказ.<br>Инженерные решения.</h1>
+        <p>Проектируем и печатаем функциональные детали из PETG, ABS, PLA и Nylon.</p>
+        <div class="hero-cta">
+            <a href="#contact" class="btn-primary">Обсудить проект</a>
+            <a href="#gallery" class="btn-ghost">Галерея работ ↓</a>
+        </div>
+    </div>
+    <div class="scroll-hint">
+        <div class="line"></div>
+    </div>
+</section>
+
+<!-- CAPABILITIES -->
+<div class="capabilities">
+    <span><strong>21+ проектов</strong> &nbsp;·&nbsp; PETG &nbsp;·&nbsp; ABS &nbsp;·&nbsp; PLA &nbsp;·&nbsp; Nylon &nbsp;·&nbsp; FDM &nbsp;·&nbsp; ±0.1 мм &nbsp;·&nbsp; от 2 дней</span>
+</div>
+
+<!-- GALLERY -->
+<section class="gallery-section" id="gallery">
+    <div class="section-label">Портфолио</div>
+    <h2 class="section-title">Избранные проекты</h2>
+    <div class="gallery-grid">
+        <!-- 1: tall -->
+        <div class="gallery-item tall">
+            <img src="../images/audi-cover.jpg" alt="Audi A5 крышка двигателя">
+            <div class="gallery-overlay">
+                <h3>Audi A5 · Крышка двигателя</h3>
+                <span>PETG · FDM</span>
+            </div>
+        </div>
+        <!-- 2 -->
+        <div class="gallery-item">
+            <img src="../images/gear.jpg" alt="Двухступенчатая шестерня">
+            <div class="gallery-overlay">
+                <h3>Двухступенчатая шестерня</h3>
+                <span>Nylon · FDM</span>
+            </div>
+        </div>
+        <!-- 3 -->
+        <div class="gallery-item">
+            <img src="../images/rr-panel.jpg" alt="Range Rover накладка">
+            <div class="gallery-overlay">
+                <h3>Range Rover L494 · Накладка</h3>
+                <span>ABS · FDM</span>
+            </div>
+        </div>
+        <!-- 4: wide -->
+        <div class="gallery-item wide">
+            <img src="../images/worn-gear.jpg" alt="Редуктор лебедки">
+            <div class="gallery-overlay">
+                <h3>Редуктор лебедки · Восстановление</h3>
+                <span>PETG · FDM</span>
+            </div>
+        </div>
+        <!-- 5 -->
+        <div class="gallery-item">
+            <img src="../images/frame.jpg" alt="Крепежная рама усилителя">
+            <div class="gallery-overlay">
+                <h3>Крепежная рама усилителя</h3>
+                <span>PLA · FDM</span>
+            </div>
+        </div>
+        <!-- 6 -->
+        <div class="gallery-item">
+            <img src="../images/ultra-case.jpg" alt="Корпус ультразвуковой мойки">
+            <div class="gallery-overlay">
+                <h3>Корпус ультразвуковой мойки</h3>
+                <span>PETG · FDM</span>
+            </div>
+        </div>
+        <!-- 7: tall -->
+        <div class="gallery-item tall">
+            <img src="../images/drill-guard.jpg" alt="Защита сверлильной установки">
+            <div class="gallery-overlay">
+                <h3>Защита сверлильной установки</h3>
+                <span>ABS · FDM</span>
+            </div>
+        </div>
+        <!-- 8 -->
+        <div class="gallery-item">
+            <img src="../images/toy-1.jpg" alt="Декоративная фигурка">
+            <div class="gallery-overlay">
+                <h3>Декоративная фигурка</h3>
+                <span>PLA · FDM</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section" id="services">
+    <div class="section-label">Услуги</div>
+    <h2 class="section-title">Что мы делаем</h2>
+
+    <div class="service-card">
+        <div class="service-img">
+            <img src="../images/audi-cover.jpg" alt="3D печать функциональных деталей">
+        </div>
+        <div class="service-text">
+            <h3>3D печать функциональных деталей</h3>
+            <p>Печатаем детали, которые работают: корпуса, защёлки, шестерни, адаптеры. Подбираем материал под нагрузку, температуру и среду эксплуатации.</p>
+            <div class="service-price">от 350 ₽</div>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-img">
+            <img src="../images/worn-gear.jpg" alt="Восстановление деталей">
+        </div>
+        <div class="service-text">
+            <h3>Восстановление деталей по оригиналу</h3>
+            <p>Сканируем или моделируем по образцу изношенную деталь. Печатаем точную копию из более стойкого материала — и она служит дольше оригинала.</p>
+            <div class="service-price">от 2 500 ₽</div>
+        </div>
+    </div>
+
+    <div class="service-card">
+        <div class="service-img">
+            <img src="../images/gear.jpg" alt="Проектирование 3D моделей">
+        </div>
+        <div class="service-text">
+            <h3>Проектирование 3D моделей</h3>
+            <p>Разрабатываем модель с нуля по эскизу, фото или описанию задачи. Готовый STL-файл, подготовленный под печать без поддержек.</p>
+            <div class="service-price">от 1 500 ₽</div>
+        </div>
+    </div>
+</section>
+
+<!-- FORM -->
+<section class="form-section" id="contact">
+    <div class="form-wrap">
+        <div class="section-label">Связаться</div>
+        <h2 class="section-title">Обсудим ваш проект</h2>
+        <form class="form-grid" onsubmit="event.preventDefault(); alert('Заявка отправлена!');">
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" placeholder="Как к вам обращаться" required>
+            </div>
+            <div class="form-group">
+                <label>Контакт</label>
+                <input type="text" placeholder="Телефон или Telegram" required>
+            </div>
+            <div class="form-group full">
+                <label>Описание задачи</label>
+                <textarea placeholder="Что нужно напечатать? Размеры, материал, количество"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Материал</label>
+                <select>
+                    <option>Не определён</option>
+                    <option>PETG</option>
+                    <option>ABS</option>
+                    <option>PLA</option>
+                    <option>Nylon</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Количество</label>
+                <input type="number" min="1" value="1" placeholder="шт.">
+            </div>
+            <div class="form-group full form-submit">
+                <button type="submit" class="btn-primary">Отправить заявку</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-copy">© 2026 3DPrint Studio</div>
+    <div class="footer-links">
+        <a href="#">Telegram</a>
+        <a href="#">WhatsApp</a>
+        <a href="tel:+79001234567">+7 900 123-45-67</a>
+    </div>
+</footer>
+
+<script>
+    // Nav scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Печать Инженерных Деталей | Портфолио</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #09090b;
+    --surface: #18181b;
+    --surface-2: #1f1f23;
+    --border: #27272a;
+    --text: #fafafa;
+    --text-dim: #a1a1aa;
+    --text-mute: #71717a;
+    --accent-from: #f97316;
+    --accent-to: #eab308;
+    --accent: linear-gradient(135deg, #f97316 0%, #eab308 100%);
+    --accent-soft: linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(234,179,8,0.15) 100%);
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .container { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+  section { padding: 100px 0; }
+
+  .gradient-text {
+    background: var(--accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding: 18px 0;
+    backdrop-filter: blur(14px);
+    background: rgba(9,9,11,0.6);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px rgba(249,115,22,0.6); }
+  .nav-links { display: flex; gap: 32px; font-size: 0.9rem; color: var(--text-dim); }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    padding: 10px 18px; border-radius: 8px;
+    background: var(--accent); color: #0b0b0d; font-weight: 600; font-size: 0.88rem;
+  }
+  @media (max-width: 760px) { .nav-links { display: none; } }
+
+  /* HERO */
+  .hero {
+    position: relative; min-height: 100vh; display: flex; align-items: center;
+    padding: 140px 0 100px; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-image: url('../images/hero-bg.jpg');
+    background-size: cover; background-position: center;
+    z-index: 0;
+  }
+  .hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 70% 30%, rgba(249,115,22,0.18), transparent 55%),
+      linear-gradient(180deg, rgba(9,9,11,0.85) 0%, rgba(9,9,11,0.92) 60%, #09090b 100%);
+  }
+  .hero .container { position: relative; z-index: 1; display: grid; grid-template-columns: 1.3fr 1fr; gap: 60px; align-items: center; }
+  @media (max-width: 900px) { .hero .container { grid-template-columns: 1fr; gap: 40px; } }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 7px 14px; border-radius: 100px;
+    background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25);
+    font-size: 0.82rem; color: #fbbf24; font-weight: 500;
+    margin-bottom: 28px;
+  }
+  .hero-eyebrow .pulse {
+    width: 6px; height: 6px; border-radius: 50%; background: #f97316;
+    box-shadow: 0 0 12px #f97316;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 5.2rem);
+    margin-bottom: 22px;
+  }
+  .hero h1 .accent-line {
+    display: block;
+    background: var(--accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p.lead {
+    font-size: 1.15rem; color: var(--text-dim); max-width: 540px; margin-bottom: 36px;
+  }
+  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 28px; border-radius: 10px;
+    background: var(--accent); color: #0b0b0d; font-weight: 700; font-size: 1rem;
+    box-shadow: 0 10px 40px rgba(249,115,22,0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 50px rgba(249,115,22,0.5); }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 24px; border-radius: 10px;
+    border: 1px solid var(--border); color: var(--text); font-weight: 500; font-size: 1rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .btn-ghost:hover { border-color: #3f3f46; background: rgba(255,255,255,0.03); }
+
+  /* Hero stat cards */
+  .hero-stats { display: flex; flex-direction: column; gap: 16px; }
+  .stat-card {
+    padding: 22px 24px; border-radius: 16px;
+    background: rgba(24,24,27,0.7);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; inset: -1px;
+    border-radius: 16px; padding: 1px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.4), rgba(234,179,8,0.1) 40%, transparent 80%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+  .stat-card .label { font-size: 0.78rem; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .stat-card .value { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .stat-card .glow {
+    position: absolute; top: -40%; right: -20%;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(249,115,22,0.25), transparent 70%);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+  .stat-card:nth-child(2) .glow { background: radial-gradient(circle, rgba(234,179,8,0.22), transparent 70%); }
+
+  /* CAPABILITIES STRIP */
+  .cap-strip {
+    padding: 32px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: #0a0a0c;
+    position: relative;
+  }
+  .cap-strip::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+  .cap-strip .container {
+    display: flex; flex-wrap: wrap; gap: 10px 36px; justify-content: center; align-items: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+  }
+  .cap-strip span { color: var(--text-dim); }
+  .cap-strip .sep { color: #3f3f46; }
+  .cap-strip strong { color: var(--text); font-weight: 500; }
+
+  /* SECTION HEADING */
+  .section-head { margin-bottom: 56px; max-width: 720px; }
+  .section-kicker {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: #fbbf24; letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-head h2 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 14px; }
+  .section-head p { color: var(--text-dim); font-size: 1.05rem; max-width: 600px; }
+
+  /* GALLERY */
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+  @media (max-width: 760px) { .gallery-grid { grid-template-columns: 1fr; } }
+  .gallery-card {
+    position: relative; border-radius: 14px; overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .gallery-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.35s ease;
+  }
+  .gallery-card:hover::before { transform: scaleX(1); }
+  .gallery-card:hover { transform: translateY(-4px); border-color: rgba(249,115,22,0.4); }
+  .gallery-card .img-wrap {
+    aspect-ratio: 4/3; overflow: hidden; background: #111;
+    border-bottom: 1px solid var(--border);
+  }
+  .gallery-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .gallery-card:hover img { transform: scale(1.04); }
+  .gallery-card .meta { padding: 20px 22px; }
+  .gallery-card .title {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 500;
+    color: var(--text); text-transform: uppercase; letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+  .gallery-card .tag {
+    display: inline-block; padding: 4px 10px; border-radius: 100px;
+    background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.25);
+    color: #fbbf24; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* SERVICES */
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .services-grid { grid-template-columns: 1fr; } }
+  .service-card {
+    position: relative; padding: 32px 28px; border-radius: 16px;
+    background: var(--surface);
+    transition: transform 0.2s ease;
+  }
+  .service-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: 16px; padding: 1px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.55), rgba(234,179,8,0.15) 50%, transparent 90%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+  .service-card:hover { transform: translateY(-4px); }
+  .service-card .icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.2rem;
+    background-clip: padding-box;
+  }
+  .service-card .icon span {
+    background: var(--accent); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .service-card h3 { font-size: 1.3rem; margin-bottom: 10px; }
+  .service-card p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 22px; min-height: 68px; }
+  .service-card .price {
+    display: flex; align-items: baseline; gap: 8px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.6rem;
+  }
+  .service-card .price-label { font-size: 0.85rem; color: var(--text-mute); font-weight: 400; }
+
+  /* PROCESS */
+  .process-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  @media (max-width: 900px) { .process-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .process-grid { grid-template-columns: 1fr; } }
+  .step {
+    position: relative; padding: 28px 24px; border-radius: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .step-num {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem;
+    color: #0b0b0d;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(249,115,22,0.35);
+  }
+  .step h4 { font-size: 1.1rem; margin-bottom: 8px; }
+  .step p { color: var(--text-dim); font-size: 0.9rem; }
+
+  /* FORM */
+  .form-section { padding-bottom: 120px; }
+  .form-card {
+    position: relative; max-width: 760px; margin: 0 auto;
+    padding: 44px 40px; border-radius: 20px;
+    background: var(--surface);
+  }
+  .form-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 1.5px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.8), rgba(234,179,8,0.3) 50%, rgba(255,255,255,0.04));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+  .form-card h2 { font-size: 2rem; margin-bottom: 10px; }
+  .form-card > p { color: var(--text-dim); margin-bottom: 30px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .form-card { padding: 32px 24px; } }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 0.82rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; text-transform: uppercase; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 13px 14px; border-radius: 9px;
+    background: #0e0e10; border: 1px solid var(--border); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field textarea { min-height: 110px; resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: rgba(249,115,22,0.6);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+  }
+  .field select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23a1a1aa' d='M6 8L0 0h12z'/></svg>"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+  .submit-btn {
+    grid-column: 1 / -1; margin-top: 8px;
+    padding: 16px 28px; border-radius: 10px; border: none;
+    background: var(--accent); color: #0b0b0d;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 10px 36px rgba(249,115,22,0.35);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(249,115,22,0.5); }
+
+  /* FOOTER */
+  footer {
+    padding: 48px 0 40px;
+    border-top: 1px solid var(--border);
+    background: #07070a;
+  }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px; }
+  .foot-row p { color: var(--text-mute); font-size: 0.88rem; }
+  .foot-row .socials { display: flex; gap: 16px; font-size: 0.88rem; color: var(--text-dim); }
+  .foot-row .socials a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span>ИНЖПЕЧАТЬ</span>
+    </div>
+    <div class="nav-links">
+      <a href="#work">Работы</a>
+      <a href="#services">Услуги</a>
+      <a href="#process">Процесс</a>
+      <a href="#contact">Контакты</a>
+    </div>
+    <a href="#contact" class="nav-cta">Заказать</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="pulse"></span>
+        <span>Принимаю заказы · FDM печать на заказ</span>
+      </div>
+      <h1>
+        3D печать<br>
+        <span class="accent-line">инженерных деталей</span>
+      </h1>
+      <p class="lead">
+        Автомобильные запчасти, шестерни, корпуса, инструментальная оснастка и восстановленные детали по изношенным оригиналам. PETG, ABS, PLA, Nylon — точно по размерам, с постобработкой.
+      </p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn-primary">
+          Рассчитать заказ
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#work" class="btn-ghost">Смотреть работы</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-card">
+        <div class="glow"></div>
+        <div class="label">Выполнено проектов</div>
+        <div class="value gradient-text">21+</div>
+      </div>
+      <div class="stat-card">
+        <div class="glow"></div>
+        <div class="label">Точность печати</div>
+        <div class="value">±0.1 <span style="font-size:1rem;color:var(--text-mute);">мм</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="glow"></div>
+        <div class="label">Срок изготовления</div>
+        <div class="value">от 2 <span style="font-size:1rem;color:var(--text-mute);">дней</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- CAPABILITIES STRIP -->
+<div class="cap-strip">
+  <div class="container">
+    <strong>21+ проектов</strong>
+    <span class="sep">·</span>
+    <span>PETG</span>
+    <span class="sep">·</span>
+    <span>ABS</span>
+    <span class="sep">·</span>
+    <span>PLA</span>
+    <span class="sep">·</span>
+    <span>Nylon</span>
+    <span class="sep">·</span>
+    <strong>±0.1 мм</strong>
+    <span class="sep">·</span>
+    <strong>от 2 дней</strong>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<section id="work">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-kicker">// Избранные работы</span>
+      <h2>Реальные проекты и детали</h2>
+      <p>Автомобильные накладки, шестерни, рамы усилителей, декор и восстановление редких оригиналов.</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/audi-cover.jpg" alt="Крышка двигателя AUDI A5 8T"></div>
+        <div class="meta">
+          <div class="title">AUDI A5 8T · Крышка двигателя</div>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/gear.jpg" alt="Двухступенчатая шестерня"></div>
+        <div class="meta">
+          <div class="title">Двухступенчатая шестерня</div>
+          <span class="tag">ABS</span>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/rr-panel.jpg" alt="Range Rover L494 накладка"></div>
+        <div class="meta">
+          <div class="title">RANGE ROVER L494 · Накладка</div>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/worn-gear.jpg" alt="Редуктор лебедки"></div>
+        <div class="meta">
+          <div class="title">Редуктор лебедки</div>
+          <span class="tag">ABS</span>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/frame.jpg" alt="Рама усилителя"></div>
+        <div class="meta">
+          <div class="title">Рама усилителя</div>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="gallery-card">
+        <div class="img-wrap"><img src="../images/toy-1.jpg" alt="Декоративная фигурка"></div>
+        <div class="meta">
+          <div class="title">Декоративная фигурка</div>
+          <span class="tag">PLA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" style="padding-top: 40px;">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-kicker">// Услуги</span>
+      <h2>Что я делаю</h2>
+      <p>Печать по готовой модели, восстановление по образцу, и проектирование с нуля.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="icon"><span>01</span></div>
+        <h3>3D печать функциональных деталей</h3>
+        <p>Печать по вашей модели из PETG, ABS, PLA, Nylon. Постобработка, подбор материала под нагрузку.</p>
+        <div class="price">
+          <span class="gradient-text">от 350₽</span>
+          <span class="price-label">/ деталь</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="icon"><span>02</span></div>
+        <h3>Восстановление по изношенному оригиналу</h3>
+        <p>Замеры, реверс-инжиниринг, печать замены. Для автомобильных и бытовых деталей, которых уже нет в продаже.</p>
+        <div class="price">
+          <span class="gradient-text">от 2500₽</span>
+          <span class="price-label">/ проект</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="icon"><span>03</span></div>
+        <h3>Проектирование 3D моделей</h3>
+        <p>Разработка модели по вашему эскизу, описанию или образцу. STL/OBJ/STEP для печати.</p>
+        <div class="price">
+          <span class="gradient-text">от 1500₽</span>
+          <span class="price-label">/ модель</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" style="padding-top: 40px;">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-kicker">// Процесс</span>
+      <h2>Как работаем</h2>
+      <p>От запроса до готовой детали — прозрачно и в срок.</p>
+    </div>
+    <div class="process-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Заявка</h4>
+        <p>Присылаете фото, чертёж или образец. Обсуждаем материал и допуски.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Расчёт</h4>
+        <p>Оцениваю сложность, время и стоимость. Фиксируем сроки.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Печать</h4>
+        <p>Печать, контроль геометрии, постобработка и проверка размера.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Передача</h4>
+        <p>Отправка или личная встреча. Гарантия на геометрию и материал.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<section id="contact" class="form-section" style="padding-top: 40px;">
+  <div class="container">
+    <div class="form-card">
+      <span class="section-kicker">// Связаться</span>
+      <h2>Опишите вашу задачу</h2>
+      <p>Отвечу в течение дня с расчётом и сроками.</p>
+      <form class="form-grid" onsubmit="event.preventDefault(); alert('Спасибо! Свяжусь с вами в ближайшее время.');">
+        <div class="field">
+          <label for="f-name">Имя</label>
+          <input id="f-name" type="text" placeholder="Как к вам обращаться" required>
+        </div>
+        <div class="field">
+          <label for="f-contact">Контакт</label>
+          <input id="f-contact" type="text" placeholder="Telegram, телефон или почта" required>
+        </div>
+        <div class="field full">
+          <label for="f-desc">Описание</label>
+          <textarea id="f-desc" placeholder="Что нужно напечатать, размеры, назначение детали..."></textarea>
+        </div>
+        <div class="field">
+          <label for="f-material">Материал</label>
+          <select id="f-material">
+            <option>Не знаю, подскажи</option>
+            <option>PETG</option>
+            <option>ABS</option>
+            <option>PLA</option>
+            <option>Nylon</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-qty">Количество</label>
+          <input id="f-qty" type="number" min="1" value="1">
+        </div>
+        <button type="submit" class="submit-btn">Отправить заявку</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot-row">
+    <p>© 2026 ИнжПечать · Инженерная 3D-печать на заказ</p>
+    <div class="socials">
+      <a href="#">Telegram</a>
+      <a href="#">WhatsApp</a>
+      <a href="#">Email</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заказать проект — 3DArtStudio</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f5ede0;color:#3d2817;line-height:1.55}
+.container{max-width:1200px;margin:0 auto;padding:0 32px}
+
+nav{padding:24px 0;border-bottom:1px solid #d9c9b0;position:sticky;top:0;background:rgba(245,237,224,.95);backdrop-filter:blur(12px);z-index:10}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Source Serif 4',serif;font-weight:600;font-size:24px;color:#3d2817;text-decoration:none;letter-spacing:-.5px}
+.logo em{font-style:italic;color:#a8542a;font-weight:500}
+.back{color:#6b4d35;text-decoration:none;font-size:14px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:8px}
+.back:hover{color:#a8542a}
+
+.order-page{padding:80px 0 120px}
+.order-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.order-visual{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3}
+.order-visual img{width:100%;height:100%;object-fit:cover}
+
+.order-content h1{font-family:'Source Serif 4',serif;font-size:clamp(32px,4vw,48px);font-weight:500;line-height:1.1;margin-bottom:16px}
+.order-content h1 em{font-style:italic;color:#a8542a}
+.order-content .sub{font-size:16px;color:#6b4d35;margin-bottom:40px}
+
+.form-card{background:#fff;border:1px solid #d9c9b0;border-radius:16px;padding:40px;box-shadow:0 2px 8px rgba(61,40,23,.04)}
+.form-card h3{font-family:'Source Serif 4',serif;font-size:24px;font-weight:500;margin-bottom:8px}
+.form-card .sub{font-size:14px;color:#6b4d35;margin-bottom:28px}
+.form-row{margin-bottom:18px}
+.form-row label{display:block;font-size:13px;color:#6b4d35;margin-bottom:8px;font-weight:500}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:14px 16px;background:#f5ede0;border:1px solid #d9c9b0;border-radius:10px;color:#3d2817;font-family:'Inter',sans-serif;font-size:15px;transition:border-color .2s}
+.form-row input:focus,.form-row textarea:focus{outline:none;border-color:#a8542a;background:#fff}
+.form-row textarea{resize:vertical;min-height:100px}
+.form-row select{cursor:pointer}
+.btn-submit{width:100%;padding:16px;background:#a8542a;color:#f5ede0;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-submit:hover{background:#8a4320;transform:translateY(-1px)}
+.form-note{font-size:13px;color:#6b4d35;text-align:center;margin-top:16px}
+
+footer{padding:60px 0 40px;text-align:center;border-top:1px solid #d9c9b0}
+footer .logo{display:inline-block;margin-bottom:12px}
+footer p{font-size:13px;color:#6b4d35}
+
+@media(max-width:768px){
+  .order-grid{grid-template-columns:1fr}
+  .form-card{padding:28px}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">3D <em>ArtStudio</em></a>
+    <a href="index.html" class="back">← На главную</a>
+  </div>
+</nav>
+
+<section class="order-page">
+  <div class="container">
+    <div class="order-grid">
+      <div class="order-visual">
+        <img src="../images/hero-order.webp" alt="3D печать деталей">
+      </div>
+      <div class="order-content">
+        <h1>Заказать <em>проект</em></h1>
+        <p class="sub">Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову точную цену.</p>
+        <div class="form-card">
+          <form>
+            <div class="form-row"><label>Имя</label><input type="text" placeholder="Как к вам обращаться"></div>
+            <div class="form-row"><label>Телефон или Telegram</label><input type="text" placeholder="+7 ... или @username"></div>
+            <div class="form-row"><label>Материал</label>
+              <select><option value="">Выберите материал</option><option>PLA</option><option>PETG</option><option>ABS</option><option>Nylon</option><option>Другой / не знаю</option></select>
+            </div>
+            <div class="form-row"><label>Что нужно напечатать?</label><textarea placeholder="Описание детали, размеры, назначение..."></textarea></div>
+            <div class="form-row"><label>Размеры (если известны)</label><input type="text" placeholder="Длина × Ширина × Высота в мм"></div>
+            <button type="submit" class="btn-submit">Отправить заявку</button>
+          </form>
+          <p class="form-note">Ответ в течение 2 часов · Без предоплаты</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="logo">3D <em>ArtStudio</em></div>
+    <p>© 2026 · 3D-печать на заказ · Москва</p>
+  </div>
+</footer>
+</body>
+</html>

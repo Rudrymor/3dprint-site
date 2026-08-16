@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заказать проект — 3D-печать</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#0b0b0f;color:#e8e8ee;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── NAV ── */
+nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;background:rgba(11,11,15,.95);backdrop-filter:blur(16px);z-index:100}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Unbounded',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px}
+.logo .dot{color:#ffd60a}
+.back-link{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:8px}
+.back-link:hover{color:#ffd60a}
+
+/* ── ORDER PAGE ── */
+.order-page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px 80px;position:relative}
+
+/* Decorative grid background */
+.order-page::before{content:"";position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,214,10,.03) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,214,10,.03) 1px, transparent 1px);
+background-size:40px 40px;pointer-events:none}
+
+/* Decorative floating orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.12}
+.orb-1{width:300px;height:300px;background:#ffd60a;top:10%;left:-5%}
+.orb-2{width:250px;height:250px;background:#ff2d55;bottom:10%;right:-5%}
+
+.order-container{position:relative;z-index:2;width:100%;max-width:560px}
+
+/* Top decoration */
+.order-header{text-align:center;margin-bottom:40px}
+.order-header .tag{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.15);color:#ffd60a;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:24px}
+.order-header h1{font-family:'Unbounded',sans-serif;font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:12px}
+.order-header h1 .accent{color:#ffd60a}
+.order-header p{font-size:15px;color:#8888a0;max-width:400px;margin:0 auto}
+
+/* Form card */
+.form-card{background:#12121a;border:1px solid #1e1e2e;border-radius:20px;padding:40px;position:relative;overflow:hidden}
+.form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffd60a,#ff2d55,#ffd60a);opacity:.6}
+
+/* Decorative corner accents */
+.form-card::after{content:"";position:absolute;bottom:0;right:0;width:100px;height:100px;background:radial-gradient(circle at bottom right,rgba(255,214,10,.06),transparent 70%);pointer-events:none}
+
+.form-row{margin-bottom:18px}
+.form-row label{display:block;font-family:'Unbounded',sans-serif;font-size:11px;color:#ffd60a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700;opacity:.8}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:14px 16px;background:#0b0b0f;border:1px solid #1e1e2e;border-radius:12px;color:#e8e8ee;font-family:'Inter',sans-serif;font-size:15px;transition:all .25s}
+.form-row input::placeholder,.form-row textarea::placeholder{color:#444460}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:#ffd60a;box-shadow:0 0 0 3px rgba(255,214,10,.08)}
+.form-row textarea{resize:vertical;min-height:100px}
+.form-row select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.form-row select option{background:#0b0b0f;color:#e8e8ee}
+
+/* Two-column row */
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.btn-submit{width:100%;padding:16px;background:#ffd60a;color:#0b0b0f;border:none;border-radius:12px;font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .25s;letter-spacing:.5px;margin-top:8px}
+.btn-submit:hover{background:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,10,.2)}
+
+.form-note{font-size:12px;color:#444460;text-align:center;margin-top:16px}
+
+/* Decorative elements inside form */
+.form-divider{height:1px;background:#1e1e2e;margin:24px 0;position:relative}
+.form-divider::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#12121a;padding:0 12px;color:#ffd60a;font-size:12px;opacity:.5}
+
+/* Bottom reassurance */
+.reassurance{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
+.reassurance-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#666680}
+.reassurance-item .icon{font-size:16px}
+
+/* ─ FOOTER ── */
+footer{padding:32px 0;border-top:1px solid #1a1a24;text-align:center}
+footer p{font-size:13px;color:#444460}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .form-card{padding:28px 24px}
+  .form-row-2{grid-template-columns:1fr}
+  .order-page{padding:40px 16px 60px}
+  .reassurance{gap:20px}
+  .nav-inner{padding:0 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">3D<span class="dot">·</span>печать</a>
+    <a href="index.html" class="back-link">← На главную</a>
+  </div>
+</nav>
+
+<!-- ORDER FORM -->
+<section class="order-page">
+  <!-- Decorative orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="order-container">
+    <!-- Header -->
+    <div class="order-header">
+      <div class="tag">★ Заявка на печать</div>
+      <h1>Опишите <span class="accent">вашу задачу</span></h1>
+      <p>Заполните форму — я свяжусь с вами в течение 2 часов, уточню детали и рассчитаю стоимость</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+      <form>
+        <div class="form-row">
+          <label>Как к вам обращаться</label>
+          <input type="text" placeholder="Ваше имя" required>
+        </div>
+
+        <div class="form-row">
+          <label>Телефон или Telegram</label>
+          <input type="text" placeholder="+7 … или @username" required>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div class="form-row">
+          <label>Что нужно напечатать?</label>
+          <textarea placeholder="Опишите деталь: назначение, форма, особые требования…" required></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-row">
+            <label>Материал</label>
+            <select>
+              <option value="">Не знаю / посоветуйте</option>
+              <option>PLA</option>
+              <option>PETG</option>
+              <option>ABS</option>
+              <option>Nylon</option>
+              <option>TPU (гибкий)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Размеры (мм)</label>
+            <input type="text" placeholder="Д × Ш × В">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Количество</label>
+          <input type="number" placeholder="1" min="1" value="1">
+        </div>
+
+        <button type="submit" class="btn-submit">Отправить заявку →</button>
+      </form>
+      <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
+    </div>
+
+    <!-- Reassurance -->
+    <div class="reassurance">
+      <div class="reassurance-item"><span class="icon"></span> Точность 0.1 мм</div>
+      <div class="reassurance-item"><span class="icon">⚡</span> Срок от 2 дней</div>
+      <div class="reassurance-item"><span class="icon"></span> 12 материалов</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>2026 · 3D-печать на заказ · Кинешма</p>
+</footer>
+
+</body>
+</html>

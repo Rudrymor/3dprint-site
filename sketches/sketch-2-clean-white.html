@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Кастомная 3D-печать · Чистый профессиональный стиль</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f7f8fa;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+    --shadow: 0 4px 16px rgba(17,24,39,0.06);
+    --shadow-lg: 0 12px 32px rgba(17,24,39,0.08);
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  h1, h2, h3 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    line-height: 1.15;
+  }
+
+  /* NAV */
+  nav {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  nav .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+  nav ul {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  nav a:hover { color: var(--accent); }
+  .nav-cta {
+    background: var(--text);
+    color: #fff !important;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 96px 0 80px;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 4.8vw, 64px);
+    margin-bottom: 24px;
+  }
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 36px;
+    max-width: 520px;
+  }
+  .hero-cta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-block;
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37,99,235,0.28);
+  }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .btn-text {
+    color: var(--text);
+    padding: 14px 4px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .btn-text:hover { color: var(--accent); }
+  .hero-image {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
+    position: relative;
+  }
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* SECTION */
+  section { padding: 88px 0; }
+  .section-alt { background: var(--bg-alt); }
+  .section-head {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .section-head h2 {
+    font-size: clamp(30px, 3.6vw, 44px);
+    margin-bottom: 12px;
+  }
+  .section-head p {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* GALLERY */
+  .gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: transparent;
+  }
+  .card-img {
+    aspect-ratio: 16 / 11;
+    background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
+    overflow: hidden;
+  }
+  .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s;
+  }
+  .card:hover .card-img img { transform: scale(1.03); }
+  .card-body { padding: 22px 24px 26px; }
+  .card-body h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .card-body p {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 14px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 5px 11px;
+    background: #eff6ff;
+    color: var(--accent);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* CAPABILITIES STRIP */
+  .strip {
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+  .strip-item {
+    flex: 1 1 220px;
+    padding: 30px 28px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .strip-item:last-child { border-right: none; }
+  .strip-item .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .strip-item .lbl {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* SERVICES */
+  .services {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .service {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    transition: all 0.2s;
+  }
+  .service:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+  .service-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 18px;
+    font-size: 20px;
+  }
+  .service h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .service p {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0 0 18px;
+  }
+  .service .price {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  /* STEPS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .step {
+    padding: 24px 0;
+    border-top: 2px solid var(--text);
+  }
+  .step-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1;
+  }
+  .step h4 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* ORDER FORM */
+  .order-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .order-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 48px;
+    box-shadow: var(--shadow);
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .form-field { display: flex; flex-direction: column; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--text);
+  }
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fff;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+  }
+  .form-field textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  .form-submit {
+    margin-top: 24px;
+    text-align: right;
+  }
+  .btn-full {
+    width: 100%;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 36px 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav ul { display: none; }
+    .hero { padding: 56px 0 48px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    section { padding: 56px 0; }
+    .gallery { grid-template-columns: 1fr; }
+    .services { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr 1fr; }
+    .strip-item { border-right: none; border-bottom: 1px solid var(--border); flex: 1 1 100%; }
+    .strip-item:last-child { border-bottom: none; }
+    .order-card { padding: 28px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .section-head { margin-bottom: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="logo">3D<span>Lab</span></div>
+    <ul>
+      <li><a href="#gallery">Работы</a></li>
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#how">Процесс</a></li>
+      <li><a href="#order" class="nav-cta">Обсудить проект</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Инженерная 3D-печать</span>
+        <h1>Проектируем и&nbsp;печатаем детали, которые невозможно купить</h1>
+        <p>Восстанавливаем редкие автозапчасти, проектируем функциональные компоненты и&nbsp;производим малые серии. Точность до&nbsp;0,1&nbsp;мм, сроки&nbsp;— от&nbsp;2&nbsp;дней.</p>
+        <div class="hero-cta">
+          <a href="#order" class="btn btn-primary">Обсудить проект</a>
+          <a href="#gallery" class="btn-text">Смотреть работы →</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="../images/hero-bg.jpg" alt="3D-печать" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Портфолио</span>
+      <h2>Избранные проекты</h2>
+      <p>От&nbsp;восстановленных деталей Audi до&nbsp;кастомных корпусов промышленного оборудования</p>
+    </div>
+    <div class="gallery">
+      <div class="card">
+        <div class="card-img"><img src="../images/audi-cover.jpg" alt="Крышка двигателя Audi A5 8T" /></div>
+        <div class="card-body">
+          <h3>Крышка двигателя Audi A5 8T</h3>
+          <p>Восстановление декоративно-защитной крышки моторного отсека по&nbsp;образцу</p>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"><img src="../images/gear.jpg" alt="Двухступенчатая шестерня" /></div>
+        <div class="card-body">
+          <h3>Двухступенчатая шестерня</h3>
+          <p>Точное воспроизведение по&nbsp;изношенному оригиналу с&nbsp;доработкой геометрии</p>
+          <span class="tag">ABS</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"><img src="../images/rr-panel.jpg" alt="Накладка бардачка Range Rover L494" /></div>
+        <div class="card-body">
+          <h3>Накладка бардачка Range Rover L494</h3>
+          <p>Декоративная панель по&nbsp;оригинальным чертежам с&nbsp;сохранением фактуры</p>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"><img src="../images/worn-gear.jpg" alt="Шестерня редуктора лебедки" /></div>
+        <div class="card-body">
+          <h3>Шестерня редуктора лебедки</h3>
+          <p>Реверс-инжиниринг повреждённой детали с&nbsp;усилением зубчатого венца</p>
+          <span class="tag">ABS</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"><img src="../images/frame.jpg" alt="Крепёжная рама усилителя" /></div>
+        <div class="card-body">
+          <h3>Крепёжная рама усилителя</h3>
+          <p>Несущая конструкция по&nbsp;индивидуальным размерам заказчика</p>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-img"><img src="../images/ultra-case.jpg" alt="Корпус ультразвуковой мойки" /></div>
+        <div class="card-body">
+          <h3>Корпус ультразвуковой мойки</h3>
+          <p>Проектирование и&nbsp;печать корпуса под внутреннюю электронику</p>
+          <span class="tag">PETG</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES STRIP -->
+<section class="section-alt" style="padding: 0;">
+  <div class="container" style="padding: 0;">
+    <div class="strip">
+      <div class="strip-item">
+        <div class="num">21+</div>
+        <div class="lbl">выполненных проекта</div>
+      </div>
+      <div class="strip-item">
+        <div class="num">4</div>
+        <div class="lbl">материала: PETG · ABS · PLA · Nylon</div>
+      </div>
+      <div class="strip-item">
+        <div class="num">3D</div>
+        <div class="lbl">моделирование по&nbsp;изношенному оригиналу</div>
+      </div>
+      <div class="strip-item">
+        <div class="num">DXF</div>
+        <div class="lbl">конвертация в&nbsp;DXF для лазерной резки</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Услуги</span>
+      <h2>Что мы делаем</h2>
+      <p>Полный цикл&nbsp;— от&nbsp;замера изношенной детали до&nbsp;готового изделия</p>
+    </div>
+    <div class="services">
+      <div class="service">
+        <div class="service-icon">①</div>
+        <h3>Функциональные детали</h3>
+        <p>Кронштейны, корпуса, переходники, фиксаторы</p>
+        <div class="price">от 350 ₽</div>
+      </div>
+      <div class="service">
+        <div class="service-icon">②</div>
+        <h3>Шестерни и&nbsp;редукторы</h3>
+        <p>По&nbsp;чертежам или по&nbsp;изношенному оригиналу</p>
+        <div class="price">от 800 ₽</div>
+      </div>
+      <div class="service">
+        <div class="service-icon">③</div>
+        <h3>Восстановление деталей</h3>
+        <p>3D&nbsp;сканирование → модель → печать</p>
+        <div class="price">от 2500 ₽</div>
+      </div>
+      <div class="service">
+        <div class="service-icon">④</div>
+        <h3>Проектирование</h3>
+        <p>От&nbsp;идеи до&nbsp;готовой STL/STEP модели</p>
+        <div class="price">от 1500 ₽</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="section-alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Процесс</span>
+      <h2>Как мы работаем</h2>
+      <p>Прозрачный процесс без скрытых этапов</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Заявка и&nbsp;обсуждение</h4>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>3D-модель или&nbsp;чертёж</h4>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>Печать и&nbsp;контроль качества</h4>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Доставка</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER FORM -->
+<section id="order">
+  <div class="container">
+    <div class="order-wrap">
+      <div class="section-head">
+        <span class="eyebrow">Оставить заявку</span>
+        <h2>Обсудим ваш проект</h2>
+        <p>Опишите задачу&nbsp;— ответим в&nbsp;течение дня с&nbsp;оценкой и&nbsp;сроками</p>
+      </div>
+      <div class="order-card">
+        <form>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="name">Имя</label>
+              <input id="name" type="text" placeholder="Как к вам обращаться" />
+            </div>
+            <div class="form-field">
+              <label for="contact">Телефон / Telegram</label>
+              <input id="contact" type="text" placeholder="+7 или @username" />
+            </div>
+            <div class="form-field full">
+              <label for="task">Описание задачи</label>
+              <textarea id="task" placeholder="Что нужно изготовить, размеры, назначение"></textarea>
+            </div>
+            <div class="form-field">
+              <label for="material">Материал</label>
+              <select id="material">
+                <option>Не знаю, подскажите</option>
+                <option>PETG</option>
+                <option>ABS</option>
+                <option>PLA</option>
+                <option>Nylon</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="qty">Количество</label>
+              <input id="qty" type="number" min="1" value="1" />
+            </div>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary btn-full">Отправить заявку</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">© 2026 · Кастомная 3D-печать</div>
+</footer>
+
+</body>
+</html>
