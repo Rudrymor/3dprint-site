@@ -18,8 +18,8 @@ nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;backgro
 .back-link{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s}
 .back-link:hover{color:#ffd60a}
 
-/* ── ORDER PAGE ─ */
-.order-page{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px 80px;position:relative}
+/* ── ORDER PAGE ── */
+.order-page{flex:1;display:flex;flex-direction:column;align-items:center;padding:56px 24px 40px;position:relative}
 
 /* Decorative grid */
 .order-page::before{content:"";position:absolute;inset:0;background-image:
@@ -34,18 +34,6 @@ background-size:40px 40px;pointer-events:none}
 
 .order-container{position:relative;z-index:2;width:100%;max-width:540px}
 
-/* ── DELIVERY ON ORDER PAGE ── */
-.delivery-section{margin-bottom:48px;text-align:center}
-.delivery-section .section-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;font-weight:500;margin-bottom:16px}
-.delivery-section .section-title{font-family:'Source Serif 4',serif;font-size:clamp(26px,4vw,38px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:32px;color:#fafafa}
-.delivery-section .section-title em{font-style:italic;color:#ffd60a;font-weight:500}
-.delivery-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.delivery-card{padding:32px 24px;background:#12121a;border:1px solid #1e1e2e;border-radius:16px;text-align:left;transition:border-color .25s}
-.delivery-card:hover{border-color:#ffd60a}
-.delivery-card .icon{font-size:28px;margin-bottom:12px}
-.delivery-card h3{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:8px;color:#fafafa}
-.delivery-card p{font-size:14px;color:#8888a0;line-height:1.55}
-
 /* ── ORDER HEADER ── */
 .order-header{text-align:center;margin-bottom:40px}
 .order-header .tag{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;margin-bottom:24px;font-weight:500}
@@ -53,7 +41,7 @@ background-size:40px 40px;pointer-events:none}
 .order-header h1 em{font-style:italic;color:#ffd60a;font-weight:500}
 .order-header p{font-size:15px;color:#8888a0;max-width:400px;margin:0 auto}
 
-/* ── FORM ─ */
+/* ── FORM ── */
 .form-card{background:#12121a;border:1px solid #1e1e2e;border-radius:16px;padding:40px;position:relative;overflow:hidden}
 .form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#ffd60a;opacity:.5}
 
@@ -75,8 +63,18 @@ background-size:40px 40px;pointer-events:none}
 .form-divider{height:1px;background:#1e1e2e;margin:24px 0}
 
 /* ── REASSURANCE ── */
-.reassurance{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
+.reassurance{display:flex;justify-content:center;gap:32px;margin-top:28px;flex-wrap:wrap}
 .reassurance-item{font-size:13px;color:#666680}
+
+/* ── DELIVERY BAR (horizontal, after form) ── */
+.delivery-bar{margin-top:48px;padding-top:40px;border-top:1px solid #1e1e2e;width:100%;max-width:680px}
+.delivery-bar-label{font-family:'Source Serif 4',serif;font-style:italic;font-size:15px;color:#ffd60a;text-align:center;margin-bottom:24px;font-weight:500}
+.delivery-bar-grid{display:flex;gap:20px}
+.delivery-bar-item{flex:1;padding:24px 20px;background:#12121a;border:1px solid #1e1e2e;border-radius:14px;transition:border-color .25s}
+.delivery-bar-item:hover{border-color:#ffd60a}
+.delivery-bar-item .icon{font-size:24px;margin-bottom:10px}
+.delivery-bar-item h3{font-family:'Source Serif 4',serif;font-size:16px;font-weight:600;margin-bottom:6px;color:#fafafa}
+.delivery-bar-item p{font-size:13px;color:#8888a0;line-height:1.5}
 
 /* ── FOOTER ── */
 footer{padding:32px 0;border-top:1px solid #1a1a24;text-align:center}
@@ -86,8 +84,8 @@ footer p{font-size:13px;color:#444460}
 @media(max-width:600px){
   .form-card{padding:28px 24px}
   .form-row-2{grid-template-columns:1fr}
-  .delivery-grid{grid-template-columns:1fr}
-  .order-page{padding:32px 16px 60px}
+  .delivery-bar-grid{flex-direction:column}
+  .order-page{padding:32px 16px 32px}
   .reassurance{gap:20px}
   .nav-inner{padding:0 20px}
 }
@@ -108,31 +106,14 @@ footer p{font-size:13px;color:#444460}
 
   <div class="order-container">
 
-    <!-- DELIVERY (перенесено с главной) -->
-    <div class="delivery-section" id="delivery">
-      <div class="section-eyebrow">— доставка</div>
-      <h2 class="section-title">Как <em>получить</em> заказ</h2>
-      <div class="delivery-grid">
-        <div class="delivery-card">
-          <div class="icon">🚚</div>
-          <h3>Доставка по всей России</h3>
-          <p>Отправляю Почтой России или СДЭК. Стоимость рассчитывается индивидуально в зависимости от размера и веса детали.</p>
-        </div>
-        <div class="delivery-card">
-          <div class="icon">🤝</div>
-          <h3>Самовывоз — по договорённости</h3>
-          <p>Если вы в Кинешме или рядом — можно забрать лично. Обсудим удобное время при оформлении заказа.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ORDER FORM -->
+    <!-- ORDER HEADER -->
     <div class="order-header">
       <div class="tag">— заявка на печать</div>
       <h1>Опишите <em>вашу задачу</em></h1>
       <p>Заполните форму — я свяжусь с вами в течение 2 часов, уточню детали и рассчитаю стоимость</p>
     </div>
 
+    <!-- FORM -->
     <div class="form-card">
       <form>
         <div class="form-row">
@@ -174,10 +155,28 @@ footer p{font-size:13px;color:#444460}
       <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
     </div>
 
+    <!-- REASSURANCE -->
     <div class="reassurance">
       <div class="reassurance-item">✦ Точность 0.1 мм</div>
       <div class="reassurance-item">⚡ Срок от 2 дней</div>
       <div class="reassurance-item">✦ 12 материалов</div>
+    </div>
+
+    <!-- DELIVERY BAR (horizontal, after form) -->
+    <div class="delivery-bar">
+      <div class="delivery-bar-label">— как получить заказ</div>
+      <div class="delivery-bar-grid">
+        <div class="delivery-bar-item">
+          <div class="icon">🚚</div>
+          <h3>Доставка по всей России</h3>
+          <p>Почтой России или СДЭК. Стоимость — индивидуально по размеру и весу.</p>
+        </div>
+        <div class="delivery-bar-item">
+          <div class="icon"></div>
+          <h3>Самовывоз</h3>
+          <p>По договорённости — если вы в Кинешме или рядом.</p>
+        </div>
+      </div>
     </div>
 
   </div>
