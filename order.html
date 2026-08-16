@@ -15,11 +15,11 @@ nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;backgro
 .nav-inner{max-width:1280px;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-family:'Source Serif 4',serif;font-weight:600;font-size:24px;color:#fafafa;text-decoration:none;letter-spacing:-.5px}
 .logo em{font-style:italic;color:#ffd60a;font-weight:500}
-.back-link{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:8px}
+.back-link{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s}
 .back-link:hover{color:#ffd60a}
 
-/* ── ORDER PAGE ── */
-.order-page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px 80px;position:relative}
+/* ── ORDER PAGE ─ */
+.order-page{flex:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px 80px;position:relative}
 
 /* Decorative grid */
 .order-page::before{content:"";position:absolute;inset:0;background-image:
@@ -29,21 +29,33 @@ background-size:40px 40px;pointer-events:none}
 
 /* Decorative orbs */
 .orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.1}
-.orb-1{width:300px;height:300px;background:#ffd60a;top:10%;left:-5%}
-.orb-2{width:250px;height:250px;background:#ffd60a;bottom:10%;right:-5%;opacity:.06}
+.orb-1{width:300px;height:300px;background:#ffd60a;top:5%;left:-5%}
+.orb-2{width:250px;height:250px;background:#ffd60a;bottom:5%;right:-5%;opacity:.06}
 
 .order-container{position:relative;z-index:2;width:100%;max-width:540px}
 
-/* Header */
+/* ── DELIVERY ON ORDER PAGE ── */
+.delivery-section{margin-bottom:48px;text-align:center}
+.delivery-section .section-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;font-weight:500;margin-bottom:16px}
+.delivery-section .section-title{font-family:'Source Serif 4',serif;font-size:clamp(26px,4vw,38px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:32px;color:#fafafa}
+.delivery-section .section-title em{font-style:italic;color:#ffd60a;font-weight:500}
+.delivery-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.delivery-card{padding:32px 24px;background:#12121a;border:1px solid #1e1e2e;border-radius:16px;text-align:left;transition:border-color .25s}
+.delivery-card:hover{border-color:#ffd60a}
+.delivery-card .icon{font-size:28px;margin-bottom:12px}
+.delivery-card h3{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:8px;color:#fafafa}
+.delivery-card p{font-size:14px;color:#8888a0;line-height:1.55}
+
+/* ── ORDER HEADER ── */
 .order-header{text-align:center;margin-bottom:40px}
 .order-header .tag{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;margin-bottom:24px;font-weight:500}
-.order-header h1{font-family:'Source Serif 4',serif;font-size:clamp(30px,4.5vw,44px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:12px;color:#fafafa}
+.order-header h1{font-family:'Source Serif 4',serif;font-size:clamp(28px,4.5vw,40px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:12px;color:#fafafa}
 .order-header h1 em{font-style:italic;color:#ffd60a;font-weight:500}
 .order-header p{font-size:15px;color:#8888a0;max-width:400px;margin:0 auto}
 
-/* Form card */
+/* ── FORM ─ */
 .form-card{background:#12121a;border:1px solid #1e1e2e;border-radius:16px;padding:40px;position:relative;overflow:hidden}
-.form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ffd60a,#ffd60a);opacity:.5}
+.form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#ffd60a;opacity:.5}
 
 .form-row{margin-bottom:18px}
 .form-row label{display:block;font-family:'Source Serif 4',serif;font-size:14px;color:#ffd60a;font-style:italic;font-weight:500;margin-bottom:8px}
@@ -60,13 +72,11 @@ background-size:40px 40px;pointer-events:none}
 .btn-submit:hover{background:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,10,.2)}
 
 .form-note{font-size:12px;color:#444460;text-align:center;margin-top:16px}
-
-/* Divider */
 .form-divider{height:1px;background:#1e1e2e;margin:24px 0}
 
-/* Reassurance */
+/* ── REASSURANCE ── */
 .reassurance{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
-.reassurance-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#666680}
+.reassurance-item{font-size:13px;color:#666680}
 
 /* ── FOOTER ── */
 footer{padding:32px 0;border-top:1px solid #1a1a24;text-align:center}
@@ -76,7 +86,8 @@ footer p{font-size:13px;color:#444460}
 @media(max-width:600px){
   .form-card{padding:28px 24px}
   .form-row-2{grid-template-columns:1fr}
-  .order-page{padding:40px 16px 60px}
+  .delivery-grid{grid-template-columns:1fr}
+  .order-page{padding:32px 16px 60px}
   .reassurance{gap:20px}
   .nav-inner{padding:0 20px}
 }
@@ -96,6 +107,26 @@ footer p{font-size:13px;color:#444460}
   <div class="orb orb-2"></div>
 
   <div class="order-container">
+
+    <!-- DELIVERY (перенесено с главной) -->
+    <div class="delivery-section" id="delivery">
+      <div class="section-eyebrow">— доставка</div>
+      <h2 class="section-title">Как <em>получить</em> заказ</h2>
+      <div class="delivery-grid">
+        <div class="delivery-card">
+          <div class="icon">🚚</div>
+          <h3>Доставка по всей России</h3>
+          <p>Отправляю Почтой России или СДЭК. Стоимость рассчитывается индивидуально в зависимости от размера и веса детали.</p>
+        </div>
+        <div class="delivery-card">
+          <div class="icon">🤝</div>
+          <h3>Самовывоз — по договорённости</h3>
+          <p>Если вы в Кинешме или рядом — можно забрать лично. Обсудим удобное время при оформлении заказа.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER FORM -->
     <div class="order-header">
       <div class="tag">— заявка на печать</div>
       <h1>Опишите <em>вашу задачу</em></h1>
@@ -144,10 +175,11 @@ footer p{font-size:13px;color:#444460}
     </div>
 
     <div class="reassurance">
-      <div class="reassurance-item"><span>✦</span> Точность 0.1 мм</div>
-      <div class="reassurance-item"><span></span> Срок от 2 дней</div>
-      <div class="reassurance-item"><span>✦</span> 12 материалов</div>
+      <div class="reassurance-item">✦ Точность 0.1 мм</div>
+      <div class="reassurance-item">⚡ Срок от 2 дней</div>
+      <div class="reassurance-item">✦ 12 материалов</div>
     </div>
+
   </div>
 </section>
 

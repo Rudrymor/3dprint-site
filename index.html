@@ -9,12 +9,11 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',system-ui,sans-serif;background:#0b0b0f;color:#e8e8ee;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.serif{font-family:'Source Serif 4',Georgia,serif}
 .container{max-width:1280px;margin:0 auto;padding:0 32px}
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 
-/* ─ NAV ── */
+/* ── NAV ── */
 nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;background:rgba(11,11,15,.92);backdrop-filter:blur(16px);z-index:100}
 .nav-inner{display:flex;justify-content:space-between;align-items:center}
 .logo{font-family:'Source Serif 4',serif;font-weight:600;font-size:24px;color:#fafafa;letter-spacing:-.5px}
@@ -25,7 +24,7 @@ nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;backgro
 .nav-cta{padding:10px 22px;background:#ffd60a;color:#0b0b0f;border-radius:100px;font-size:13px;font-weight:700;transition:all .25s}
 .nav-cta:hover{background:#fff;transform:translateY(-1px)}
 
-/* ── HERO: full-height image, text overlay left ── */
+/* ─ HERO ── */
 .hero{position:relative;min-height:85vh;display:flex;align-items:center;overflow:hidden}
 .hero-bg{position:absolute;inset:0;z-index:0}
 .hero-bg img{width:100%;height:100%;object-fit:cover}
@@ -34,21 +33,16 @@ nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;backgro
 .hero-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:20px;color:#ffd60a;margin-bottom:28px;font-weight:500}
 .hero h1{font-family:'Source Serif 4',serif;font-size:clamp(42px,6vw,76px);font-weight:400;line-height:1.05;letter-spacing:-1.5px;margin-bottom:28px;color:#fafafa}
 .hero h1 em{font-style:italic;color:#ffd60a;font-weight:500}
-.hero-sub{font-size:17px;color:#b0b0b8;max-width:520px;line-height:1.65;margin-bottom:40px}
-.hero-ctas{display:flex;gap:16px;flex-wrap:wrap}
-.btn-primary{padding:14px 32px;background:#ffd60a;color:#0b0b0f;border:none;border-radius:100px;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s}
-.btn-primary:hover{background:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,10,.2)}
-.btn-outline{padding:14px 32px;background:transparent;color:#e8e8ee;border:1px solid #2a2a3a;border-radius:100px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s}
-.btn-outline:hover{border-color:#ffd60a;color:#ffd60a}
+.hero-sub{font-size:17px;color:#b0b0b8;max-width:520px;line-height:1.65}
 
-/* ── MARQUEE: types of items ── */
+/* ── MARQUEE ── */
 .marquee{background:#ffd60a;color:#0b0b0f;padding:14px 0;overflow:hidden}
 .marquee-track{display:flex;gap:48px;white-space:nowrap;animation:marquee 22s linear infinite;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
 .marquee-track span{display:flex;align-items:center;gap:48px}
 .marquee-track span::after{content:"";color:#0b0b0f;font-size:10px;opacity:.4}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* ── SECTIONS ── */
+/* ── SECTIONS ─ */
 section{padding:100px 0}
 .section-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;font-weight:500;margin-bottom:16px}
 .section-title{font-family:'Source Serif 4',serif;font-size:clamp(32px,4.5vw,52px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:48px;color:#fafafa}
@@ -78,21 +72,6 @@ section{padding:100px 0}
 .process-steps h4{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;margin-bottom:8px;color:#fafafa}
 .process-steps p{font-size:15px;color:#8888a0;line-height:1.55}
 
-/* ── DELIVERY ── */
-.delivery{background:#12121a;border-top:1px solid #1e1e2e;border-bottom:1px solid #1e1e2e}
-.delivery-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.delivery-card{padding:40px 32px;background:#0b0b0f;border:1px solid #1e1e2e;border-radius:16px;transition:border-color .25s}
-.delivery-card:hover{border-color:#ffd60a}
-.delivery-card .icon{font-size:32px;margin-bottom:16px}
-.delivery-card h3{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;margin-bottom:8px;color:#fafafa}
-.delivery-card p{font-size:14px;color:#8888a0;line-height:1.55}
-
-/* ── CTA BAND ── */
-.cta-band{text-align:center;padding:100px 32px;background:linear-gradient(180deg,#0b0b0f,#12121a)}
-.cta-band h2{font-family:'Source Serif 4',serif;font-size:clamp(28px,4vw,44px);font-weight:400;margin-bottom:16px;letter-spacing:-1px;color:#fafafa}
-.cta-band h2 em{font-style:italic;color:#ffd60a;font-weight:500}
-.cta-band p{font-size:16px;color:#8888a0;margin-bottom:36px;max-width:480px;margin-left:auto;margin-right:auto}
-
 /* ── FOOTER ── */
 footer{padding:40px 0;border-top:1px solid #1a1a24;text-align:center}
 footer .logo{display:inline-block;margin-bottom:12px}
@@ -101,7 +80,6 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .svc-grid{grid-template-columns:1fr}
-  .delivery-grid{grid-template-columns:1fr}
 }
 @media(max-width:768px){
   .container{padding:0 20px}
@@ -123,13 +101,12 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
       <li><a href="#projects">Проекты</a></li>
       <li><a href="#services">Услуги</a></li>
       <li><a href="#process">Процесс</a></li>
-      <li><a href="#delivery">Доставка</a></li>
     </ul>
     <a href="order.html" class="nav-cta">Заказать проект</a>
   </div>
 </nav>
 
-<!-- HERO: full image, text overlay left -->
+<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"><img src="images/hero-photo.jpg" alt="3D-принтер"></div>
   <div class="container">
@@ -137,15 +114,11 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
       <div class="hero-eyebrow">— ручная работа, машинная точность</div>
       <h1>Печатаю детали,<br>которых <em>нет</em><br>в магазинах</h1>
       <p class="hero-sub">Кронштейны, корпуса, переходники, запчасти и игрушки. Индивидуальный подход, 12 материалов, срок от 2 дней.</p>
-      <div class="hero-ctas">
-        <a href="order.html" class="btn-primary">Оставить заявку</a>
-        <a href="#services" class="btn-outline">Что печатаю</a>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- MARQUEE: types of items -->
+<!-- MARQUEE -->
 <div class="marquee">
   <div class="marquee-track">
     <span>Кронштейны</span><span>Корпуса</span><span>Переходники</span><span>Запчасти</span><span>Игрушки</span><span>Крепления</span><span>Шестерни</span>
@@ -209,33 +182,6 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
     </ul>
   </div>
 </section>
-
-<!-- DELIVERY -->
-<section id="delivery" class="delivery">
-  <div class="container">
-    <div class="section-eyebrow">— доставка</div>
-    <h2 class="section-title">Как <em>получить</em> заказ</h2>
-    <div class="delivery-grid">
-      <div class="delivery-card">
-        <div class="icon">🚚</div>
-        <h3>Доставка по всей России</h3>
-        <p>Отправляю Почтой России или СДЭК. Стоимость доставки рассчитывается индивидуально в зависимости от размера и веса детали.</p>
-      </div>
-      <div class="delivery-card">
-        <div class="icon">🤝</div>
-        <h3>Самовывоз — по договорённости</h3>
-        <p>Если вы в Кинешме или рядом — можно забрать лично. Обсудим удобное время при оформлении заказа.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA BAND -->
-<div class="cta-band">
-  <h2>Нужна деталь, которой <em>нет в магазине</em>?</h2>
-  <p>Опишите задачу — рассчитаю стоимость и сроки в течение 2 часов</p>
-  <a href="order.html" class="btn-primary">Оставить заявку</a>
-</div>
 
 <!-- FOOTER -->
 <footer>
