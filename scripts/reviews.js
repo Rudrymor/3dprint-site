@@ -38,10 +38,10 @@ function renderReviews(items) {
   root.innerHTML = "";
 
   items.forEach(item => {
-    const name = item.name || "";
-    const text = item.text || "";
+    const name = escapeHtml(item.name || "");
+    const text = escapeHtml(item.text || "");
     const rating = Math.max(1, Math.min(5, parseInt(item.rating, 10) || 5));
-    const date = item.date || "";
+    const date = escapeHtml(item.date || "");
 
     const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
 

@@ -7,107 +7,30 @@
 <meta property="og:title" content="Мои работы — 3DArtStudio">
 <meta property="og:description" content="Каталог работ: чехлы, кронштейны, шестерни, корпуса, игрушки. Фото и цены.">
 <meta property="og:type" content="website">
+<link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/works.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Мои работы — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Outfit',system-ui,sans-serif;background:#09090b;color:#fafafa;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.container{max-width:1280px;margin:0 auto;padding:0 32px}
-img{display:block;max-width:100%}
-a{color:inherit;text-decoration:none}
-h1,h2,h3,h4{color:#ff6b35}
-
-/* ── NAV ── */
-nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
-.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#06b6d4,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
-
-/* ── HERO ── */
-.page-hero{padding:80px 0 60px;text-align:center}
-.page-hero h1{font-size:clamp(42px,6vw,68px);font-weight:800;line-height:1.05;letter-spacing:-2.5px;margin-bottom:20px;background:linear-gradient(135deg,#8b5cf6,#06b6d4,#ffd60a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:gradientShift 4s ease-in-out infinite}
-@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.page-hero p{font-size:18px;color:#71717a;max-width:600px;margin:0 auto;line-height:1.7}
-
-/* ── COUNTER ── */
-.counter-section{padding:40px 0;text-align:center}
-.counter{display:inline-flex;align-items:center;gap:16px;padding:24px 48px;background:linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,214,0,.1));border:2px solid rgba(255,107,53,.3);border-radius:20px}
-.counter-num{font-size:56px;font-weight:900;color:#ffd60a;letter-spacing:-2px;line-height:1}
-.counter-label{font-size:18px;font-weight:600;color:#ff6b35;text-transform:uppercase;letter-spacing:2px}
-
-/* ── CATALOG ── */
-.catalog-section{padding:0 0 100px}
-.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
-.catalog-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;overflow:hidden;transition:all .3s}
-.catalog-card:hover{border-color:rgba(255,107,53,.3);transform:translateY(-4px);box-shadow:0 12px 32px rgba(255,107,53,.1)}
-.catalog-card-img{aspect-ratio:4/3;background:rgba(255,255,255,.02);overflow:hidden}
-.catalog-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.catalog-card:hover .catalog-card-img img{transform:scale(1.05)}
-.catalog-card-body{padding:24px}
-.catalog-card-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
-.catalog-card-title{font-size:18px;font-weight:700;color:#7dd3fc;letter-spacing:-.3px}
-.catalog-card-badge{padding:4px 10px;background:rgba(255,214,0,.15);color:#ffd60a;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase}
-.catalog-card-desc{font-size:14px;color:#a1a1aa;line-height:1.6;margin-bottom:16px}
-.catalog-card-footer{display:flex;justify-content:space-between;align-items:center}
-.catalog-card-material{font-size:12px;color:#71717a;font-weight:500}
-.catalog-card-price{font-size:18px;font-weight:700;color:#7dd3fc}
-
-/* ── CTA ── */
-.cta{padding:80px 0;text-align:center;border-top:1px solid rgba(255,255,255,.04)}
-.cta h2{font-size:clamp(28px,3.5vw,40px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:12px;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:ctaShift 4s ease infinite}
-@keyframes ctaShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.cta p{font-size:16px;color:#a1a1aa;margin-bottom:28px}
-.btn-primary{display:inline-block;padding:14px 28px;background:transparent;color:#ff6b35;border:2px solid #ff6b35;border-radius:100px;font-size:15px;font-weight:600;transition:all .25s}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,53,.3);background:rgba(255,107,53,.1)}
-
-/* ── FOOTER ── */
-footer{padding:60px 0;border-top:1px solid rgba(255,255,255,.04);text-align:center}
-footer p{font-size:13px;color:#71717a}
-
-.catalog-card-img{cursor:zoom-in}
-
-/* ── LIGHTBOX ── */
-.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(9,9,11,.95);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;flex-direction:column;padding:40px}
-.lightbox.open{display:flex}
-.lb-img{max-width:90vw;max-height:78vh;object-fit:contain;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-.lb-caption{margin-top:20px;text-align:center;color:#a1a1aa;font-size:15px;max-width:600px}
-.lb-caption strong{color:#7dd3fc;font-weight:700}
-.lb-caption .lb-price{color:#7dd3fc;font-weight:700}
-.lb-btn{position:absolute;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fafafa;border-radius:50%;width:52px;height:52px;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'Outfit',sans-serif;line-height:1}
-.lb-btn:hover{background:rgba(139,92,246,.25);border-color:rgba(139,92,246,.5)}
-.lb-close{top:28px;right:28px}
-.lb-prev{left:28px;top:50%;transform:translateY(-50%)}
-.lb-next{right:28px;top:50%;transform:translateY(-50%)}
-body.lb-open{overflow:hidden}
-
-/* ── FLOATING CONTACT ── */
-.vk-float{position:fixed;bottom:28px;right:28px;z-index:900;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:15px;font-weight:600;box-shadow:0 8px 28px rgba(139,92,246,.4);transition:all .25s}
-.vk-float:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(139,92,246,.55)}
-.vk-float svg{width:22px;height:22px;fill:#fff;flex-shrink:0}
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px){
-  .container{padding:0 20px}
-  .catalog-grid{grid-template-columns:1fr}
-  .counter{flex-direction:column;gap:8px;padding:20px 32px}
-  .counter-num{font-size:42px}
-  .vk-float{bottom:20px;right:20px;padding:14px;border-radius:50%}
-  .vk-float .vk-label{display:none}
-  .lb-prev{left:12px}
-  .lb-next{right:12px}
-  .lb-close{top:16px;right:16px}
-  .lb-btn{width:44px;height:44px;font-size:22px}
-  .lightbox{padding:16px}
-}
-</style>
+<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo">3DArtStudio</a>
+  <div class="container nav-inner">
+    <button class="nav-toggle" aria-label="Меню" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Главная</a>
+      <a href="index.html" class="logo">3DArtStudio</a>
+      <a href="works.html" class="nav-link">Работы</a>
+      <a href="order.html" class="nav-link">Заказать</a>
+    </div>
+  </div>
 </nav>
 
+<main>
 <!-- HERO -->
 <section class="page-hero">
   <div class="container">
@@ -120,14 +43,14 @@ body.lb-open{overflow:hidden}
 <section class="counter-section">
   <div class="container">
     <div class="counter">
-      <div class="counter-num">10</div>
+      <div class="counter-num" id="work-count">10</div>
       <div class="counter-label">работ в каталоге</div>
     </div>
   </div>
 </section>
 
 <!-- CATALOG -->
-<section class="catalog-section">
+<section class="catalog-section" style="padding-bottom:100px">
   <div class="container">
     <div class="catalog-grid" id="catalog-root"></div>
   </div>
@@ -135,16 +58,19 @@ body.lb-open{overflow:hidden}
 
 <!-- CTA -->
 <section class="cta">
-  <div class="container">
+  <div class="container cta-inner">
     <h2>Нужна своя деталь?</h2>
     <p>Опишите задачу — свяжусь в течение 2 часов и назову точную цену.</p>
     <a href="order.html" class="btn-primary">Заказать проект</a>
   </div>
 </section>
+</main>
 
 <!-- FOOTER -->
-<footer>
-  <p>2026 · 3DArtStudio · Кинешма</p>
+<footer class="footer-center">
+  <div class="container">
+    <p>2026 · 3DArtStudio · Кинешма</p>
+  </div>
 </footer>
 
 <!-- FLOATING CONTACT -->
@@ -153,10 +79,19 @@ body.lb-open{overflow:hidden}
   <span class="vk-label">Мы во ВКонтакте</span>
 </a>
 
+<script src="scripts/common.js"></script>
 <script src="scripts/catalog.js"></script>
 <script>
+// ─── ОБНОВЛЕНИЕ СЧЁТЧИКА ───
+document.addEventListener('DOMContentLoaded', () => {
+  const countEl = document.getElementById('work-count');
+  if (countEl && typeof CATALOG_DATA !== 'undefined') {
+    countEl.textContent = CATALOG_DATA.length;
+  }
+});
+
 // ─── ЛАЙТБОКС ───
-(function () {
+document.addEventListener('DOMContentLoaded', function() {
   const imgs = Array.from(document.querySelectorAll('.catalog-card-img img'));
   if (!imgs.length) return;
 
@@ -186,21 +121,30 @@ body.lb-open{overflow:hidden}
     capEl.innerHTML = (title ? `<strong>${title}</strong>` : '') + (price ? ` · <span class="lb-price">${price}</span>` : '');
   }
 
-  function open(i) { show(i); box.classList.add('open'); document.body.classList.add('lb-open'); }
-  function close() { box.classList.remove('open'); document.body.classList.remove('lb-open'); }
+  function open(i) { 
+    show(i); 
+    box.classList.add('open'); 
+    document.body.classList.add('lb-open'); 
+  }
+  
+  function close() { 
+    box.classList.remove('open'); 
+    document.body.classList.remove('lb-open'); 
+  }
 
   imgs.forEach((im, i) => im.addEventListener('click', () => open(i)));
   box.querySelector('.lb-close').addEventListener('click', close);
   box.querySelector('.lb-next').addEventListener('click', (e) => { e.stopPropagation(); show(idx + 1); });
   box.querySelector('.lb-prev').addEventListener('click', (e) => { e.stopPropagation(); show(idx - 1); });
   box.addEventListener('click', (e) => { if (e.target === box) close(); });
+  
   document.addEventListener('keydown', (e) => {
     if (!box.classList.contains('open')) return;
     if (e.key === 'Escape') close();
     if (e.key === 'ArrowRight') show(idx + 1);
     if (e.key === 'ArrowLeft') show(idx - 1);
   });
-})();
+});
 </script>
 </body>
 </html>

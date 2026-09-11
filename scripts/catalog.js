@@ -128,21 +128,26 @@ function renderCatalog(items) {
   root.className = "catalog-grid";
 
   items.forEach(item => {
-    const name = item.name || "";
-    const desc = item.description || "";
+    const name = escapeHtml(item.name || "");
+    const desc = escapeHtml(item.description || "");
     const img = item.image || "";
-    const material = item.material || "";
-    const price = item.price_s || item.price_m || item.price_l || "";
-    const category = item.category || "";
+    const material = escapeHtml(item.material || "");
+    const price = escapeHtml(item.price_s || item.price_m || item.price_l || "");
+    const category = escapeHtml(item.category || "");
 
-    const categoryLabel = category === "decor" ? "Декор" : "Техно";
+    const categoryLabel = item.category === "decor" ? "Декор" : "Техно";
 
     const card = document.createElement("div");
     card.className = "catalog-card";
     card.dataset.category = category;
+    
+    const imgHtml = img 
+      ? `<img src="${img}" alt="${name}" loading="lazy">`
+      : '<span style="font-size:40px;opacity:.3">🖨️</span>';
+    
     card.innerHTML = `
       <div class="catalog-card-img">
-        ${img ? `<img src="${img}" alt="${name}" loading="lazy">` : '<span style="font-size:40px;opacity:.3">🖨️</span>'}
+        ${imgHtml}
       </div>
       <div class="catalog-card-body">
         <div class="catalog-card-header">

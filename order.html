@@ -7,82 +7,11 @@
 <meta property="og:title" content="Заказать проект — 3DArtStudio">
 <meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты, ответ в течение 2 часов.">
 <meta property="og:type" content="website">
+<link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/order.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Outfit',system-ui,sans-serif;background:#09090b;color:#fafafa;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.container{max-width:800px;margin:0 auto;padding:0 32px}
-a{color:inherit;text-decoration:none}
-
-/* ── NAV ── */
-nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
-.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#06b6d4,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
-
-/* ── MESH GRADIENT BG ── */
-.mesh-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
-.mesh-bg::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(6,182,212,.15) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(139,92,246,.12) 0%,transparent 50%),radial-gradient(circle at 50% 50%,rgba(236,72,153,.08) 0%,transparent 50%);filter:blur(80px)}
-
-/* ── FORM ── */
-.order-section{position:relative;z-index:1;padding:60px 0}
-.form-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:40px}
-.form-card h3{font-size:24px;font-weight:700;margin-bottom:8px}
-.form-card .sub{font-size:15px;color:#a1a1aa;margin-bottom:28px}
-.form-row{margin-bottom:18px}
-.form-row label{display:block;font-size:13px;color:#a1a1aa;font-weight:600;margin-bottom:8px;letter-spacing:.5px}
-.form-row input,.form-row textarea,.form-row select{width:100%;padding:14px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#fafafa;font-family:'Outfit',sans-serif;font-size:15px;transition:all .25s}
-.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:rgba(139,92,246,.5);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
-.form-row input::placeholder,.form-row textarea::placeholder{color:#3f3f46}
-.form-row textarea{resize:vertical;min-height:100px}
-.form-row select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
-.form-row select option{background:#18181b;color:#fafafa}
-.form-row-inline{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;margin-top:8px}
-.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
-.form-note{text-align:center;margin-top:14px;font-size:13px;color:#71717a}
-
-/* ── SUCCESS ── */
-.form-success{display:none;text-align:center;padding:40px}
-.form-success.show{display:block}
-.form-success .icon{font-size:56px;margin-bottom:20px}
-.form-success h3{font-size:22px;font-weight:700;margin-bottom:10px}
-.form-success p{font-size:15px;color:#a1a1aa;margin-bottom:24px}
-
-/* ── MATERIALS GUIDE ── */
-.materials{margin-top:40px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:36px}
-.materials h3{font-size:22px;font-weight:700;margin-bottom:8px;color:#ffd60a}
-.materials .mat-sub{font-size:15px;color:#a1a1aa;margin-bottom:24px}
-.mat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.mat-table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
-.mat-table th{text-align:left;padding:12px 14px;color:#7dd3fc;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
-.mat-table td{padding:14px;color:#a1a1aa;border-bottom:1px solid rgba(255,255,255,.04)}
-.mat-table tr:last-child td{border-bottom:none}
-.mat-table td:first-child{font-weight:700;color:#adff2f;white-space:nowrap}
-.mat-table td:last-child{color:#7dd3fc;font-weight:600;white-space:nowrap}
-.mat-hint{margin-top:20px;font-size:14px;color:#71717a;line-height:1.6}
-.mat-hint strong{color:#a1a1aa;font-weight:600}
-
-/* ── FLOATING CONTACT ── */
-.vk-float{position:fixed;bottom:28px;right:28px;z-index:900;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:15px;font-weight:600;box-shadow:0 8px 28px rgba(139,92,246,.4);transition:all .25s}
-.vk-float:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(139,92,246,.55)}
-.vk-float svg{width:22px;height:22px;fill:#fff;flex-shrink:0}
-
-/* ── FOOTER ── */
-footer{position:relative;z-index:1;padding:40px 0;text-align:center}
-footer p{font-size:13px;color:#71717a}
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px){
-  .container{padding:0 20px}
-  .form-row-inline{grid-template-columns:1fr}
-  .form-card{padding:28px}
-  .materials{padding:24px}
-  .vk-float{bottom:20px;right:20px;padding:14px;border-radius:50%}
-  .vk-float .vk-label{display:none}
-}
-</style>
+<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 
@@ -91,23 +20,38 @@ footer p{font-size:13px;color:#71717a}
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="logo">3DArtStudio</a>
+  <div class="container nav-inner">
+    <button class="nav-toggle" aria-label="Меню" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Главная</a>
+      <a href="index.html" class="logo">3DArtStudio</a>
+      <a href="works.html" class="nav-link">Работы</a>
+      <a href="order.html" class="nav-link">Заказать</a>
+    </div>
+  </div>
 </nav>
 
+<main>
 <!-- FORM -->
 <section class="order-section">
-  <div class="container">
+  <div class="order-container">
     <div class="form-card" id="form-card">
-      <h3>Заявка на проект</h3>
-      <p class="sub">Заполните форму — отвечу в течение 2 часов</p>
+      <!-- ФОРМА HEADER (скрывается при успехе) -->
+      <div class="form-header" id="form-header">
+        <h3>Заявка на проект</h3>
+        <p class="sub">Заполните форму — отвечу в течение 2 часов</p>
+      </div>
+      
       <form id="order-form">
         <div class="form-row">
           <label>Ваше имя</label>
-          <input type="text" name="name" placeholder="Как к вам обращаться" required>
+          <input type="text" name="name" placeholder="Как к вам обращаться" required autocomplete="name">
         </div>
         <div class="form-row">
           <label>Телефон или Telegram</label>
-          <input type="text" name="contact" placeholder="+7 ... или @username" required>
+          <input type="tel" name="contact" placeholder="+7 ... или @username" required autocomplete="tel">
         </div>
         <div class="form-row">
           <label>Материал</label>
@@ -132,7 +76,7 @@ footer p{font-size:13px;color:#71717a}
           </div>
           <div>
             <label>Количество</label>
-            <input type="text" name="quantity" placeholder="1 шт.">
+            <input type="text" name="quantity" placeholder="1 шт." value="1 шт.">
           </div>
         </div>
         <div class="form-row">
@@ -143,11 +87,12 @@ footer p{font-size:13px;color:#71717a}
         <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
       </form>
       
+      <!-- УСПЕХ (показывается после отправки) -->
       <div class="form-success" id="form-success">
         <div class="icon">✅</div>
         <h3>Заявка отправлена!</h3>
         <p>Свяжусь с вами в течение 2 часов. Проверьте Telegram или телефон.</p>
-        <a href="works.html" class="btn-submit" style="display:inline-block;width:auto;padding:14px 32px">Смотреть работы</a>
+        <a href="works.html" class="btn-submit">Смотреть работы</a>
       </div>
     </div>
 
@@ -203,6 +148,7 @@ footer p{font-size:13px;color:#71717a}
     </div>
   </div>
 </section>
+</main>
 
 <!-- FLOATING CONTACT -->
 <a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
@@ -211,18 +157,30 @@ footer p{font-size:13px;color:#71717a}
 </a>
 
 <!-- FOOTER -->
-<footer>
-  <p>2026 · 3DArtStudio · Кинешма</p>
+<footer class="footer-center">
+  <div class="container">
+    <p>2026 · 3DArtStudio · Кинешма</p>
+  </div>
 </footer>
 
+<script src="scripts/common.js"></script>
 <script>
-document.getElementById('order-form').addEventListener('submit', function(e) {
-  e.preventDefault();
+// ─── ФОРМА ЗАЯВКИ ───
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('order-form');
+  const header = document.getElementById('form-header');
+  const success = document.getElementById('form-success');
   
-  const formData = new FormData(this);
-  const data = Object.fromEntries(formData.entries());
+  if (!form) return;
   
-  const message = `
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Формируем сообщение для Telegram
+    const message = `
 🆕 Новая заявка на 3D-печать
 
 👤 Имя: ${data.name}
@@ -231,17 +189,29 @@ document.getElementById('order-form').addEventListener('submit', function(e) {
 📝 Описание: ${data.description}
 📏 Размеры: ${data.size || 'Не указаны'}
 🔢 Количество: ${data.quantity || '1 шт.'}
-  `.trim();
-  
-  const encodedMessage = encodeURIComponent(message);
-  
-  // window.open(`https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>&text=${encodedMessage}`);
-  
-  document.getElementById('order-form').style.display = 'none';
-  document.getElementById('form-success').classList.add('show');
-  
-  console.log('Данные заявки:', data);
-  console.log('Сообщение для Telegram:', message);
+    `.trim();
+    
+    // TODO: Раскомментировать и настроить для отправки в Telegram
+    // Замените <BOT_TOKEN> и <CHAT_ID> на реальные значения
+    // const encodedMessage = encodeURIComponent(message);
+    // fetch(`https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>&text=${encodedMessage}`)
+    //   .then(() => {
+    //     header.classList.add('hidden');
+    //     form.style.display = 'none';
+    //     success.classList.add('show');
+    //   })
+    //   .catch(err => {
+    //     console.error('Ошибка отправки:', err);
+    //     alert('Ошибка отправки. Попробуйте ещё раз или свяжитесь через ВКонтакте.');
+    //   });
+    
+    // Временно: просто показываем успех (для тестирования)
+    console.log('Данные заявки:', data);
+    console.log('Сообщение для Telegram:', message);
+    header.classList.add('hidden');
+    form.style.display = 'none';
+    success.classList.add('show');
+  });
 });
 </script>
 </body>
