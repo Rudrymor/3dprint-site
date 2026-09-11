@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Оформите заявку на 3D-печать. Без предоплаты.">
+<meta name="description" content="Оформите заявку на 3D-печать. Без предоплаты, ответ в течение 2 часов.">
 <meta property="og:title" content="Заказать проект — 3DArtStudio">
-<meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты.">
+<meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты, ответ в течение 2 часов.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/order.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
@@ -22,10 +22,13 @@
 <nav>
   <div class="container nav-inner">
     <button class="nav-toggle" aria-label="Меню" aria-expanded="false">
-      <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="nav-links">
+      <a href="index.html" class="nav-link">Главная</a>
       <a href="index.html" class="logo">3DArtStudio</a>
+      <a href="works.html" class="nav-link">Работы</a>
+      <a href="order.html" class="nav-link">Заказать</a>
     </div>
   </div>
 </nav>
@@ -38,7 +41,7 @@
       <!-- ФОРМА HEADER (скрывается при успехе) -->
       <div class="form-header" id="form-header">
         <h3>Заявка на проект</h3>
-        <p class="sub">Заполните форму — отвечу в ближайшее время</p>
+        <p class="sub">Заполните форму — отвечу в течение 2 часов</p>
       </div>
       
       <form id="order-form">
@@ -57,6 +60,8 @@
             <option value="PLA">PLA — универсальный, для декора</option>
             <option value="PETG">PETG — прочный, хим. стойкий</option>
             <option value="ABS">ABS — термостойкий, для механизмов</option>
+            <option value="Nylon">Nylon — износостойкий, шестерни</option>
+            <option value="TPU">TPU — гибкий, чехлы, прокладки</option>
             <option value="other">Другой / не знаю</option>
           </select>
         </div>
@@ -79,14 +84,14 @@
           <input type="file" name="file" accept=".stl,.obj,.step,.3mf" style="padding:12px 16px">
         </div>
         <button type="submit" class="btn-submit">Отправить заявку →</button>
-        <p class="form-note">Без предоплаты</p>
+        <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
       </form>
       
       <!-- УСПЕХ (показывается после отправки) -->
       <div class="form-success" id="form-success">
         <div class="icon">✅</div>
         <h3>Заявка отправлена!</h3>
-        <p>Свяжусь с вами в ближайшее время. Проверьте Telegram или телефон.</p>
+        <p>Свяжусь с вами в течение 2 часов. Проверьте Telegram или телефон.</p>
         <a href="works.html" class="btn-submit">Смотреть работы</a>
       </div>
     </div>
@@ -102,6 +107,7 @@
               <th>Материал</th>
               <th>До какой температуры</th>
               <th>Для чего подходит</th>
+              <th>Цена</th>
             </tr>
           </thead>
           <tbody>
@@ -109,21 +115,36 @@
               <td>PLA</td>
               <td>до 60 °C</td>
               <td>Декор, игрушки, макеты, ночники</td>
+              <td>от 320 ₽</td>
             </tr>
             <tr>
               <td>PETG</td>
               <td>до 80 °C</td>
               <td>Кронштейны, корпуса, крепления, чехлы</td>
+              <td>от 450 ₽</td>
             </tr>
             <tr>
               <td>ABS</td>
               <td>до 100 °C</td>
               <td>Авто-детали, термостойкие корпуса</td>
+              <td>от 550 ₽</td>
+            </tr>
+            <tr>
+              <td>Nylon</td>
+              <td>до 110 °C</td>
+              <td>Шестерни, втулки, детали под износ</td>
+              <td>от 680 ₽</td>
+            </tr>
+            <tr>
+              <td>TPU</td>
+              <td>до 80 °C</td>
+              <td>Прокладки, гибкие чехлы, амортизаторы</td>
+              <td>от 520 ₽</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="mat-hint"><strong>Простое правило:</strong> для декора — PLA, для нагрузок — PETG, для жары — ABS.</p>
+      <p class="mat-hint"><strong>Простое правило:</strong> для декора — PLA, для нагрузок — PETG или Nylon, для гибкости — TPU, для жары — ABS.</p>
     </div>
   </div>
 </section>

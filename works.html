@@ -19,10 +19,13 @@
 <nav>
   <div class="container nav-inner">
     <button class="nav-toggle" aria-label="Меню" aria-expanded="false">
-      <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="nav-links">
+      <a href="index.html" class="nav-link">Главная</a>
       <a href="index.html" class="logo">3DArtStudio</a>
+      <a href="works.html" class="nav-link">Работы</a>
+      <a href="order.html" class="nav-link">Заказать</a>
     </div>
   </div>
 </nav>
@@ -56,9 +59,9 @@
 <!-- CTA -->
 <section class="cta">
   <div class="container cta-inner">
-    <h2>Нужна деталь?</h2>
-    <p>Опишите задачу — свяжусь и назову точную цену.</p>
-    <a href="order.html" class="btn-primary">Заказать</a>
+    <h2>Нужна своя деталь?</h2>
+    <p>Опишите задачу — свяжусь в течение 2 часов и назову точную цену.</p>
+    <a href="order.html" class="btn-primary">Заказать проект</a>
   </div>
 </section>
 </main>
@@ -112,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const source = imgs[idx];
     const card = source.closest('.catalog-card');
     const title = card ? card.querySelector('.catalog-card-title')?.textContent.trim() : '';
+    const price = card ? card.querySelector('.catalog-card-price')?.textContent.trim() : '';
     imgEl.src = source.src;
     imgEl.alt = source.alt || title;
-    capEl.innerHTML = title ? `<strong>${title}</strong>` : '';
+    capEl.innerHTML = (title ? `<strong>${title}</strong>` : '') + (price ? ` · <span class="lb-price">${price}</span>` : '');
   }
 
   function open(i) { 
