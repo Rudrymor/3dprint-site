@@ -50,6 +50,25 @@ nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-fi
 .form-success h3{font-size:22px;font-weight:700;margin-bottom:10px}
 .form-success p{font-size:15px;color:#a1a1aa;margin-bottom:24px}
 
+/* ── MATERIALS GUIDE ── */
+.materials{margin-top:40px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:36px}
+.materials h3{font-size:22px;font-weight:700;margin-bottom:8px;color:#ffd60a}
+.materials .mat-sub{font-size:15px;color:#a1a1aa;margin-bottom:24px}
+.mat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mat-table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.mat-table th{text-align:left;padding:12px 14px;color:#7dd3fc;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
+.mat-table td{padding:14px;color:#a1a1aa;border-bottom:1px solid rgba(255,255,255,.04)}
+.mat-table tr:last-child td{border-bottom:none}
+.mat-table td:first-child{font-weight:700;color:#adff2f;white-space:nowrap}
+.mat-table td:last-child{color:#7dd3fc;font-weight:600;white-space:nowrap}
+.mat-hint{margin-top:20px;font-size:14px;color:#71717a;line-height:1.6}
+.mat-hint strong{color:#a1a1aa;font-weight:600}
+
+/* ── FLOATING CONTACT ── */
+.vk-float{position:fixed;bottom:28px;right:28px;z-index:900;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:15px;font-weight:600;box-shadow:0 8px 28px rgba(139,92,246,.4);transition:all .25s}
+.vk-float:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(139,92,246,.55)}
+.vk-float svg{width:22px;height:22px;fill:#fff;flex-shrink:0}
+
 /* ── FOOTER ── */
 footer{position:relative;z-index:1;padding:40px 0;text-align:center}
 footer p{font-size:13px;color:#71717a}
@@ -59,6 +78,9 @@ footer p{font-size:13px;color:#71717a}
   .container{padding:0 20px}
   .form-row-inline{grid-template-columns:1fr}
   .form-card{padding:28px}
+  .materials{padding:24px}
+  .vk-float{bottom:20px;right:20px;padding:14px;border-radius:50%}
+  .vk-float .vk-label{display:none}
 }
 </style>
 </head>
@@ -128,8 +150,65 @@ footer p{font-size:13px;color:#71717a}
         <a href="works.html" class="btn-submit" style="display:inline-block;width:auto;padding:14px 32px">Смотреть работы</a>
       </div>
     </div>
+
+    <!-- MATERIALS GUIDE -->
+    <div class="materials">
+      <h3>Какой материал выбрать?</h3>
+      <p class="mat-sub">Если сомневаетесь — оставьте поле «Материал» пустым, подберу под задачу.</p>
+      <div class="mat-scroll">
+        <table class="mat-table">
+          <thead>
+            <tr>
+              <th>Материал</th>
+              <th>До какой температуры</th>
+              <th>Для чего подходит</th>
+              <th>Цена</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PLA</td>
+              <td>до 60 °C</td>
+              <td>Декор, игрушки, макеты, ночники</td>
+              <td>от 320 ₽</td>
+            </tr>
+            <tr>
+              <td>PETG</td>
+              <td>до 80 °C</td>
+              <td>Кронштейны, корпуса, крепления, чехлы</td>
+              <td>от 450 ₽</td>
+            </tr>
+            <tr>
+              <td>ABS</td>
+              <td>до 100 °C</td>
+              <td>Авто-детали, термостойкие корпуса</td>
+              <td>от 550 ₽</td>
+            </tr>
+            <tr>
+              <td>Nylon</td>
+              <td>до 110 °C</td>
+              <td>Шестерни, втулки, детали под износ</td>
+              <td>от 680 ₽</td>
+            </tr>
+            <tr>
+              <td>TPU</td>
+              <td>до 80 °C</td>
+              <td>Прокладки, гибкие чехлы, амортизаторы</td>
+              <td>от 520 ₽</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mat-hint"><strong>Простое правило:</strong> для декора — PLA, для нагрузок — PETG или Nylon, для гибкости — TPU, для жары — ABS.</p>
+    </div>
   </div>
 </section>
+
+<!-- FLOATING CONTACT -->
+<a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
+  <svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.576-1.496c.588-.19 1.341 1.26 2.14 1.818.605.422 1.064.33 1.064.33l2.137-.03s1.117-.071.587-.964c-.043-.073-.308-.661-1.588-1.87-1.34-1.264-1.16-1.059.453-3.246.983-1.332 1.376-2.145 1.253-2.493-.117-.332-.84-.244-.84-.244l-2.406.015s-.178-.025-.31.056c-.13.079-.212.262-.212.262s-.382 1.03-.89 1.907c-1.07 1.85-1.499 1.948-1.674 1.832-.407-.267-.305-1.075-.305-1.649 0-1.793.267-2.54-.521-2.733-.262-.065-.454-.107-1.123-.114-.858-.009-1.585.003-1.996.208-.274.136-.485.44-.356.457.159.022.519.099.71.363.246.341.237 1.107.237 1.107s.142 2.11-.33 2.371c-.325.18-.77-.187-1.725-1.865-.489-.859-.859-1.81-.859-1.81s-.071-.176-.198-.272c-.154-.115-.37-.151-.37-.151l-2.286.015s-.343.01-.469.161c-.112.135-.009.413-.009.413s1.79 4.258 3.817 6.403c1.858 1.967 3.968 1.838 3.968 1.838z"/></svg>
+  <span class="vk-label">Мы во ВКонтакте</span>
+</a>
 
 <!-- FOOTER -->
 <footer>

@@ -64,12 +64,40 @@ nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-fi
 footer{padding:60px 0;border-top:1px solid rgba(255,255,255,.04);text-align:center}
 footer p{font-size:13px;color:#71717a}
 
+.catalog-card-img{cursor:zoom-in}
+
+/* ── LIGHTBOX ── */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(9,9,11,.95);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;flex-direction:column;padding:40px}
+.lightbox.open{display:flex}
+.lb-img{max-width:90vw;max-height:78vh;object-fit:contain;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.lb-caption{margin-top:20px;text-align:center;color:#a1a1aa;font-size:15px;max-width:600px}
+.lb-caption strong{color:#7dd3fc;font-weight:700}
+.lb-caption .lb-price{color:#7dd3fc;font-weight:700}
+.lb-btn{position:absolute;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fafafa;border-radius:50%;width:52px;height:52px;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'Outfit',sans-serif;line-height:1}
+.lb-btn:hover{background:rgba(139,92,246,.25);border-color:rgba(139,92,246,.5)}
+.lb-close{top:28px;right:28px}
+.lb-prev{left:28px;top:50%;transform:translateY(-50%)}
+.lb-next{right:28px;top:50%;transform:translateY(-50%)}
+body.lb-open{overflow:hidden}
+
+/* ── FLOATING CONTACT ── */
+.vk-float{position:fixed;bottom:28px;right:28px;z-index:900;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:15px;font-weight:600;box-shadow:0 8px 28px rgba(139,92,246,.4);transition:all .25s}
+.vk-float:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(139,92,246,.55)}
+.vk-float svg{width:22px;height:22px;fill:#fff;flex-shrink:0}
+
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
   .container{padding:0 20px}
   .catalog-grid{grid-template-columns:1fr}
   .counter{flex-direction:column;gap:8px;padding:20px 32px}
   .counter-num{font-size:42px}
+  .vk-float{bottom:20px;right:20px;padding:14px;border-radius:50%}
+  .vk-float .vk-label{display:none}
+  .lb-prev{left:12px}
+  .lb-next{right:12px}
+  .lb-close{top:16px;right:16px}
+  .lb-btn{width:44px;height:44px;font-size:22px}
+  .lightbox{padding:16px}
 }
 </style>
 </head>
@@ -119,6 +147,60 @@ footer p{font-size:13px;color:#71717a}
   <p>2026 · 3DArtStudio · Кинешма</p>
 </footer>
 
+<!-- FLOATING CONTACT -->
+<a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
+  <svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.576-1.496c.588-.19 1.341 1.26 2.14 1.818.605.422 1.064.33 1.064.33l2.137-.03s1.117-.071.587-.964c-.043-.073-.308-.661-1.588-1.87-1.34-1.264-1.16-1.059.453-3.246.983-1.332 1.376-2.145 1.253-2.493-.117-.332-.84-.244-.84-.244l-2.406.015s-.178-.025-.31.056c-.13.079-.212.262-.212.262s-.382 1.03-.89 1.907c-1.07 1.85-1.499 1.948-1.674 1.832-.407-.267-.305-1.075-.305-1.649 0-1.793.267-2.54-.521-2.733-.262-.065-.454-.107-1.123-.114-.858-.009-1.585.003-1.996.208-.274.136-.485.44-.356.457.159.022.519.099.71.363.246.341.237 1.107.237 1.107s.142 2.11-.33 2.371c-.325.18-.77-.187-1.725-1.865-.489-.859-.859-1.81-.859-1.81s-.071-.176-.198-.272c-.154-.115-.37-.151-.37-.151l-2.286.015s-.343.01-.469.161c-.112.135-.009.413-.009.413s1.79 4.258 3.817 6.403c1.858 1.967 3.968 1.838 3.968 1.838z"/></svg>
+  <span class="vk-label">Мы во ВКонтакте</span>
+</a>
+
 <script src="scripts/catalog.js"></script>
+<script>
+// ─── ЛАЙТБОКС ───
+(function () {
+  const imgs = Array.from(document.querySelectorAll('.catalog-card-img img'));
+  if (!imgs.length) return;
+
+  let idx = 0;
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.innerHTML = `
+    <button class="lb-btn lb-close" aria-label="Закрыть">×</button>
+    <button class="lb-btn lb-prev" aria-label="Предыдущая">‹</button>
+    <img class="lb-img" src="" alt="">
+    <button class="lb-btn lb-next" aria-label="Следующая">›</button>
+    <div class="lb-caption"></div>
+  `;
+  document.body.appendChild(box);
+
+  const imgEl = box.querySelector('.lb-img');
+  const capEl = box.querySelector('.lb-caption');
+
+  function show(i) {
+    idx = (i + imgs.length) % imgs.length;
+    const source = imgs[idx];
+    const card = source.closest('.catalog-card');
+    const title = card ? card.querySelector('.catalog-card-title')?.textContent.trim() : '';
+    const price = card ? card.querySelector('.catalog-card-price')?.textContent.trim() : '';
+    imgEl.src = source.src;
+    imgEl.alt = source.alt || title;
+    capEl.innerHTML = (title ? `<strong>${title}</strong>` : '') + (price ? ` · <span class="lb-price">${price}</span>` : '');
+  }
+
+  function open(i) { show(i); box.classList.add('open'); document.body.classList.add('lb-open'); }
+  function close() { box.classList.remove('open'); document.body.classList.remove('lb-open'); }
+
+  imgs.forEach((im, i) => im.addEventListener('click', () => open(i)));
+  box.querySelector('.lb-close').addEventListener('click', close);
+  box.querySelector('.lb-next').addEventListener('click', (e) => { e.stopPropagation(); show(idx + 1); });
+  box.querySelector('.lb-prev').addEventListener('click', (e) => { e.stopPropagation(); show(idx - 1); });
+  box.addEventListener('click', (e) => { if (e.target === box) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (!box.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') show(idx + 1);
+    if (e.key === 'ArrowLeft') show(idx - 1);
+  });
+})();
+</script>
 </body>
 </html>
