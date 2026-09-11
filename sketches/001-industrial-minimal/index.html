@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DArtStudio — Industrial Minimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#0a0a0a;color:#e8e8e8;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.container{max-width:1280px;margin:0 auto;padding:0 32px}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+
+/* ── NAV ── */
+nav{padding:20px 0;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;background:rgba(10,10,10,.95);backdrop-filter:blur(20px);z-index:100}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#fafafa;letter-spacing:-1px}
+.logo span{color:#ff6b35}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:#666;font-size:14px;font-weight:500;transition:color .2s;letter-spacing:.5px;text-transform:uppercase}
+.nav-links a:hover{color:#ff6b35}
+.nav-cta{padding:10px 24px;background:transparent;border:1px solid #ff6b35;color:#ff6b35;border-radius:4px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:all .25s}
+.nav-cta:hover{background:#ff6b35;color:#0a0a0a}
+
+/* ── HERO ── */
+.hero{position:relative;min-height:90vh;display:flex;align-items:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.3}
+.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.3) 0%,rgba(10,10,10,.9) 100%)}
+.hero-inner{position:relative;z-index:1;padding:120px 0 100px}
+.hero-tag{display:inline-block;padding:6px 16px;border:1px solid rgba(255,107,53,.3);border-radius:2px;font-size:11px;letter-spacing:3px;color:#ff6b35;text-transform:uppercase;margin-bottom:32px;font-weight:600}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(48px,7vw,88px);font-weight:300;line-height:1;letter-spacing:-3px;margin-bottom:32px;color:#fafafa}
+.hero h1 strong{font-weight:700;color:#ff6b35}
+.hero-sub{font-size:18px;color:#888;max-width:480px;line-height:1.7;margin-bottom:48px}
+.hero-stats{display:flex;gap:48px}
+.stat{text-align:left}
+.stat-num{font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#ff6b35;letter-spacing:-1px}
+.stat-label{font-size:12px;color:#666;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+
+/* ── MARQUEE ── */
+.marquee{background:#ff6b35;color:#0a0a0a;padding:16px 0;overflow:hidden}
+.marquee-track{display:flex;gap:56px;white-space:nowrap;animation:marquee 20s linear infinite;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── SECTIONS ── */
+section{padding:100px 0}
+.section-tag{display:inline-block;padding:4px 12px;background:rgba(255,107,53,.1);border-radius:2px;font-size:11px;letter-spacing:2px;color:#ff6b35;text-transform:uppercase;margin-bottom:20px;font-weight:600}
+.section-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(36px,5vw,56px);font-weight:300;line-height:1.1;letter-spacing:-2px;margin-bottom:48px;color:#fafafa}
+.section-title strong{font-weight:700}
+
+/* ── PROJECTS ── */
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.catalog-card{background:#111;border:1px solid rgba(255,255,255,.06);border-radius:4px;overflow:hidden;transition:all .3s;position:relative}
+.catalog-card:hover{border-color:#ff6b35;transform:translateY(-4px)}
+.catalog-card-img{aspect-ratio:16/10;background:#1a1a1a;overflow:hidden}
+.catalog-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.catalog-card:hover .catalog-card-img img{transform:scale(1.08)}
+.catalog-card-body{padding:24px}
+.catalog-card-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;margin-bottom:8px;color:#fafafa;letter-spacing:-.5px}
+.catalog-card-desc{font-size:14px;color:#666;line-height:1.6;margin-bottom:16px}
+.catalog-card-meta{display:flex;justify-content:space-between;align-items:center}
+.catalog-card-material{font-size:11px;color:#888;letter-spacing:1px;text-transform:uppercase}
+.catalog-card-price{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#ff6b35}
+
+/* ── CATALOG FILTER ── */
+.catalog-filter{display:flex;gap:8px;margin-bottom:40px}
+.filter-btn{padding:8px 20px;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:2px;color:#888;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .25s;letter-spacing:1px;text-transform:uppercase}
+.filter-btn:hover{border-color:#ff6b35;color:#ff6b35}
+.filter-btn.active{background:#ff6b35;border-color:#ff6b35;color:#0a0a0a}
+
+/* ── SERVICES ── */
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.svc{padding:40px 32px;background:#111;border:1px solid rgba(255,255,255,.06);border-radius:4px;transition:all .3s}
+.svc:hover{border-color:#ff6b35;transform:translateY(-3px)}
+.svc-num{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;color:rgba(255,107,53,.15);margin-bottom:16px;letter-spacing:-2px}
+.svc h3{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;margin-bottom:12px;color:#fafafa;letter-spacing:-.5px}
+.svc p{font-size:15px;color:#666;line-height:1.7}
+.svc-price{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:#ff6b35;margin-top:20px}
+
+/* ── PROCESS ── */
+.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.process-step{padding:32px;background:#111;border:1px solid rgba(255,255,255,.06);border-radius:4px;transition:all .3s}
+.process-step:hover{border-color:#ff6b35}
+.process-step .num{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:#ff6b35;margin-bottom:16px;letter-spacing:-1px}
+.process-step h4{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:8px;color:#fafafa}
+.process-step p{font-size:14px;color:#666;line-height:1.6}
+
+/* ── FOOTER ── */
+footer{padding:60px 0;border-top:1px solid rgba(255,255,255,.06)}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:#fafafa}
+.footer-logo span{color:#ff6b35}
+footer p{font-size:13px;color:#444}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .process-grid{grid-template-columns:repeat(2,1fr)}
+  .svc-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .hero{min-height:80vh}
+  .hero-inner{padding:80px 0 60px}
+  .hero-stats{flex-direction:column;gap:24px}
+  section{padding:70px 0}
+  .nav-links{display:none}
+  .process-grid{grid-template-columns:1fr}
+  .catalog-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">3D<span>ArtStudio</span></a>
+    <ul class="nav-links">
+      <li><a href="#projects">Проекты</a></li>
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#process">Процесс</a></li>
+    </ul>
+    <a href="order.html" class="nav-cta">Заказать</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"><img src="../images/hero-photo.jpg" alt="3D-принтер"></div>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-tag">FDM / SLA печать</div>
+      <h1>Печатаю детали<br><strong>которых нет</strong></h1>
+      <p class="hero-sub">Кронштейны, корпуса, переходники, запчасти и игрушки. Индивидуальный подход, 12 материалов, срок от 2 дней.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">500+</div><div class="stat-label">Проектов</div></div>
+        <div class="stat"><div class="stat-num">12</div><div class="stat-label">Материалов</div></div>
+        <div class="stat"><div class="stat-num">2 дня</div><div class="stat-label">Мин. срок</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Кронштейны</span><span>Корпуса</span><span>Переходники</span><span>Запчасти</span><span>Игрушки</span><span>Крепления</span><span>Шестерни</span>
+    <span>Кронштейны</span><span>Корпуса</span><span>Переходники</span><span>Запчасти</span><span>Игрушки</span><span>Крепления</span><span>Шестерни</span>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-tag">Проекты</div>
+    <h2 class="section-title">Мои <strong>работы</strong></h2>
+    <div class="catalog-filter">
+      <button class="filter-btn active" data-filter="all">Все</button>
+      <button class="filter-btn" data-filter="techno">Техно</button>
+      <button class="filter-btn" data-filter="decor">Декор</button>
+    </div>
+    <div class="catalog-grid" id="catalog-root"></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="container">
+    <div class="section-tag">Услуги</div>
+    <h2 class="section-title">Что <strong>печатаю</strong></h2>
+    <div class="svc-grid">
+      <div class="svc">
+        <div class="svc-num">01</div>
+        <h3>Функциональные детали</h3>
+        <p>Кронштейны, крепления, переходники, защёлки. Износостойкие материалы для долгих лет службы.</p>
+        <div class="svc-price">от 320 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-num">02</div>
+        <h3>Корпуса для электроники</h3>
+        <p>Arduino, Raspberry Pi, DIY-проекты. С отверстиями под разъёмы и вентиляцию.</p>
+        <div class="svc-price">от 680 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-num">03</div>
+        <h3>Редкие запчасти</h3>
+        <p>Шестерни, втулки, клипсы — то, что невозможно купить, но можно напечатать.</p>
+        <div class="svc-price">от 450 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-num">04</div>
+        <h3>Игрушки и модели</h3>
+        <p>Фигурки, сувениры, архитектурные макеты. Высокая детализация и выбор цветов.</p>
+        <div class="svc-price">от 550 ₽</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="container">
+    <div class="section-tag">Процесс</div>
+    <h2 class="section-title">От заявки до <strong>детали</strong></h2>
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="num">01</div>
+        <h4>Заявка</h4>
+        <p>Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову цену.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">02</div>
+        <h4>3D-модель</h4>
+        <p>Если есть модель — печатаю. Если нет — спроектирую по вашим размерам.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">03</div>
+        <h4>Печать</h4>
+        <p>Подбираю материал, печатаю с контролем качества на каждом этапе.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">04</div>
+        <h4>Доставка</h4>
+        <p>Отправлю по всей России. Самовывоз — по договорённости.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">3D<span>ArtStudio</span></div>
+      <p>2026 · 3D-печать на заказ · Кинешма</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../scripts/catalog.js"></script>
+</body>
+</html>

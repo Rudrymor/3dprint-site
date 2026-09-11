@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DArtStudio — Clean Light</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#fafaf9;color:#1a1a1a;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.container{max-width:1280px;margin:0 auto;padding:0 32px}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+
+/* ── NAV ── */
+nav{padding:20px 0;border-bottom:1px solid rgba(0,0,0,.06);position:sticky;top:0;background:rgba(250,250,249,.95);backdrop-filter:blur(20px);z-index:100}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:800;font-size:22px;color:#1a1a1a;letter-spacing:-.5px}
+.logo span{color:#2563eb}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{color:#666;font-size:14px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:#2563eb}
+.nav-cta{padding:10px 24px;background:#2563eb;color:#fff;border-radius:8px;font-size:13px;font-weight:600;transition:all .25s}
+.nav-cta:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+
+/* ── HERO ── */
+.hero{padding:80px 0 100px;background:linear-gradient(180deg,#f0f4ff 0%,#fafaf9 100%)}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.hero-content{max-width:560px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:100px;font-size:13px;color:#2563eb;font-weight:600;margin-bottom:28px}
+.hero-badge::before{content:"⚡";font-size:14px}
+.hero h1{font-size:clamp(40px,5vw,64px);font-weight:800;line-height:1.1;letter-spacing:-2px;margin-bottom:24px;color:#1a1a1a}
+.hero h1 .accent{color:#2563eb}
+.hero-sub{font-size:18px;color:#666;line-height:1.7;margin-bottom:36px}
+.hero-ctas{display:flex;gap:12px}
+.btn-primary{padding:14px 28px;background:#2563eb;color:#fff;border-radius:8px;font-size:15px;font-weight:600;transition:all .25s}
+.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-secondary{padding:14px 28px;background:#fff;color:#1a1a1a;border:1px solid #e5e7eb;border-radius:8px;font-size:15px;font-weight:600;transition:all .25s}
+.btn-secondary:hover{border-color:#2563eb;color:#2563eb}
+.hero-visual{position:relative}
+.hero-visual img{width:100%;border-radius:16px;box-shadow:0 24px 48px rgba(0,0,0,.08)}
+.hero-visual::before{content:"";position:absolute;top:-16px;right:-16px;width:100%;height:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:16px;z-index:-1;opacity:.1}
+
+/* ── STATS ── */
+.stats{padding:60px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.stat{padding:24px}
+.stat-num{font-size:40px;font-weight:800;color:#2563eb;letter-spacing:-1px;margin-bottom:8px}
+.stat-label{font-size:14px;color:#666;font-weight:500}
+
+/* ── SECTIONS ── */
+section{padding:100px 0}
+.section-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#eff6ff;border-radius:100px;font-size:13px;color:#2563eb;font-weight:600;margin-bottom:20px}
+.section-title{font-size:clamp(36px,4.5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;color:#1a1a1a}
+.section-title .accent{color:#2563eb}
+.section-sub{font-size:18px;color:#666;max-width:600px;margin-bottom:48px}
+
+/* ── PROJECTS ── */
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.catalog-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden;transition:all .3s}
+.catalog-card:hover{border-color:#2563eb;transform:translateY(-4px);box-shadow:0 12px 32px rgba(37,99,235,.08)}
+.catalog-card-img{aspect-ratio:4/3;background:#f3f4f6;overflow:hidden}
+.catalog-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.catalog-card:hover .catalog-card-img img{transform:scale(1.05)}
+.catalog-card-body{padding:24px}
+.catalog-card-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
+.catalog-card-title{font-size:18px;font-weight:700;color:#1a1a1a;letter-spacing:-.3px}
+.catalog-card-badge{padding:4px 10px;background:#eff6ff;color:#2563eb;border-radius:6px;font-size:11px;font-weight:600}
+.catalog-card-desc{font-size:14px;color:#666;line-height:1.6;margin-bottom:16px}
+.catalog-card-footer{display:flex;justify-content:space-between;align-items:center}
+.catalog-card-material{font-size:12px;color:#999}
+.catalog-card-price{font-size:18px;font-weight:700;color:#2563eb}
+
+/* ── CATALOG FILTER ── */
+.catalog-filter{display:flex;gap:8px;margin-bottom:40px}
+.filter-btn{padding:8px 20px;background:#fff;border:1px solid #e5e7eb;border-radius:100px;color:#666;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s}
+.filter-btn:hover{border-color:#2563eb;color:#2563eb}
+.filter-btn.active{background:#2563eb;border-color:#2563eb;color:#fff}
+
+/* ── SERVICES ── */
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.svc{padding:40px 32px;background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;transition:all .3s}
+.svc:hover{border-color:#2563eb;transform:translateY(-3px);box-shadow:0 8px 24px rgba(37,99,235,.08)}
+.svc-icon{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px}
+.svc h3{font-size:22px;font-weight:700;margin-bottom:12px;color:#1a1a1a;letter-spacing:-.5px}
+.svc p{font-size:15px;color:#666;line-height:1.7}
+.svc-price{font-size:16px;font-weight:700;color:#2563eb;margin-top:20px}
+
+/* ── PROCESS ── */
+.process-steps{max-width:800px}
+.process-step{display:grid;grid-template-columns:80px 1fr;gap:24px;padding:32px 0;border-bottom:1px solid rgba(0,0,0,.06);align-items:start}
+.process-step:last-child{border-bottom:none}
+.process-step .num{width:56px;height:56px;background:#eff6ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#2563eb}
+.process-step h4{font-size:20px;font-weight:700;margin-bottom:8px;color:#1a1a1a}
+.process-step p{font-size:15px;color:#666;line-height:1.7}
+
+/* ── CTA ── */
+.cta{padding:100px 0;background:linear-gradient(135deg,#1e40af 0%,#7c3aed 100%);text-align:center}
+.cta h2{font-size:clamp(36px,4.5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;color:#fff}
+.cta p{font-size:18px;color:rgba(255,255,255,.8);max-width:600px;margin:0 auto 36px}
+.cta .btn-primary{background:#fff;color:#1e40af}
+.cta .btn-primary:hover{background:#f0f4ff}
+
+/* ── FOOTER ── */
+footer{padding:60px 0;border-top:1px solid rgba(0,0,0,.06)}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-logo{font-weight:800;font-size:20px;color:#1a1a1a}
+.footer-logo span{color:#2563eb}
+footer p{font-size:13px;color:#999}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero-visual{order:-1}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .svc-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .hero{padding:60px 0 80px}
+  section{padding:70px 0}
+  .nav-links{display:none}
+  .catalog-grid{grid-template-columns:1fr}
+  .hero-ctas{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">3D<span>ArtStudio</span></a>
+    <ul class="nav-links">
+      <li><a href="#projects">Проекты</a></li>
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#process">Процесс</a></li>
+    </ul>
+    <a href="order.html" class="nav-cta">Заказать проект</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">FDM / SLA печать на заказ</div>
+        <h1>Печатаю детали, которых <span class="accent">нет в магазинах</span></h1>
+        <p class="hero-sub">Кронштейны, корпуса, переходники, запчасти и игрушки. Индивидуальный подход, 12 материалов, срок от 2 дней.</p>
+        <div class="hero-ctas">
+          <a href="order.html" class="btn-primary">Заказать проект</a>
+          <a href="#projects" class="btn-secondary">Смотреть работы</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img src="../images/hero-photo.jpg" alt="3D-принтер">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num">500+</div><div class="stat-label">Проектов</div></div>
+      <div class="stat"><div class="stat-num">12</div><div class="stat-label">Материалов</div></div>
+      <div class="stat"><div class="stat-num">2 дня</div><div class="stat-label">Мин. срок</div></div>
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Гарантия</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-badge">📁 Портфолио</div>
+    <h2 class="section-title">Мои <span class="accent">работы</span></h2>
+    <p class="section-sub">Каждый проект — это решение реальной задачи. Вот примеры того, что я уже сделал.</p>
+    <div class="catalog-filter">
+      <button class="filter-btn active" data-filter="all">Все</button>
+      <button class="filter-btn" data-filter="techno">Техно</button>
+      <button class="filter-btn" data-filter="decor">Декор</button>
+    </div>
+    <div class="catalog-grid" id="catalog-root"></div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="container">
+    <div class="section-badge">🔧 Услуги</div>
+    <h2 class="section-title">Что <span class="accent">печатаю</span></h2>
+    <p class="section-sub">От мелких запчастей до декоративных моделей — решу задачу любой сложности.</p>
+    <div class="svc-grid">
+      <div class="svc">
+        <div class="svc-icon">🔧</div>
+        <h3>Функциональные детали</h3>
+        <p>Кронштейны, крепления, переходники, защёлки. Износостойкие материалы для долгих лет службы.</p>
+        <div class="svc-price">от 320 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-icon">💻</div>
+        <h3>Корпуса для электроники</h3>
+        <p>Arduino, Raspberry Pi, DIY-проекты. С отверстиями под разъёмы и вентиляцию.</p>
+        <div class="svc-price">от 680 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-icon">⚙️</div>
+        <h3>Редкие запчасти</h3>
+        <p>Шестерни, втулки, клипсы — то, что невозможно купить, но можно напечатать.</p>
+        <div class="svc-price">от 450 ₽</div>
+      </div>
+      <div class="svc">
+        <div class="svc-icon">🎮</div>
+        <h3>Игрушки и модели</h3>
+        <p>Фигурки, сувениры, архитектурные макеты. Высокая детализация и выбор цветов.</p>
+        <div class="svc-price">от 550 ₽</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="container">
+    <div class="section-badge">📋 Процесс</div>
+    <h2 class="section-title">От заявки до <span class="accent">готовой детали</span></h2>
+    <p class="section-sub">Простой и прозрачный процесс работы — вы всегда знаете, на каком этапе ваш заказ.</p>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="num">01</div>
+        <div><h4>Заявка и обсуждение</h4><p>Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову точную цену.</p></div>
+      </div>
+      <div class="process-step">
+        <div class="num">02</div>
+        <div><h4>3D-модель или чертёж</h4><p>Если есть модель — печатаю. Если нет — спроектирую по вашим размерам и описанию.</p></div>
+      </div>
+      <div class="process-step">
+        <div class="num">03</div>
+        <div><h4>Печать и контроль</h4><p>Подбираю материал, печатаю с контролем качества на каждом этапе.</p></div>
+      </div>
+      <div class="process-step">
+        <div class="num">04</div>
+        <div><h4>Доставка или самовывоз</h4><p>Отправлю по всей России. Самовывоз — по договорённости.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Готовы начать проект?</h2>
+    <p>Опишите задачу — свяжусь в течение 2 часов и назову точную цену.</p>
+    <a href="order.html" class="btn-primary">Заказать проект</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">3D<span>ArtStudio</span></div>
+      <p>2026 · 3D-печать на заказ · Кинешма</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../scripts/catalog.js"></script>
+</body>
+</html>

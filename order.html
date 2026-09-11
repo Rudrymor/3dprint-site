@@ -4,187 +4,161 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Заказать проект — 3DArtStudio</title>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,sans-serif;background:#0b0b0f;color:#e8e8ee;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Outfit',system-ui,sans-serif;background:#09090b;color:#fafafa;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.container{max-width:800px;margin:0 auto;padding:0 32px}
+a{color:inherit;text-decoration:none}
 
 /* ── NAV ── */
-nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;background:rgba(11,11,15,.95);backdrop-filter:blur(16px);z-index:100}
-.nav-inner{max-width:1280px;margin:0 auto;padding:0 32px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-family:'Source Serif 4',serif;font-weight:600;font-size:24px;color:#fafafa;text-decoration:none;letter-spacing:-.5px}
-.logo em{font-style:italic;color:#ffd60a;font-weight:500}
-.back-link{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s}
-.back-link:hover{color:#ffd60a}
+nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#06b6d4,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
 
-/* ── ORDER PAGE ── */
-.order-page{flex:1;display:flex;flex-direction:column;align-items:center;padding:56px 24px 40px;position:relative}
-
-/* Decorative grid */
-.order-page::before{content:"";position:absolute;inset:0;background-image:
-  linear-gradient(rgba(255,214,10,.03) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(255,214,10,.03) 1px,transparent 1px);
-background-size:40px 40px;pointer-events:none}
-
-/* Decorative orbs */
-.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.1}
-.orb-1{width:300px;height:300px;background:#ffd60a;top:5%;left:-5%}
-.orb-2{width:250px;height:250px;background:#ffd60a;bottom:5%;right:-5%;opacity:.06}
-
-.order-container{position:relative;z-index:2;width:100%;max-width:540px}
-
-/* ── ORDER HEADER ── */
-.order-header{text-align:center;margin-bottom:40px}
-.order-header .tag{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;margin-bottom:24px;font-weight:500}
-.order-header h1{font-family:'Source Serif 4',serif;font-size:clamp(28px,4.5vw,40px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:12px;color:#fafafa}
-.order-header h1 em{font-style:italic;color:#ffd60a;font-weight:500}
-.order-header p{font-size:15px;color:#8888a0;max-width:400px;margin:0 auto}
+/* ── MESH GRADIENT BG ── */
+.mesh-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.mesh-bg::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(6,182,212,.15) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(139,92,246,.12) 0%,transparent 50%),radial-gradient(circle at 50% 50%,rgba(236,72,153,.08) 0%,transparent 50%);filter:blur(80px)}
 
 /* ── FORM ── */
-.form-card{background:#12121a;border:1px solid #1e1e2e;border-radius:16px;padding:40px;position:relative;overflow:hidden}
-.form-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#ffd60a;opacity:.5}
-
+.order-section{position:relative;z-index:1;padding:60px 0}
+.form-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:40px}
+.form-card h3{font-size:24px;font-weight:700;margin-bottom:8px}
+.form-card .sub{font-size:15px;color:#52525b;margin-bottom:28px}
 .form-row{margin-bottom:18px}
-.form-row label{display:block;font-family:'Source Serif 4',serif;font-size:14px;color:#ffd60a;font-style:italic;font-weight:500;margin-bottom:8px}
-.form-row input,.form-row textarea,.form-row select{width:100%;padding:14px 16px;background:#0b0b0f;border:1px solid #1e1e2e;border-radius:10px;color:#e8e8ee;font-family:'Inter',sans-serif;font-size:15px;transition:all .25s}
-.form-row input::placeholder,.form-row textarea::placeholder{color:#444460}
-.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:#ffd60a;box-shadow:0 0 0 3px rgba(255,214,10,.08)}
+.form-row label{display:block;font-size:13px;color:#a1a1aa;font-weight:600;margin-bottom:8px;letter-spacing:.5px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:14px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:#fafafa;font-family:'Outfit',sans-serif;font-size:15px;transition:all .25s}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{outline:none;border-color:rgba(139,92,246,.5);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.form-row input::placeholder,.form-row textarea::placeholder{color:#3f3f46}
 .form-row textarea{resize:vertical;min-height:100px}
-.form-row select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888a0'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
-.form-row select option{background:#0b0b0f;color:#e8e8ee}
+.form-row select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.form-row select option{background:#18181b;color:#fafafa}
+.form-row-inline{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;margin-top:8px}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
+.form-note{text-align:center;margin-top:14px;font-size:13px;color:#3f3f46}
 
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-
-.btn-submit{width:100%;padding:16px;background:#ffd60a;color:#0b0b0f;border:none;border-radius:100px;font-family:'Source Serif 4',serif;font-size:16px;font-weight:600;font-style:italic;cursor:pointer;transition:all .25s;margin-top:8px}
-.btn-submit:hover{background:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,214,10,.2)}
-
-.form-note{font-size:12px;color:#444460;text-align:center;margin-top:16px}
-.form-divider{height:1px;background:#1e1e2e;margin:24px 0}
-
-/* ── REASSURANCE ── */
-.reassurance{display:flex;justify-content:center;gap:32px;margin-top:28px;flex-wrap:wrap}
-.reassurance-item{font-size:13px;color:#666680}
-
-/* ── DELIVERY BAR (horizontal, after form) ── */
-.delivery-bar{margin-top:48px;padding-top:40px;border-top:1px solid #1e1e2e;width:100%;max-width:680px}
-.delivery-bar-label{font-family:'Source Serif 4',serif;font-style:italic;font-size:15px;color:#ffd60a;text-align:center;margin-bottom:24px;font-weight:500}
-.delivery-bar-grid{display:flex;gap:20px}
-.delivery-bar-item{flex:1;padding:24px 20px;background:#12121a;border:1px solid #1e1e2e;border-radius:14px;transition:border-color .25s}
-.delivery-bar-item:hover{border-color:#ffd60a}
-.delivery-bar-item .icon{font-size:24px;margin-bottom:10px}
-.delivery-bar-item h3{font-family:'Source Serif 4',serif;font-size:16px;font-weight:600;margin-bottom:6px;color:#fafafa}
-.delivery-bar-item p{font-size:13px;color:#8888a0;line-height:1.5}
+/* ── SUCCESS ── */
+.form-success{display:none;text-align:center;padding:40px}
+.form-success.show{display:block}
+.form-success .icon{font-size:56px;margin-bottom:20px}
+.form-success h3{font-size:22px;font-weight:700;margin-bottom:10px}
+.form-success p{font-size:15px;color:#52525b;margin-bottom:24px}
 
 /* ── FOOTER ── */
-footer{padding:32px 0;border-top:1px solid #1a1a24;text-align:center}
-footer p{font-size:13px;color:#444460}
+footer{position:relative;z-index:1;padding:40px 0;text-align:center}
+footer p{font-size:13px;color:#3f3f46}
 
 /* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .form-card{padding:28px 24px}
-  .form-row-2{grid-template-columns:1fr}
-  .delivery-bar-grid{flex-direction:column}
-  .order-page{padding:32px 16px 32px}
-  .reassurance{gap:20px}
-  .nav-inner{padding:0 20px}
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .form-row-inline{grid-template-columns:1fr}
+  .form-card{padding:28px}
 }
 </style>
 </head>
 <body>
 
+<!-- MESH GRADIENT BACKGROUND -->
+<div class="mesh-bg"></div>
+
+<!-- NAV -->
 <nav>
-  <div class="nav-inner">
-    <a href="index.html" class="logo">3D <em>ArtStudio</em></a>
-    <a href="index.html" class="back-link">← На главную</a>
-  </div>
+  <a href="index.html" class="logo">3DArtStudio</a>
 </nav>
 
-<section class="order-page">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
-  <div class="order-container">
-
-    <!-- ORDER HEADER -->
-    <div class="order-header">
-      <div class="tag">— заявка на печать</div>
-      <h1>Опишите <em>вашу задачу</em></h1>
-      <p>Заполните форму — я свяжусь с вами в течение 2 часов, уточню детали и рассчитаю стоимость</p>
-    </div>
-
-    <!-- FORM -->
-    <div class="form-card">
-      <form>
+<!-- FORM -->
+<section class="order-section">
+  <div class="container">
+    <div class="form-card" id="form-card">
+      <h3>Заявка на проект</h3>
+      <p class="sub">Заполните форму — отвечу в течение 2 часов</p>
+      <form id="order-form">
         <div class="form-row">
-          <label>Как к вам обращаться</label>
-          <input type="text" placeholder="Ваше имя" required>
+          <label>Ваше имя</label>
+          <input type="text" name="name" placeholder="Как к вам обращаться" required>
         </div>
         <div class="form-row">
           <label>Телефон или Telegram</label>
-          <input type="text" placeholder="+7 … или @username" required>
+          <input type="text" name="contact" placeholder="+7 ... или @username" required>
         </div>
-        <div class="form-divider"></div>
+        <div class="form-row">
+          <label>Материал</label>
+          <select name="material">
+            <option value="">Выберите материал</option>
+            <option value="PLA">PLA — универсальный, для декора</option>
+            <option value="PETG">PETG — прочный, хим. стойкий</option>
+            <option value="ABS">ABS — термостойкий, для механизмов</option>
+            <option value="Nylon">Nylon — износостойкий, шестерни</option>
+            <option value="TPU">TPU — гибкий, чехлы, прокладки</option>
+            <option value="other">Другой / не знаю</option>
+          </select>
+        </div>
         <div class="form-row">
           <label>Что нужно напечатать?</label>
-          <textarea placeholder="Опишите деталь: назначение, форма, особые требования…" required></textarea>
+          <textarea name="description" placeholder="Описание детали, назначение, особые требования..." required></textarea>
         </div>
-        <div class="form-row-2">
-          <div class="form-row">
-            <label>Материал</label>
-            <select>
-              <option value="">Не знаю / посоветуйте</option>
-              <option>PLA</option>
-              <option>PETG</option>
-              <option>ABS</option>
-              <option>Nylon</option>
-              <option>TPU (гибкий)</option>
-            </select>
+        <div class="form-row form-row-inline">
+          <div>
+            <label>Размеры (если известны)</label>
+            <input type="text" name="size" placeholder="Д × Ш × В в мм">
           </div>
-          <div class="form-row">
-            <label>Размеры (мм)</label>
-            <input type="text" placeholder="Д × Ш × В">
+          <div>
+            <label>Количество</label>
+            <input type="text" name="quantity" placeholder="1 шт.">
           </div>
         </div>
         <div class="form-row">
-          <label>Количество</label>
-          <input type="number" placeholder="1" min="1" value="1">
+          <label>Файл (если есть)</label>
+          <input type="file" name="file" accept=".stl,.obj,.step,.3mf" style="padding:12px 16px">
         </div>
-        <button type="submit" class="btn-submit">Оставить заявку</button>
+        <button type="submit" class="btn-submit">Отправить заявку →</button>
+        <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
       </form>
-      <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
-    </div>
-
-    <!-- REASSURANCE -->
-    <div class="reassurance">
-      <div class="reassurance-item">✦ Точность 0.1 мм</div>
-      <div class="reassurance-item">⚡ Срок от 2 дней</div>
-      <div class="reassurance-item">✦ 12 материалов</div>
-    </div>
-
-    <!-- DELIVERY BAR (horizontal, after form) -->
-    <div class="delivery-bar">
-      <div class="delivery-bar-label">— как получить заказ</div>
-      <div class="delivery-bar-grid">
-        <div class="delivery-bar-item">
-          <div class="icon">🚚</div>
-          <h3>Доставка по всей России</h3>
-          <p>Почтой России или СДЭК. Стоимость — индивидуально по размеру и весу.</p>
-        </div>
-        <div class="delivery-bar-item">
-          <div class="icon">🤝</div>
-          <h3>Самовывоз</h3>
-          <p>По договорённости — если вы в Кинешме или рядом.</p>
-        </div>
+      
+      <div class="form-success" id="form-success">
+        <div class="icon">✅</div>
+        <h3>Заявка отправлена!</h3>
+        <p>Свяжусь с вами в течение 2 часов. Проверьте Telegram или телефон.</p>
+        <a href="works.html" class="btn-submit" style="display:inline-block;width:auto;padding:14px 32px">Смотреть работы</a>
       </div>
     </div>
-
   </div>
 </section>
 
+<!-- FOOTER -->
 <footer>
-  <p>2026 · 3D-печать на заказ · Кинешма</p>
+  <p>2026 · 3DArtStudio · Кинешма</p>
 </footer>
 
+<script>
+document.getElementById('order-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData.entries());
+  
+  const message = `
+🆕 Новая заявка на 3D-печать
+
+👤 Имя: ${data.name}
+📱 Контакт: ${data.contact}
+📦 Материал: ${data.material || 'Не указан'}
+📝 Описание: ${data.description}
+📏 Размеры: ${data.size || 'Не указаны'}
+🔢 Количество: ${data.quantity || '1 шт.'}
+  `.trim();
+  
+  const encodedMessage = encodeURIComponent(message);
+  
+  // window.open(`https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>&text=${encodedMessage}`);
+  
+  document.getElementById('order-form').style.display = 'none';
+  document.getElementById('form-success').classList.add('show');
+  
+  console.log('Данные заявки:', data);
+  console.log('Сообщение для Telegram:', message);
+});
+</script>
 </body>
 </html>

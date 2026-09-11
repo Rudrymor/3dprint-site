@@ -4,90 +4,104 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3DArtStudio — 3D-печать на заказ</title>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,sans-serif;background:#0b0b0f;color:#e8e8ee;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:'Outfit',system-ui,sans-serif;background:#09090b;color:#fafafa;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .container{max-width:1280px;margin:0 auto;padding:0 32px}
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{color:#ff6b35}
 
 /* ── NAV ── */
-nav{padding:20px 0;border-bottom:1px solid #1a1a24;position:sticky;top:0;background:rgba(11,11,15,.92);backdrop-filter:blur(16px);z-index:100}
-.nav-inner{display:flex;justify-content:space-between;align-items:center}
-.logo{font-family:'Source Serif 4',serif;font-weight:600;font-size:24px;color:#fafafa;letter-spacing:-.5px}
-.logo em{font-style:italic;color:#ffd60a;font-weight:500}
-.nav-links{display:flex;gap:32px;list-style:none}
-.nav-links a{color:#8888a0;font-size:14px;font-weight:500;transition:color .2s}
-.nav-links a:hover{color:#ffd60a}
-.nav-cta{padding:10px 22px;background:#ffd60a;color:#0b0b0f;border-radius:100px;font-size:13px;font-weight:700;transition:all .25s}
-.nav-cta:hover{background:#fff;transform:translateY(-1px)}
+nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;border-bottom:1px solid rgba(255,255,255,.04)}
+.nav-inner{display:flex;justify-content:center;align-items:center;gap:48px}
+.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px;animation:logoShift 4s ease infinite}
+@keyframes logoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.nav-link{color:#ff6b35;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
+.nav-link:hover{color:#ffa366}
 
-/* ─ HERO ── */
-.hero{position:relative;min-height:85vh;display:flex;align-items:center;overflow:hidden}
-.hero-bg{position:absolute;inset:0;z-index:0}
-.hero-bg img{width:100%;height:100%;object-fit:cover}
-.hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,11,15,.95) 0%,rgba(11,11,15,.85) 30%,rgba(11,11,15,.4) 60%,transparent 100%)}
-.hero-inner{position:relative;z-index:1;padding:120px 0 100px;max-width:620px}
-.hero-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:20px;color:#ffd60a;margin-bottom:28px;font-weight:500}
-.hero h1{font-family:'Source Serif 4',serif;font-size:clamp(42px,6vw,76px);font-weight:400;line-height:1.05;letter-spacing:-1.5px;margin-bottom:28px;color:#fafafa}
-.hero h1 em{font-style:italic;color:#ffd60a;font-weight:500}
-.hero-sub{font-size:17px;color:#b0b0b8;max-width:520px;line-height:1.65}
+/* ── HERO ── */
+.hero{padding:100px 0 80px;position:relative;overflow:hidden;background:#09090b}
+.hero-bg-orbs{position:absolute;inset:0;z-index:0}
+.hero-bg-orbs::before{content:"";position:absolute;width:500px;height:500px;top:-150px;right:-100px;background:radial-gradient(circle,rgba(6,182,212,.25) 0%,transparent 70%);border-radius:50%;filter:blur(40px);animation:float1 8s ease-in-out infinite}
+.hero-bg-orbs::after{content:"";position:absolute;width:400px;height:400px;bottom:-100px;left:-50px;background:radial-gradient(circle,rgba(139,92,246,.2) 0%,transparent 70%);border-radius:50%;filter:blur(40px);animation:float2 10s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,40px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-50px)}}
+.hero-inner{position:relative;z-index:1;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;padding:10px 24px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:100px;font-size:15px;color:#22c55e;font-weight:600;margin-bottom:28px}
+.hero-badge .dot{width:10px;height:10px;background:#22c55e;border-radius:50%;animation:blink 1.5s infinite;box-shadow:0 0 8px rgba(34,197,94,.5)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(42px,6vw,68px);font-weight:800;line-height:1.05;letter-spacing:-2.5px;margin-bottom:20px}
+.hero h1 .gradient{background:linear-gradient(135deg,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:18px;color:#71717a;line-height:1.7;margin:0 auto 40px;max-width:600px}
+.hero-buttons{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.btn-hero{padding:18px 36px;border-radius:14px;font-size:18px;font-weight:700;transition:all .25s;white-space:nowrap;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4);background-size:300% 300%;color:#09090b;border:none;animation:logoShift 4s ease infinite}
+.btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.3);background-size:400% 400%}
 
 /* ── MARQUEE ── */
-.marquee{background:#ffd60a;color:#0b0b0f;padding:14px 0;overflow:hidden}
-.marquee-track{display:flex;gap:48px;white-space:nowrap;animation:marquee 22s linear infinite;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-.marquee-track span{display:flex;align-items:center;gap:48px}
-.marquee-track span::after{content:"";color:#0b0b0f;font-size:10px;opacity:.4}
+.marquee{padding:20px 0;overflow:hidden;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04)}
+.marquee-track{display:flex;gap:48px;white-space:nowrap;animation:marquee 25s linear infinite;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#adff2f}
+.marquee-track .accent{color:#8b5cf6}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* ── SECTIONS ─ */
+/* ── SECTIONS ── */
 section{padding:100px 0}
-.section-eyebrow{font-family:'Source Serif 4',serif;font-style:italic;font-size:18px;color:#ffd60a;font-weight:500;margin-bottom:16px}
-.section-title{font-family:'Source Serif 4',serif;font-size:clamp(32px,4.5vw,52px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:48px;color:#fafafa}
-.section-title em{font-style:italic;color:#ffd60a;font-weight:500}
-
-/* ── PROJECTS ── */
-.projects-empty{text-align:center;padding:80px 40px;background:#12121a;border:1px dashed #2a2a3a;border-radius:20px}
-.projects-empty .icon{font-size:56px;margin-bottom:20px;opacity:.5}
-.projects-empty h3{font-family:'Source Serif 4',serif;font-size:24px;font-weight:600;margin-bottom:12px;color:#fafafa}
-.projects-empty p{font-size:15px;color:#8888a0;max-width:420px;margin:0 auto}
+.section-title{text-align:center;font-size:clamp(36px,4.5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px}
+.section-title .gradient{background:linear-gradient(135deg,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section-sub{text-align:center;font-size:18px;color:#52525b;max-width:600px;margin:0 auto 48px}
 
 /* ── SERVICES ── */
-.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
-.svc{padding:40px 32px;background:#12121a;border:1px solid #1e1e2e;border-radius:16px;transition:all .3s}
-.svc:hover{border-color:#ffd60a;transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.svc-top{display:flex;justify-content:space-between;align-items:start;margin-bottom:20px}
-.svc-icon{width:52px;height:52px;background:#1a1a24;border:1px solid #2a2a3a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;font-size:18px;color:#ffd60a;font-weight:700;font-style:italic}
-.svc-price{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;color:#ffd60a;font-style:italic}
-.svc h3{font-family:'Source Serif 4',serif;font-size:24px;font-weight:600;margin-bottom:12px;color:#fafafa;letter-spacing:-.5px}
-.svc p{font-size:15px;color:#8888a0;line-height:1.6}
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
+.svc{padding:48px 36px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;transition:all .3s;position:relative;overflow:hidden}
+.svc::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#06b6d4,#8b5cf6);opacity:0;transition:opacity .3s}
+.svc:hover{border-color:rgba(139,92,246,.3);transform:translateY(-4px);box-shadow:0 12px 32px rgba(139,92,246,.1)}
+.svc:hover::before{opacity:1}
+.svc-icon{width:64px;height:64px;background:linear-gradient(135deg,rgba(6,182,212,.15),rgba(139,92,246,.15));border:1px solid rgba(139,92,246,.2);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;transition:all .3s}
+.svc:hover .svc-icon{transform:scale(1.1);box-shadow:0 0 20px rgba(139,92,246,.2)}
+.svc-icon svg{width:28px;height:28px;stroke:#a78bfa;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.svc:hover .svc-icon svg{animation:iconPulse .6s ease-in-out}
+@keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.svc h3{font-size:24px;font-weight:700;margin-bottom:14px;color:#ffd60a;letter-spacing:-.5px}
+.svc p{font-size:16px;color:#52525b;line-height:1.7}
+.svc-price{font-size:18px;font-weight:700;background:linear-gradient(135deg,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:24px}
 
 /* ── PROCESS ── */
-.process-steps{list-style:none;max-width:800px}
-.process-steps li{display:grid;grid-template-columns:56px 1fr;gap:24px;padding:26px 0;border-top:1px solid #1e1e2e;align-items:start}
-.process-steps li:last-child{border-bottom:1px solid #1e1e2e}
-.process-steps .n{font-family:'Source Serif 4',serif;font-style:italic;font-size:16px;color:#ffd60a;font-weight:500;padding-top:2px}
-.process-steps h4{font-family:'Source Serif 4',serif;font-size:20px;font-weight:600;margin-bottom:8px;color:#fafafa}
-.process-steps p{font-size:15px;color:#8888a0;line-height:1.55}
+.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.process-step{padding:40px 28px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;transition:all .3s;text-align:center}
+.process-step:hover{border-color:rgba(139,92,246,.3);transform:translateY(-4px)}
+.process-step .num{width:64px;height:64px;background:linear-gradient(135deg,rgba(6,182,212,.15),rgba(139,92,246,.15));border:1px solid rgba(139,92,246,.2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#a78bfa;margin:0 auto 24px}
+.process-step h4{font-size:18px;font-weight:700;margin-bottom:10px;color:#adff2f}
+.process-step p{font-size:15px;color:#52525b;line-height:1.6}
+
+/* ── CTA ── */
+.cta{padding:100px 0;position:relative;overflow:hidden;text-align:center;border-top:1px solid rgba(255,255,255,.04)}
+.cta::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(139,92,246,.1) 0%,transparent 70%)}
+.cta-inner{position:relative;z-index:1}
+.cta h2{font-size:clamp(32px,4vw,48px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:12px}
+.cta h2 .gradient{background:linear-gradient(135deg,#06b6d4,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cta p{font-size:18px;color:#52525b;margin-bottom:32px}
+.btn-primary{display:inline-block;padding:16px 32px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:16px;font-weight:600;transition:all .25s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
 
 /* ── FOOTER ── */
-footer{padding:40px 0;border-top:1px solid #1a1a24;text-align:center}
-footer .logo{display:inline-block;margin-bottom:12px}
-footer p{font-size:13px;color:#444460;letter-spacing:.5px}
+footer{padding:60px 0;border-top:1px solid rgba(255,255,255,.04)}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-logo{font-weight:800;font-size:20px;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoShift 4s ease infinite}
+footer p{font-size:13px;color:#3f3f46}
 
 /* ── RESPONSIVE ── */
-@media(max-width:900px){
+@media(max-width:1024px){
+  .process-grid{grid-template-columns:repeat(2,1fr)}
   .svc-grid{grid-template-columns:1fr}
 }
 @media(max-width:768px){
   .container{padding:0 20px}
-  .hero{min-height:75vh}
-  .hero-inner{padding:80px 0 60px}
-  .hero-bg::after{background:linear-gradient(180deg,rgba(11,11,15,.5) 0%,rgba(11,11,15,.85) 60%,rgba(11,11,15,.95) 100%)}
+  .hero{padding:60px 0 60px}
   section{padding:70px 0}
   .nav-links{display:none}
+  .process-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -96,24 +110,24 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
 <!-- NAV -->
 <nav>
   <div class="container nav-inner">
-    <a href="index.html" class="logo">3D <em>ArtStudio</em></a>
-    <ul class="nav-links">
-      <li><a href="#projects">Проекты</a></li>
-      <li><a href="#services">Услуги</a></li>
-      <li><a href="#process">Процесс</a></li>
-    </ul>
-    <a href="order.html" class="nav-cta">Заказать проект</a>
+    <a href="#services" class="nav-link">Услуги</a>
+    <a href="index.html" class="logo">3DArtStudio</a>
+    <a href="#process" class="nav-link">Процесс</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"><img src="images/hero-photo.jpg" alt="3D-принтер"></div>
+  <div class="hero-bg-orbs"></div>
   <div class="container">
     <div class="hero-inner">
-      <div class="hero-eyebrow">— ручная работа, машинная точность</div>
-      <h1>Печатаю детали,<br>которых <em>нет</em><br>в магазинах</h1>
+      <div class="hero-badge"><span class="dot"></span> Принимаю заказы</div>
+      <h1>Печатаю детали, которых <span class="gradient">нет в магазинах</span></h1>
       <p class="hero-sub">Кронштейны, корпуса, переходники, запчасти и игрушки. Индивидуальный подход, 12 материалов, срок от 2 дней.</p>
+      <div class="hero-buttons">
+        <a href="works.html" class="btn-hero">Мои работы</a>
+        <a href="order.html" class="btn-hero">Заказать проект</a>
+      </div>
     </div>
   </div>
 </section>
@@ -121,49 +135,58 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
 <!-- MARQUEE -->
 <div class="marquee">
   <div class="marquee-track">
-    <span>Кронштейны</span><span>Корпуса</span><span>Переходники</span><span>Запчасти</span><span>Игрушки</span><span>Крепления</span><span>Шестерни</span>
-    <span>Кронштейны</span><span>Корпуса</span><span>Переходники</span><span>Запчасти</span><span>Игрушки</span><span>Крепления</span><span>Шестерни</span>
+    <span>Кронштейны</span><span class="accent">•</span>
+    <span>Корпуса</span><span class="accent">•</span>
+    <span>Переходники</span><span class="accent">•</span>
+    <span>Запчасти</span><span class="accent">•</span>
+    <span>Игрушки</span><span class="accent">•</span>
+    <span>Крепления</span><span class="accent">•</span>
+    <span>Шестерни</span><span class="accent">•</span>
+    <span>Чехлы</span><span class="accent">•</span>
+    <span>Фигурки</span><span class="accent">•</span>
+    <span>Макеты</span><span class="accent">•</span>
+    <span>Кронштейны</span><span class="accent">•</span>
+    <span>Корпуса</span><span class="accent">•</span>
+    <span>Переходники</span><span class="accent">•</span>
+    <span>Запчасти</span><span class="accent">•</span>
+    <span>Игрушки</span><span class="accent">•</span>
+    <span>Крепления</span><span class="accent">•</span>
+    <span>Шестерни</span><span class="accent">•</span>
+    <span>Чехлы</span><span class="accent">•</span>
+    <span>Фигурки</span><span class="accent">•</span>
+    <span>Макеты</span>
   </div>
 </div>
-
-<!-- PROJECTS -->
-<section id="projects">
-  <div class="container">
-    <div class="section-eyebrow">— проекты</div>
-    <h2 class="section-title">Мои <em>работы</em></h2>
-    <div class="projects-empty" id="catalog-root">
-      <div class="icon">🖨️</div>
-      <h3>Скоро здесь появятся работы</h3>
-      <p>Проекты будут добавляться по мере их выполнения. Следите за обновлениями!</p>
-    </div>
-  </div>
-</section>
 
 <!-- SERVICES -->
 <section id="services">
   <div class="container">
-    <div class="section-eyebrow">— услуги</div>
-    <h2 class="section-title">Что <em>печатаю</em></h2>
+    <h2 class="section-title">Что <span class="gradient">печатаю</span></h2>
+    <p class="section-sub">От мелких запчастей до декоративных моделей — решу задачу любой сложности.</p>
     <div class="svc-grid">
       <div class="svc">
-        <div class="svc-top"><div class="svc-icon">01</div><div class="svc-price">от 320 ₽</div></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <h3>Функциональные детали</h3>
         <p>Кронштейны, крепления, переходники, защёлки. Износостойкие материалы для долгих лет службы.</p>
+        <div class="svc-price">от 320 ₽</div>
       </div>
       <div class="svc">
-        <div class="svc-top"><div class="svc-icon">02</div><div class="svc-price">от 680 ₽</div></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
         <h3>Корпуса для электроники</h3>
         <p>Arduino, Raspberry Pi, DIY-проекты. С отверстиями под разъёмы и вентиляцию.</p>
+        <div class="svc-price">от 680 ₽</div>
       </div>
       <div class="svc">
-        <div class="svc-top"><div class="svc-icon">03</div><div class="svc-price">от 450 ₽</div></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
         <h3>Редкие запчасти</h3>
         <p>Шестерни, втулки, клипсы — то, что невозможно купить, но можно напечатать.</p>
+        <div class="svc-price">от 450 ₽</div>
       </div>
       <div class="svc">
-        <div class="svc-top"><div class="svc-icon">04</div><div class="svc-price">от 550 ₽</div></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <h3>Игрушки и модели</h3>
         <p>Фигурки, сувениры, архитектурные макеты. Высокая детализация и выбор цветов.</p>
+        <div class="svc-price">от 550 ₽</div>
       </div>
     </div>
   </div>
@@ -172,25 +195,42 @@ footer p{font-size:13px;color:#444460;letter-spacing:.5px}
 <!-- PROCESS -->
 <section id="process">
   <div class="container">
-    <div class="section-eyebrow">— процесс</div>
-    <h2 class="section-title">От заявки до <em>готовой детали</em></h2>
-    <ul class="process-steps">
-      <li><span class="n">01</span><div><h4>Заявка и обсуждение</h4><p>Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову точную цену.</p></div></li>
-      <li><span class="n">02</span><div><h4>3D-модель или чертёж</h4><p>Если есть модель — печатаю. Если нет — спроектирую по вашим размерам и описанию.</p></div></li>
-      <li><span class="n">03</span><div><h4>Печать и контроль</h4><p>Подбираю материал, печатаю с контролем качества на каждом этапе.</p></div></li>
-      <li><span class="n">04</span><div><h4>Доставка или самовывоз</h4><p>Отправлю по всей России. Самовывоз — по договорённости.</p></div></li>
-    </ul>
+    <h2 class="section-title">От заявки до <span class="gradient">готовой детали</span></h2>
+    <p class="section-sub">Простой и прозрачный процесс — вы всегда знаете, на каком этапе ваш заказ.</p>
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="num">01</div>
+        <h4>Заявка</h4>
+        <p>Опишите задачу — свяжусь в течение 2 часов, уточню детали и назову цену.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">02</div>
+        <h4>3D-модель</h4>
+        <p>Если есть модель — печатаю. Если нет — спроектирую по вашим размерам.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">03</div>
+        <h4>Печать</h4>
+        <p>Подбираю материал, печатаю с контролем качества на каждом этапе.</p>
+      </div>
+      <div class="process-step">
+        <div class="num">04</div>
+        <h4>Доставка</h4>
+        <p>Отправлю по всей России. Самовывоз — по договорённости.</p>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <div class="logo">3D <em>ArtStudio</em></div>
-    <p>2026 · 3D-печать на заказ · Кинешма</p>
+    <div class="footer-inner">
+      <p>2026 · 3D-печать на заказ · Кинешма</p>
+      <div class="footer-logo">3DArtStudio</div>
+    </div>
   </div>
 </footer>
 
-<script src="scripts/catalog.js"></script>
 </body>
 </html>
