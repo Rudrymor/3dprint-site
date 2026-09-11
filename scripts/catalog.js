@@ -131,9 +131,7 @@ function renderCatalog(items) {
     const name = item.name || "";
     const desc = item.description || "";
     const img = item.image || "";
-    const priceS = item.price_s || "";
-    const priceM = item.price_m || "";
-    const priceL = item.price_l || "";
+    const price = item.price_s || item.price_m || item.price_l || "";
 
     const card = document.createElement("div");
     card.className = "catalog-card";
@@ -146,9 +144,7 @@ function renderCatalog(items) {
         <h3 class="catalog-card-title">${name}</h3>
         <p class="catalog-card-desc">${desc}</p>
         <div class="catalog-card-prices">
-          ${priceS ? `<span class="price-tag">${priceS}</span>` : ""}
-          ${priceM ? `<span class="price-tag">${priceM}</span>` : ""}
-          ${priceL ? `<span class="price-tag">${priceL}</span>` : ""}
+          ${price ? `<span class="price-tag">${price}</span>` : ""}
         </div>
       </div>
     `;
