@@ -132,14 +132,9 @@ function renderCatalog(items) {
     const desc = escapeHtml(item.description || "");
     const img = item.image || "";
     const material = escapeHtml(item.material || "");
-    const price = escapeHtml(item.price_s || item.price_m || item.price_l || "");
-    const category = escapeHtml(item.category || "");
-
-    const categoryLabel = item.category === "decor" ? "Декор" : "Техно";
 
     const card = document.createElement("div");
     card.className = "catalog-card";
-    card.dataset.category = category;
     
     const imgHtml = img 
       ? `<img src="${img}" alt="${name}" loading="lazy">`
@@ -152,12 +147,10 @@ function renderCatalog(items) {
       <div class="catalog-card-body">
         <div class="catalog-card-header">
           <h3 class="catalog-card-title">${name}</h3>
-          <span class="catalog-card-badge">${categoryLabel}</span>
         </div>
         <p class="catalog-card-desc">${desc}</p>
         <div class="catalog-card-footer">
           <span class="catalog-card-material">${material}</span>
-          <span class="catalog-card-price">${price}</span>
         </div>
       </div>
     `;
