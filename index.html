@@ -35,12 +35,111 @@
   <div class="hero-bg-orbs"></div>
   <div class="container">
     <div class="hero-inner">
-      <div class="hero-badge"><span class="dot"></span> Принимаю заказы</div>
-      <h1>3D <span class="gradient">Печать</span></h1>
-      <p class="hero-sub hero-sub-gradient">игрушки и детали на заказ</p>
-      <div class="hero-buttons">
-        <a href="works.html" class="btn-hero">Мои работы</a>
-        <a href="order.html" class="btn-hero">Заказать проект</a>
+      <div class="hero-content">
+        <div class="hero-badge"><span class="dot"></span> Принимаю заказы</div>
+        <h1>3D <span class="gradient">Печать</span></h1>
+        <p class="hero-sub hero-sub-gradient">игрушки и детали на заказ</p>
+        <div class="hero-buttons">
+          <a href="works.html" class="btn-hero">Мои работы</a>
+          <a href="order.html" class="btn-hero">Заказать проект</a>
+        </div>
+      </div>
+      <div class="hero-printer">
+        <!-- 3D Printer Animation -->
+        <svg class="printer-svg" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg">
+          <!-- Frame -->
+          <rect class="printer-frame" x="30" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
+          <rect class="printer-frame" x="258" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
+          <rect class="printer-frame" x="30" y="20" width="240" height="12" fill="url(#frameGrad)" rx="2"/>
+          
+          <!-- Base -->
+          <rect class="printer-base" x="20" y="290" width="260" height="20" fill="url(#baseGrad)" rx="4"/>
+          <rect class="printer-base" x="30" y="300" width="240" height="35" fill="url(#baseGrad2)" rx="4"/>
+          
+          <!-- Display -->
+          <rect class="printer-display" x="210" y="310" width="50" height="18" fill="#09090b" rx="2" stroke="#06b6d4" stroke-width="1"/>
+          <text class="printer-display-text" x="235" y="323" text-anchor="middle" fill="#06b6d4" font-size="10" font-weight="bold">100%</text>
+          
+          <!-- LED -->
+          <circle class="printer-led" cx="200" cy="319" r="4" fill="#22c55e"/>
+          
+          <!-- Fan -->
+          <g class="printer-fan" transform="translate(55, 319)">
+            <circle cx="0" cy="0" r="10" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+            <line class="fan-blade" x1="-8" y1="0" x2="8" y2="0" stroke="#8b5cf6" stroke-width="2"/>
+            <line class="fan-blade" x1="0" y1="-8" x2="0" y2="8" stroke="#8b5cf6" stroke-width="2"/>
+          </g>
+          
+          <!-- Filament spool -->
+          <g class="printer-spool">
+            <circle cx="60" cy="80" r="25" fill="none" stroke="#ec4899" stroke-width="3"/>
+            <circle cx="60" cy="80" r="8" fill="#ec4899" opacity="0.6"/>
+            <path class="filament-path" d="M 85 80 Q 120 100 150 120" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
+          </g>
+          
+          <!-- Print head rail -->
+          <rect class="head-rail" x="42" y="110" width="216" height="8" fill="url(#railGrad)" rx="2"/>
+          
+          <!-- Print head -->
+          <g class="print-head">
+            <rect x="140" y="100" width="50" height="30" fill="url(#headGrad)" rx="4"/>
+            <polygon class="nozzle" points="165,130 160,140 170,140" fill="#ffd60a"/>
+            <ellipse class="nozzle-glow" cx="165" cy="142" rx="3" ry="5" fill="#ffd60a" opacity="0.6"/>
+          </g>
+          
+          <!-- Printed object (layers) -->
+          <g class="printed-object">
+            <rect class="layer layer-1" x="120" y="270" width="60" height="8" fill="url(#layerGrad1)" rx="1"/>
+            <rect class="layer layer-2" x="125" y="260" width="50" height="8" fill="url(#layerGrad2)" rx="1"/>
+            <rect class="layer layer-3" x="130" y="250" width="40" height="8" fill="url(#layerGrad3)" rx="1"/>
+            <rect class="layer layer-4" x="135" y="240" width="30" height="8" fill="url(#layerGrad4)" rx="1"/>
+            <rect class="layer layer-5" x="140" y="230" width="20" height="8" fill="url(#layerGrad5)" rx="1"/>
+          </g>
+          
+          <!-- Gradients -->
+          <defs>
+            <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="baseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="baseGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#6d28d9;stop-opacity:0.8"/>
+              <stop offset="100%" style="stop-color:#5b21b6;stop-opacity:0.8"/>
+            </linearGradient>
+            <linearGradient id="railGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#64748b;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#475569;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="headGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f97316;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="layerGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="layerGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="layerGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#db2777;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="layerGrad4" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#d97706;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="layerGrad5" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1"/>
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     </div>
   </div>
