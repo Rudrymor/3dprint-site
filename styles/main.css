@@ -13,8 +13,9 @@ a{color:inherit;text-decoration:none}
 
 /* ── NAV ── */
 nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;border-bottom:1px solid rgba(255,255,255,.04)}
-.nav-inner{display:flex;justify-content:center;align-items:center;gap:48px}
-.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px;animation:logoShift 4s ease infinite}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;position:relative}
+.nav-inner .logo{flex-shrink:0}
+.nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:48px}
 @keyframes logoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .nav-link{color:#ff6b35;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
 .nav-link:hover{color:#ffa366}
@@ -22,7 +23,7 @@ nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-fi
 /* mobile hamburger */
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px;color:#ff6b35}
 .nav-toggle svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.nav-links{display:flex;align-items:center;gap:48px}
+.logo{font-weight:800;font-size:24px;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px;animation:logoShift 4s ease infinite}
 
 /* ── HERO (index) ── */
 .hero{padding:100px 0 80px;position:relative;overflow:hidden;background:#09090b}
