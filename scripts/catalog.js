@@ -131,20 +131,28 @@ function renderCatalog(items) {
     const name = item.name || "";
     const desc = item.description || "";
     const img = item.image || "";
+    const material = item.material || "";
     const price = item.price_s || item.price_m || item.price_l || "";
+    const category = item.category || "";
+
+    const categoryLabel = category === "decor" ? "Декор" : "Техно";
 
     const card = document.createElement("div");
     card.className = "catalog-card";
-    card.dataset.category = item.category || "";
+    card.dataset.category = category;
     card.innerHTML = `
       <div class="catalog-card-img">
         ${img ? `<img src="${img}" alt="${name}" loading="lazy">` : '<span style="font-size:40px;opacity:.3">🖨️</span>'}
       </div>
       <div class="catalog-card-body">
-        <h3 class="catalog-card-title">${name}</h3>
+        <div class="catalog-card-header">
+          <h3 class="catalog-card-title">${name}</h3>
+          <span class="catalog-card-badge">${categoryLabel}</span>
+        </div>
         <p class="catalog-card-desc">${desc}</p>
-        <div class="catalog-card-prices">
-          ${price ? `<span class="price-tag">${price}</span>` : ""}
+        <div class="catalog-card-footer">
+          <span class="catalog-card-material">${material}</span>
+          <span class="catalog-card-price">${price}</span>
         </div>
       </div>
     `;
@@ -156,24 +164,3 @@ function renderCatalog(items) {
 if (document.getElementById("catalog-root")) {
   renderCatalog(CATALOG_DATA);
 }
-
-// ─── ФИЛЬТРАЦИЯ ───
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  const filter = btn.dataset.filter;
-  const cards = document.querySelectorAll('.catalog-card');
-
-  cards.forEach(card => {
-    const cat = card.dataset.category;
-    if (filter === 'all' || cat === filter) {
-      card.style.display = '';
-    } else {
-      card.style.display = 'none';
-    }
-  });
-});
