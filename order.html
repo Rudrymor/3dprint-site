@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Оформите заявку на 3D-печать. Без предоплаты, ответ в течение 2 часов.">
-<meta property="og:title" content="Заказать проект — 3DArtStudio">
-<meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты, ответ в течение 2 часов.">
+<meta name="description" content="Оформите заявку на 3D-печать. Без предоплаты.">
+<meta property="og:title" content="3DArtStudio — Заказ 3D-печати">
+<meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/order.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
@@ -38,7 +38,7 @@
       <!-- ФОРМА HEADER (скрывается при успехе) -->
       <div class="form-header" id="form-header">
         <h3>Заявка на проект</h3>
-        <p class="sub">Заполните форму — отвечу в течение 2 часов</p>
+        <p class="sub">Заполните форму — отвечу</p>
       </div>
       
       <form id="order-form">
@@ -79,14 +79,14 @@
           <input type="file" name="file" accept=".stl,.obj,.step,.3mf" style="padding:12px 16px">
         </div>
         <button type="submit" class="btn-submit">Отправить заявку →</button>
-        <p class="form-note">Без предоплаты · Ответ в течение 2 часов</p>
+        <p class="form-note">Без предоплаты</p>
       </form>
       
       <!-- УСПЕХ (показывается после отправки) -->
       <div class="form-success" id="form-success">
         <div class="icon">✅</div>
         <h3>Заявка отправлена!</h3>
-        <p>Свяжусь с вами в течение 2 часов. Проверьте Telegram или телефон.</p>
+        <p>Свяжусь с вами. Проверьте Telegram или телефон.</p>
         <a href="works.html" class="btn-submit">Смотреть работы</a>
       </div>
     </div>
@@ -98,6 +98,28 @@
       <div class="mat-scroll">
         <table class="mat-table">
           <thead>
+            <tr>
+              <th>Материал</th>
+              <th>До какой температуры</th>
+              <th>Для чего подходит</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PLA</td>
+              <td>до 60 °C</td>
+              <td>Декор, игрушки, макеты, ночники</td>
+            </tr>
+            <tr>
+              <td>PETG</td>
+              <td>до 80 °C</td>
+              <td>Кронштейны, корпуса, крепления, чехлы</td>
+            </tr>
+            <tr>
+              <td>ABS</td>
+              <td>до 100 °C</td>
+              <td>Авто-детали, термостойкие корпуса</td>
+            </tr>
           </tbody>
         </table>
       </div>
