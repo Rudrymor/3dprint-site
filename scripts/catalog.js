@@ -131,7 +131,6 @@ function renderCatalog(items) {
     const name = escapeHtml(item.name || "");
     const desc = escapeHtml(item.description || "");
     const img = item.image || "";
-    const material = escapeHtml(item.material || "");
 
     const card = document.createElement("div");
     card.className = "catalog-card";
@@ -150,7 +149,6 @@ function renderCatalog(items) {
         </div>
         <p class="catalog-card-desc">${desc}</p>
         <div class="catalog-card-footer">
-          <span class="catalog-card-material">${material}</span>
         </div>
       </div>
     `;
