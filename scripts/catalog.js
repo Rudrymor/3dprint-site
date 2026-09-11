@@ -144,12 +144,8 @@ function renderCatalog(items) {
         ${imgHtml}
       </div>
       <div class="catalog-card-body">
-        <div class="catalog-card-header">
-          <h3 class="catalog-card-title">${name}</h3>
-        </div>
+        <h3 class="catalog-card-title">${name}</h3>
         <p class="catalog-card-desc">${desc}</p>
-        <div class="catalog-card-footer">
-        </div>
       </div>
     `;
     root.appendChild(card);

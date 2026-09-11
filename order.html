@@ -7,7 +7,7 @@
 <meta property="og:title" content="3DArtStudio — Заказ 3D-печати">
 <meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты.">
 <meta property="og:type" content="website">
-<link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/order.html">
+<link rel="canonical" href="https://rudrymor.github.io/3dprint-site/order.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -129,18 +129,18 @@
 </section>
 </main>
 
-<!-- FLOATING CONTACT -->
-<a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
-  <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
-  <span class="vk-label">Мы во ВКонтакте</span>
-</a>
-
 <!-- FOOTER -->
 <footer class="footer-center">
   <div class="container">
     <p>2026 · 3DArtStudio · Кинешма</p>
   </div>
 </footer>
+
+<!-- FLOATING CONTACT -->
+<a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
+  <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
+  <span class="vk-label">Мы во ВКонтакте</span>
+</a>
 
 <script src="scripts/common.js"></script>
 <script>
@@ -159,6 +159,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const data = Object.fromEntries(formData.entries());
     
     // Формируем сообщение для Telegram
+    // Примечание: file input не отправляется через fetch API в Telegram
+    // Если нужна отправка файлов — требуется бэкенд-сервер или бот-посредник
     const message = `
 🆕 Новая заявка на 3D-печать
 

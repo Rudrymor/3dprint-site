@@ -116,7 +116,6 @@ section{padding:100px 0}
 @keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 .svc h3{font-size:24px;font-weight:700;margin-bottom:14px;color:#ffd60a;letter-spacing:-.5px}
 .svc p{font-size:16px;color:#a1a1aa;line-height:1.7}
-.svc-price{font-size:18px;font-weight:700;background:linear-gradient(135deg,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:24px}
 
 /* ── PROCESS ── */
 .process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
@@ -144,13 +143,8 @@ section{padding:100px 0}
 .catalog-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
 .catalog-card:hover .catalog-card-img img{transform:scale(1.05)}
 .catalog-card-body{padding:24px}
-.catalog-card-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
-.catalog-card-title{font-size:18px;font-weight:700;color:#7dd3fc;letter-spacing:-.3px}
-.catalog-card-badge{padding:4px 10px;background:rgba(255,214,0,.15);color:#ffd60a;border-radius:6px;font-size:11px;font-weight:600;text-transform:uppercase}
-.catalog-card-desc{font-size:14px;color:#a1a1aa;line-height:1.6;margin-bottom:16px}
-.catalog-card-footer{display:flex;justify-content:space-between;align-items:center}
-.catalog-card-material{font-size:12px;color:#71717a;font-weight:500}
-.catalog-card-price{font-size:18px;font-weight:700;color:#7dd3fc}
+.catalog-card-title{font-size:18px;font-weight:700;color:#7dd3fc;letter-spacing:-.3px;margin-bottom:12px}
+.catalog-card-desc{font-size:14px;color:#a1a1aa;line-height:1.6}
 
 /* ── COUNTER (works) ── */
 .counter-section{padding:40px 0;text-align:center}
@@ -174,7 +168,6 @@ section{padding:100px 0}
 .lb-img{max-width:90vw;max-height:78vh;object-fit:contain;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lb-caption{margin-top:20px;text-align:center;color:#a1a1aa;font-size:15px;max-width:600px}
 .lb-caption strong{color:#7dd3fc;font-weight:700}
-.lb-caption .lb-price{color:#7dd3fc;font-weight:700}
 .lb-btn{position:absolute;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fafafa;border-radius:50%;width:52px;height:52px;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'Outfit',sans-serif;line-height:1}
 .lb-btn:hover{background:rgba(139,92,246,.25);border-color:rgba(139,92,246,.5)}
 .lb-close{top:28px;right:28px}
@@ -233,7 +226,6 @@ body.lb-open{overflow:hidden}
 /* ── FLOATING VK BUTTON ── */
 .vk-float{position:fixed;bottom:28px;right:28px;z-index:900;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border-radius:100px;font-size:15px;font-weight:600;box-shadow:0 8px 28px rgba(139,92,246,.4);transition:all .25s}
 .vk-float:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 36px rgba(139,92,246,.55)}
-.vk-float svg{width:22px;height:22px;fill:#fff;flex-shrink:0}
 
 /* ── FOOTER ── */
 footer{padding:60px 0;border-top:1px solid rgba(255,255,255,.04)}

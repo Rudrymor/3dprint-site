@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Каталог работ 3DArtStudio — 10 проектов: чехлы, кронштейны, шестерни, корпуса, игрушки. Фото и цены.">
+<meta name="description" content="Каталог работ 3DArtStudio — 10 проектов: чехлы, кронштейны, шестерни, корпуса, игрушки. Фото и описания.">
 <meta property="og:title" content="Мои работы — 3DArtStudio">
-<meta property="og:description" content="Каталог работ: чехлы, кронштейны, шестерни, корпуса, игрушки. Фото и цены.">
+<meta property="og:description" content="Каталог работ: чехлы, кронштейны, шестерни, корпуса, игрушки. Фото и описания.">
 <meta property="og:type" content="website">
-<link rel="canonical" href="https://ВАШ_НИК.github.io/3dprint-site/works.html">
+<link rel="canonical" href="https://rudrymor.github.io/3dprint-site/works.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Мои работы — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -79,16 +79,15 @@
 <script src="scripts/common.js"></script>
 <script src="scripts/catalog.js"></script>
 <script>
-// ─── ОБНОВЛЕНИЕ СЧЁТЧИКА ───
+// ─── ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ───
 document.addEventListener('DOMContentLoaded', () => {
+  // Обновление счётчика работ
   const countEl = document.getElementById('work-count');
   if (countEl && typeof CATALOG_DATA !== 'undefined') {
     countEl.textContent = CATALOG_DATA.length;
   }
-});
 
-// ─── ЛАЙТБОКС ───
-document.addEventListener('DOMContentLoaded', function() {
+  // ─── ЛАЙТБОКС ───
   const imgs = Array.from(document.querySelectorAll('.catalog-card-img img'));
   if (!imgs.length) return;
 
@@ -114,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const title = card ? card.querySelector('.catalog-card-title')?.textContent.trim() : '';
     imgEl.src = source.src;
     imgEl.alt = source.alt || title;
-    capEl.innerHTML = title ? `<strong>${title}</strong>` : '';
+    capEl.innerHTML = title ? `<strong>${escapeHtml(title)}</strong>` : '';
   }
 
   function open(i) { 
