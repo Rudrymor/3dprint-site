@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Отзывы клиентов 3DArtStudio — что говорят те, кто заказывал 3D-печать.">
+<meta property="og:title" content="Книга клиентов — 3DArtStudio">
+<meta property="og:description" content="Отзывы клиентов 3DArtStudio — что говорят те, кто заказывал 3D-печать.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://rudrymor.github.io/3dprint-site/reviews.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
+<title>Книга клиентов — 3DArtStudio</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/main.css">
+<style>
+  /* Warm background for reviews page */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(255,214,0,.12) 0%, transparent 50%),
+      radial-gradient(circle at 85% 75%, rgba(173,255,47,.08) 0%, transparent 50%);
+    filter: blur(60px);
+  }
+  .reviews-page { position: relative; z-index: 1; }
+  .reviews-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: #71717a;
+    font-size: 16px;
+  }
+  .reviews-empty .icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav-no-toggle nav-centered">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">3DArtStudio</a>
+  </div>
+</nav>
+
+<main class="reviews-page">
+<!-- HERO -->
+<section class="page-hero">
+  <div class="container">
+    <h1>Книга клиентов</h1>
+    <p>Отзывы тех, кто уже получил свои детали</p>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section style="padding-top:0">
+  <div class="container">
+    <div class="reviews-grid" id="reviews-root"></div>
+    <div class="reviews-empty" id="reviews-empty" style="display:none">
+      <div class="icon">💬</div>
+      <p>Пока нет отзывов. Буду рад первому!</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container cta-inner">
+    <h2>Хотите заказать?</h2>
+    <p>Опишите задачу — свяжусь и назову точную цену.</p>
+    <a href="order.html" class="btn-primary">Заказать</a>
+  </div>
+</section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer-center">
+  <div class="container">
+    <p>2026 · 3DArtStudio · Кинешма</p>
+  </div>
+</footer>
+
+<!-- FLOATING CONTACT -->
+<a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
+  <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
+  <span class="vk-label">ВКонтакте</span>
+</a>
+
+<script src="scripts/common.js"></script>
+<script src="scripts/reviews.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const root = document.getElementById('reviews-root');
+  const empty = document.getElementById('reviews-empty');
+  if (typeof REVIEWS_DATA !== 'undefined' && REVIEWS_DATA.length > 0) {
+    REVIEWS_DATA.forEach(function(r) {
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+      card.innerHTML =
+        '<div class="review-stars">' + stars + '</div>' +
+        '<p class="review-text">' + escapeHtml(r.text) + '</p>' +
+        '<div class="review-meta">' +
+          '<span class="review-name">' + escapeHtml(r.name) + '</span>' +
+          '<span class="review-date">' + escapeHtml(r.date) + '</span>' +
+        '</div>';
+      root.appendChild(card);
+    });
+  } else {
+    empty.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

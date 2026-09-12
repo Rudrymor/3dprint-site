@@ -19,7 +19,7 @@
 <div class="mesh-bg"></div>
 
 <!-- NAV -->
-<nav class="nav-no-toggle">
+<nav class="nav-no-toggle nav-centered">
   <div class="container nav-inner">
     <a href="index.html" class="logo">3DArtStudio</a>
   </div>
@@ -31,7 +31,7 @@
   <div class="order-container">
     <div class="form-card" id="form-card">
       <!-- ФОРМА HEADER (скрывается при успехе) -->
-      <div class="form-header" id="form-header">
+      <div class="form-header form-header-center" id="form-header">
         <h3>Заявка на проект</h3>
         <p class="sub">Заполните форму — отвечу</p>
       </div>
@@ -46,6 +46,10 @@
           <input type="tel" name="contact" placeholder="+7 ... или @username" required autocomplete="tel">
         </div>
         <div class="form-row">
+          <label>Что нужно напечатать?</label>
+          <textarea name="description" placeholder="Описание детали, назначение, особые требования..." required></textarea>
+        </div>
+        <div class="form-row">
           <label>Материал</label>
           <select name="material">
             <option value="">Выберите материал</option>
@@ -54,10 +58,6 @@
             <option value="ABS">ABS — термостойкий, для механизмов</option>
             <option value="other">Другой / не знаю</option>
           </select>
-        </div>
-        <div class="form-row">
-          <label>Что нужно напечатать?</label>
-          <textarea name="description" placeholder="Описание детали, назначение, особые требования..." required></textarea>
         </div>
         <div class="form-row form-row-inline">
           <div>
@@ -69,11 +69,7 @@
             <input type="text" name="quantity" placeholder="1 шт." value="1 шт.">
           </div>
         </div>
-        <div class="form-row">
-          <label>Файл (если есть)</label>
-          <input type="file" name="file" accept=".stl,.obj,.step,.3mf" style="padding:12px 16px">
-        </div>
-        <button type="submit" class="btn-submit">Отправить заявку →</button>
+        <button type="submit" class="btn-submit">Отправить заявку</button>
         <p class="form-note">Без предоплаты</p>
       </form>
       
@@ -96,24 +92,28 @@
             <tr>
               <th>Материал</th>
               <th>До какой температуры</th>
-              <th>Для чего подходит</th>
+              <th class="mat-cell-full">Для чего подходит</th>
+              <th class="mat-tip" style="display:none"></th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>PLA</td>
               <td>до 60 °C</td>
-              <td>Декор, игрушки, макеты, ночники</td>
+              <td class="mat-cell-full">Декор, игрушки, макеты, ночники</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Декор, игрушки, макеты, ночники</span></td>
             </tr>
             <tr>
               <td>PETG</td>
               <td>до 80 °C</td>
-              <td>Кронштейны, корпуса, крепления, чехлы</td>
+              <td class="mat-cell-full">Кронштейны, корпуса, крепления, чехлы</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Кронштейны, корпуса, крепления, чехлы</span></td>
             </tr>
             <tr>
               <td>ABS</td>
               <td>до 100 °C</td>
-              <td>Авто-детали, термостойкие корпуса</td>
+              <td class="mat-cell-full">Авто-детали, термостойкие корпуса</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Авто-детали, термостойкие корпуса</span></td>
             </tr>
           </tbody>
         </table>
