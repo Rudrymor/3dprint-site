@@ -140,6 +140,37 @@
 
 <script src="scripts/common.js"></script>
 <script>
+// ─── МОБИЛЬНЫЕ ТУЛТИПЫ МАТЕРИАЛОВ ───
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.innerWidth > 768) return;
+
+  var tips = document.querySelectorAll('.mat-tip');
+
+  tips.forEach(function(tip) {
+    var icon = tip.querySelector('.mat-tip-icon');
+    if (!icon) return;
+
+    icon.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var isActive = tip.classList.contains('active');
+
+      // Закрыть все остальные
+      tips.forEach(function(t) { t.classList.remove('active'); });
+
+      // Переключить текущий
+      if (!isActive) {
+        tip.classList.add('active');
+      }
+    });
+  });
+
+  // Закрыть при клике вне тултипа
+  document.addEventListener('click', function() {
+    tips.forEach(function(t) { t.classList.remove('active'); });
+  });
+});
+</script>
+<script>
 // ─── ФОРМА ЗАЯВКИ ───
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('order-form');
