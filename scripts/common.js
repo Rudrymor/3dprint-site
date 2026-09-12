@@ -9,32 +9,53 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// ─── MOBILE NAV ───
+// ─── MOBILE NAV (sidebar left) ───
 function initMobileNav() {
   const toggle = document.querySelector('.nav-toggle');
   const links = document.querySelector('.nav-links');
   
   if (!toggle || !links) return;
   
+  // Create overlay if not exists
+  let overlay = document.querySelector('.nav-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    document.body.appendChild(overlay);
+  }
+  
+  function openMenu() {
+    links.classList.add('open');
+    overlay.classList.add('active');
+    toggle.setAttribute('aria-expanded', 'true');
+  }
+  
+  function closeMenu() {
+    links.classList.remove('open');
+    overlay.classList.remove('active');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+  
   toggle.addEventListener('click', () => {
-    links.classList.toggle('open');
-    const isOpen = links.classList.contains('open');
-    toggle.setAttribute('aria-expanded', isOpen);
+    if (links.classList.contains('open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
   
-  // Закрыть меню при клике на ссылку
-  links.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      links.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-    });
+  // Close on overlay click
+  overlay.addEventListener('click', closeMenu);
+  
+  // Close on link click
+  links.querySelectorAll('.nav-link, .logo').forEach(link => {
+    link.addEventListener('click', closeMenu);
   });
   
-  // Закрыть меню при клике вне
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('nav') && links.classList.contains('open')) {
-      links.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
+  // Close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && links.classList.contains('open')) {
+      closeMenu();
     }
   });
 }
