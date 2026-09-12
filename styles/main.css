@@ -242,19 +242,24 @@ body.lb-open{overflow:hidden}
 .mat-tip{display:none;position:relative;cursor:help}
 .mat-tip-header{display:none}
 .mat-tip-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:rgba(255,214,0,.15);border:1px solid rgba(255,214,0,.3);border-radius:50%;font-size:14px;font-weight:700;color:#ffd60a}
-.mat-tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#a1a1aa;white-space:normal;z-index:10;max-width:220px;line-height:1.5}
+.mat-tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#a1a1aa;white-space:normal;z-index:10;max-width:220px;line-height:1.5;pointer-events:none}
 .mat-tip-text::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#18181b}
 .mat-tip:hover .mat-tip-text,.mat-tip:focus .mat-tip-text{display:block}
 
 /* MOBILE: compact 3-column table, full text hidden, ? shown */
 @media(max-width:768px){
   .mat-cell-full{display:none}
-  .mat-table th:last-child,.mat-table th.mat-cell-full{display:none}
+  .mat-table th.mat-cell-full{display:none}
   .mat-tip{display:inline-flex}
-  .mat-table{min-width:0 !important}
+  .mat-tip-header{display:table-cell !important;font-size:14px;text-align:center;width:36px;padding:10px 4px !important}
+  .mat-table{min-width:0 !important;table-layout:fixed;width:100%}
   .mat-table th,.mat-table td{padding:10px 6px;font-size:13px;white-space:nowrap}
   .mat-scroll{overflow-x:hidden}
-  .materials{padding:20px}
+  .materials{padding:16px}
+  .mat-table td:first-child{width:30%}
+  .mat-table td:nth-child(2),.mat-table th:nth-child(2){width:22%;text-align:center}
+  .mat-tip-text{bottom:auto;top:calc(100% + 8px)}
+  .mat-tip-text::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:#18181b}
 }
 
 /* ── MESH GRADIENT BG (order) ── */
