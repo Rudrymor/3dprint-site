@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Отзывы клиентов 3DArtStudio — что говорят те, кто заказывал 3D-печать.">
 <meta property="og:title" content="Книга клиентов — 3DArtStudio">
-<meta property="og:description" content="Отзывы клиентов 3DArtStudio — что говорят те, кто заказывал 3D-печать.">
+<meta property="og:description" content="Как оценивают работу клиенты 3DArtStudio — книга отзывов.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://rudrymor.github.io/3dprint-site/reviews.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/main.css">
 <style>
-  /* Warm background for reviews page */
+  /* Warm background */
   body::before {
     content: "";
     position: fixed;
@@ -26,6 +26,157 @@
     filter: blur(60px);
   }
   .reviews-page { position: relative; z-index: 1; }
+
+  /* ── FLOATING REVIEW FORM BUTTON ── */
+  .review-fab {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 950;
+  }
+  .review-fab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 22px;
+    background: linear-gradient(135deg, #ffd60a, #ff6b35);
+    color: #09090b;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 28px rgba(255,214,0,.35);
+    transition: all .25s;
+  }
+  .review-fab-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 36px rgba(255,214,0,.5);
+  }
+  .review-fab-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ── EXPANDED FORM PANEL ── */
+  .review-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 28px;
+    z-index: 940;
+    width: 380px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: rgba(24,24,27,.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px;
+    padding: 28px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition: all .3s ease;
+  }
+  .review-fab:hover .review-panel,
+  .review-fab.panel-open .review-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .review-panel h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #ffd60a;
+  }
+  .review-panel .sub {
+    font-size: 13px;
+    color: #71717a;
+    margin-bottom: 18px;
+  }
+  .review-panel .form-row { margin-bottom: 14px; }
+  .review-panel .form-row label {
+    display: block;
+    font-size: 12px;
+    color: #a1a1aa;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: .5px;
+  }
+  .review-panel input, .review-panel textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    color: #fafafa;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    transition: all .25s;
+  }
+  .review-panel input:focus, .review-panel textarea:focus {
+    outline: none;
+    border-color: rgba(139,92,246,.5);
+    box-shadow: 0 0 0 3px rgba(139,92,246,.1);
+  }
+  .review-panel input::placeholder, .review-panel textarea::placeholder { color: #3f3f46; }
+  .review-panel textarea { resize: vertical; min-height: 70px; }
+  .review-panel .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .25s;
+  }
+  .review-panel .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139,92,246,.4);
+  }
+
+  /* ── REVIEWS LIST ── */
+  .reviews-list {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .review-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    transition: background .2s;
+  }
+  .review-row:last-child { border-bottom: none; }
+  .review-row:hover { background: rgba(255,255,255,.02); }
+  .review-row-name {
+    flex-shrink: 0;
+    min-width: 100px;
+    font-weight: 700;
+    color: #adff2f;
+    font-size: 14px;
+  }
+  .review-row-stars {
+    flex-shrink: 0;
+    color: #ffd60a;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  .review-row-text {
+    flex: 1;
+    color: #a1a1aa;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .review-row-date {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #52525b;
+  }
   .reviews-empty {
     text-align: center;
     padding: 80px 20px;
@@ -33,6 +184,23 @@
     font-size: 16px;
   }
   .reviews-empty .icon { font-size: 48px; margin-bottom: 16px; }
+
+  /* Mobile */
+  @media(max-width:768px) {
+    .review-fab { bottom: 20px; left: 20px; }
+    .review-fab-btn { padding: 14px; border-radius: 50%; font-size: 0; }
+    .review-fab-btn svg { font-size: 20px; }
+    .review-panel {
+      bottom: 70px;
+      left: 10px;
+      right: 10px;
+      width: auto;
+      max-height: 60vh;
+    }
+    .review-row { flex-wrap: wrap; gap: 6px; }
+    .review-row-name { min-width: auto; }
+    .review-row-date { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -49,57 +217,16 @@
 <section class="page-hero">
   <div class="container">
     <h1>Книга клиентов</h1>
-    <p>Отзывы тех, кто уже получил свои детали</p>
+    <p>Как оценивают работу клиенты</p>
   </div>
 </section>
 
-<!-- REVIEWS -->
+<!-- REVIEWS LIST -->
 <section style="padding-top:0">
-  <div class="container">
-    <div class="reviews-grid" id="reviews-root"></div>
-    <div class="reviews-empty" id="reviews-empty" style="display:none">
-      <div class="icon">💬</div>
-      <p>Пока нет отзывов. Буду рад первому!</p>
-    </div>
-  </div>
-</section>
-
-<!-- REVIEW FORM -->
-<section style="padding-top:0">
-  <div class="container" style="max-width:600px">
-    <div class="form-card" id="review-form-card">
-      <div class="form-header form-header-center" id="review-form-header">
-        <h3>Оставить отзыв</h3>
-        <p class="sub">Расскажите о своём опыте — это поможет другим</p>
-      </div>
-      <form id="review-form">
-        <div class="form-row">
-          <label>Ваше имя</label>
-          <input type="text" name="name" placeholder="Как к вам обращаться" required>
-        </div>
-        <div class="form-row">
-          <label>Оценка</label>
-          <div class="star-rating" id="star-rating">
-            <span class="star" data-value="1">☆</span>
-            <span class="star" data-value="2">☆</span>
-            <span class="star" data-value="3">☆</span>
-            <span class="star" data-value="4">☆</span>
-            <span class="star" data-value="5">☆</span>
-          </div>
-          <input type="hidden" name="stars" id="stars-input" value="0">
-        </div>
-        <div class="form-row">
-          <label>Отзыв</label>
-          <textarea name="text" placeholder="Что понравилось? Как использовали деталь?" required></textarea>
-        </div>
-        <button type="submit" class="btn-submit">Отправить отзыв</button>
-      </form>
-      <div class="form-success" id="review-success">
-        <div class="icon">🙏</div>
-        <h3>Спасибо за отзыв!</h3>
-        <p>Он появится здесь после проверки.</p>
-      </div>
-    </div>
+  <div class="reviews-list" id="reviews-root"></div>
+  <div class="reviews-empty" id="reviews-empty" style="display:none">
+    <div class="icon">💬</div>
+    <p>Пока нет отзывов. Буду рад первому!</p>
   </div>
 </section>
 
@@ -119,26 +246,67 @@
   <span class="vk-label-mobile">VK</span>
 </a>
 
+<!-- FLOATING REVIEW FORM -->
+<div class="review-fab" id="review-fab">
+  <button class="review-fab-btn" id="review-fab-btn">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    <span>Отзыв</span>
+  </button>
+  <div class="review-panel" id="review-panel">
+    <h3>Оставить отзыв</h3>
+    <p class="sub">Расскажите о своём опыте</p>
+    <form id="review-form">
+      <div class="form-row">
+        <label>Ваше имя</label>
+        <input type="text" name="name" placeholder="Как к вам обращаться" required>
+      </div>
+      <div class="form-row">
+        <label>Оценка</label>
+        <div class="star-rating" id="star-rating">
+          <span class="star" data-value="1">☆</span>
+          <span class="star" data-value="2">☆</span>
+          <span class="star" data-value="3">☆</span>
+          <span class="star" data-value="4">☆</span>
+          <span class="star" data-value="5">☆</span>
+        </div>
+        <input type="hidden" name="stars" id="stars-input" value="0">
+      </div>
+      <div class="form-row">
+        <label>Отзыв</label>
+        <textarea name="text" placeholder="Что понравилось?" required></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Отправить</button>
+    </form>
+    <div class="form-success" id="review-success" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:36px;margin-bottom:8px">🙏</div>
+      <p style="color:#a1a1aa;font-size:14px">Спасибо за отзыв!</p>
+    </div>
+  </div>
+</div>
+
 <script src="scripts/common.js"></script>
 <script src="scripts/reviews.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Render reviews
   var root = document.getElementById('reviews-root');
   var empty = document.getElementById('reviews-empty');
-  if (typeof REVIEWS_DATA !== 'undefined' && REVIEWS_DATA.length > 0) {
-    REVIEWS_DATA.forEach(function(r) {
-      var card = document.createElement('div');
-      card.className = 'review-card';
+
+  // Load reviews
+  var stored = [];
+  try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
+  var allReviews = (typeof REVIEWS_DATA !== 'undefined' ? REVIEWS_DATA : []).concat(stored);
+
+  if (allReviews.length > 0) {
+    allReviews.forEach(function(r) {
+      var row = document.createElement('div');
+      row.className = 'review-row';
       var stars = '\u2605'.repeat(r.stars) + '\u2606'.repeat(5 - r.stars);
-      card.innerHTML =
-        '<div class="review-stars">' + stars + '</div>' +
-        '<p class="review-text">' + escapeHtml(r.text) + '</p>' +
-        '<div class="review-meta">' +
-          '<span class="review-name">' + escapeHtml(r.name) + '</span>' +
-          '<span class="review-date">' + escapeHtml(r.date) + '</span>' +
-        '</div>';
-      root.appendChild(card);
+      row.innerHTML =
+        '<span class="review-row-name">' + escapeHtml(r.name) + '</span>' +
+        '<span class="review-row-stars">' + stars + '</span>' +
+        '<span class="review-row-text">' + escapeHtml(r.text) + '</span>' +
+        '<span class="review-row-date">' + escapeHtml(r.date) + '</span>';
+      root.appendChild(row);
     });
   } else {
     empty.style.display = 'block';
@@ -157,32 +325,65 @@ document.addEventListener('DOMContentLoaded', function() {
         s.classList.toggle('active', v <= val);
       });
     });
-    star.addEventListener('mouseenter', function() {
-      var val = parseInt(this.getAttribute('data-value'));
-      stars.forEach(function(s) {
-        var v = parseInt(s.getAttribute('data-value'));
-        s.classList.toggle('hover', v <= val);
-      });
-    });
-    star.addEventListener('mouseleave', function() {
-      stars.forEach(function(s) { s.classList.remove('hover'); });
-    });
   });
 
-  // Review form submission
+  // FAB toggle
+  var fab = document.getElementById('review-fab');
+  var fabBtn = document.getElementById('review-fab-btn');
+  fabBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    fab.classList.toggle('panel-open');
+  });
+  document.addEventListener('click', function(e) {
+    if (!fab.contains(e.target)) fab.classList.remove('panel-open');
+  });
+
+  // Form submit
   var form = document.getElementById('review-form');
-  var header = document.getElementById('review-form-header');
+  var panel = document.getElementById('review-panel');
   var success = document.getElementById('review-success');
   if (form) {
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       var data = Object.fromEntries(new FormData(this).entries());
       if (data.stars === '0') { alert('Поставьте оценку'); return; }
-      // TODO: Send via Telegram when bot is set up
-      console.log('Review:', data);
-      header.classList.add('hidden');
+
+      var review = {
+        name: data.name,
+        text: data.text,
+        stars: parseInt(data.stars),
+        date: new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})
+      };
+      var stored = [];
+      try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
+      stored.push(review);
+      localStorage.setItem('3dprint_reviews', JSON.stringify(stored));
+
+      // Add to list immediately
+      var row = document.createElement('div');
+      row.className = 'review-row';
+      var s = '\u2605'.repeat(review.stars) + '\u2606'.repeat(5 - review.stars);
+      row.innerHTML =
+        '<span class="review-row-name">' + escapeHtml(review.name) + '</span>' +
+        '<span class="review-row-stars">' + s + '</span>' +
+        '<span class="review-row-text">' + escapeHtml(review.text) + '</span>' +
+        '<span class="review-row-date">' + escapeHtml(review.date) + '</span>';
+      root.appendChild(row);
+      empty.style.display = 'none';
+
       form.style.display = 'none';
-      success.classList.add('show');
+      success.style.display = 'block';
+      setTimeout(function() {
+        form.style.display = '';
+        success.style.display = 'none';
+        form.reset();
+        starsInput.value = '0';
+        stars.forEach(function(st) {
+          st.textContent = '\u2606';
+          st.classList.remove('active');
+        });
+        fab.classList.remove('panel-open');
+      }, 2000);
     });
   }
 });

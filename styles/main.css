@@ -137,6 +137,21 @@ section{padding:100px 0}
 .review-name{font-size:15px;font-weight:700;color:#adff2f}
 .review-date{font-size:13px;color:#71717a}
 
+/* ── REVIEWS LIST (index + reviews page) ── */
+.reviews-list{max-width:900px;margin:0 auto}
+.review-row{display:flex;align-items:baseline;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.06);transition:background .2s}
+.review-row:last-child{border-bottom:none}
+.review-row:hover{background:rgba(255,255,255,.02)}
+.review-row-name{flex-shrink:0;min-width:100px;font-weight:700;color:#adff2f;font-size:14px}
+.review-row-stars{flex-shrink:0;color:#ffd60a;font-size:14px;letter-spacing:1px}
+.review-row-text{flex:1;color:#a1a1aa;font-size:14px;line-height:1.6}
+.review-row-date{flex-shrink:0;font-size:12px;color:#52525b}
+@media(max-width:768px){
+  .review-row{flex-wrap:wrap;gap:6px}
+  .review-row-name{min-width:auto}
+  .review-row-date{width:100%}
+}
+
 /* ── CATALOG (works) ── */
 .catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
 .catalog-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;overflow:hidden;transition:all .3s}
@@ -214,23 +229,33 @@ body.lb-open{overflow:hidden}
 .materials h3{font-size:22px;font-weight:700;margin-bottom:8px;color:#ffd60a}
 .materials .mat-sub{font-size:15px;color:#a1a1aa;margin-bottom:24px}
 .mat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.mat-table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.mat-table{width:100%;border-collapse:collapse;font-size:14px}
 .mat-table th{text-align:left;padding:12px 14px;color:#7dd3fc;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
 .mat-table td{padding:14px;color:#a1a1aa;border-bottom:1px solid rgba(255,255,255,.04)}
 .mat-table tr:last-child td{border-bottom:none}
 .mat-table td:first-child{font-weight:700;color:#adff2f;white-space:nowrap}
 .mat-table td:last-child{color:#7dd3fc;font-weight:600;white-space:nowrap}
 .mat-hint{margin-top:20px;font-size:14px;color:#71717a;line-height:1.6}
-.mat-hint strong{color:#a1a1aa;font-weight:600}
+.mat-hint strong{color:#a1a1aa;font-weight:60}
 
 /* ── MATERIALS TOOLTIP (mobile) ── */
 .mat-tip{display:none;position:relative;cursor:help}
 .mat-tip-header{display:none}
-.mat-tip-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:rgba(255,214,0,.15);border:1px solid rgba(255,214,0,.3);border-radius:50%;font-size:13px;font-weight:700;color:#ffd60a}
-.mat-tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#a1a1aa;white-space:nowrap;z-index:10;max-width:220px;white-space:normal;line-height:1.5}
+.mat-tip-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:rgba(255,214,0,.15);border:1px solid rgba(255,214,0,.3);border-radius:50%;font-size:14px;font-weight:700;color:#ffd60a}
+.mat-tip-text{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#18181b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#a1a1aa;white-space:normal;z-index:10;max-width:220px;line-height:1.5}
 .mat-tip-text::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#18181b}
 .mat-tip:hover .mat-tip-text,.mat-tip:focus .mat-tip-text{display:block}
-@media(max-width:768px){.mat-tip{display:inline-flex}.mat-cell-full{display:none}.mat-table th:last-child{display:none}}
+
+/* MOBILE: compact 3-column table, full text hidden, ? shown */
+@media(max-width:768px){
+  .mat-cell-full{display:none}
+  .mat-table th:last-child,.mat-table th.mat-cell-full{display:none}
+  .mat-tip{display:inline-flex}
+  .mat-table{min-width:0 !important}
+  .mat-table th,.mat-table td{padding:10px 6px;font-size:13px;white-space:nowrap}
+  .mat-scroll{overflow-x:hidden}
+  .materials{padding:20px}
+}
 
 /* ── MESH GRADIENT BG (order) ── */
 .mesh-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
@@ -288,17 +313,18 @@ footer p{font-size:13px;color:#71717a}
 
   /* mobile nav — sidebar left */
   .nav-toggle{display:block}
-  .nav-links{display:none;position:fixed;top:0;left:0;width:240px;height:auto;max-height:60vh;flex-direction:column;gap:0;background:rgba(9,9,11,.8);backdrop-filter:blur(20px);padding:70px 0 16px;border-right:1px solid rgba(255,255,255,.08);border-radius:0 16px 16px 0;z-index:15;transform:translateX(-100%);transition:transform .3s ease}
+  .nav-links{display:none;position:fixed;top:0;left:0;width:200px;height:auto;max-height:none;flex-direction:column;gap:0;background:rgba(9,9,11,.6);backdrop-filter:blur(16px);padding:64px 0 12px;border-right:1px solid rgba(255,255,255,.06);border-radius:0 12px 12px 0;z-index:15;transform:translateX(-100%);transition:transform .3s ease}
   .nav-links.open{display:flex;transform:translateX(0)}
-  .nav-links .nav-link{padding:16px 32px;width:100%;text-align:left;font-size:16px}
-  .nav-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:14}
+  .nav-links .nav-link{padding:12px 24px;width:100%;text-align:left;font-size:14px}
+  .nav-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);z-index:14}
   .nav-overlay.active{display:block}
   .nav-inner .logo{font-size:18px}
   /* works/order: no hamburger, logo always visible */
   .nav-no-toggle .nav-toggle{display:none !important}
   .nav-no-toggle .nav-links{display:flex !important;position:static !important;transform:none !important;width:auto !important;height:auto !important;padding:0 !important;border:none !important;background:transparent !important;backdrop-filter:none !important}
   .nav-no-toggle .nav-links .logo{font-size:18px}
+  .nav-no-toggle .nav-inner{justify-content:center}
   .form-row-inline{grid-template-columns:1fr}
   .form-card{padding:28px}
-  .materials{padding:24px}
+  .materials{padding:20px}
 }
