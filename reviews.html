@@ -38,7 +38,7 @@
 <body>
 
 <!-- NAV -->
-<nav class="nav-no-toggle nav-centered">
+<nav class="nav-no-toggle nav-centered" style="justify-content:center">
   <div class="container nav-inner">
     <a href="index.html" class="logo">3DArtStudio</a>
   </div>
@@ -64,14 +64,45 @@
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta">
-  <div class="container cta-inner">
-    <h2>Хотите заказать?</h2>
-    <p>Опишите задачу — свяжусь и назову точную цену.</p>
-    <a href="order.html" class="btn-primary">Заказать</a>
+<!-- REVIEW FORM -->
+<section style="padding-top:0">
+  <div class="container" style="max-width:600px">
+    <div class="form-card" id="review-form-card">
+      <div class="form-header form-header-center" id="review-form-header">
+        <h3>Оставить отзыв</h3>
+        <p class="sub">Расскажите о своём опыте — это поможет другим</p>
+      </div>
+      <form id="review-form">
+        <div class="form-row">
+          <label>Ваше имя</label>
+          <input type="text" name="name" placeholder="Как к вам обращаться" required>
+        </div>
+        <div class="form-row">
+          <label>Оценка</label>
+          <div class="star-rating" id="star-rating">
+            <span class="star" data-value="1">☆</span>
+            <span class="star" data-value="2">☆</span>
+            <span class="star" data-value="3">☆</span>
+            <span class="star" data-value="4">☆</span>
+            <span class="star" data-value="5">☆</span>
+          </div>
+          <input type="hidden" name="stars" id="stars-input" value="0">
+        </div>
+        <div class="form-row">
+          <label>Отзыв</label>
+          <textarea name="text" placeholder="Что понравилось? Как использовали деталь?" required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Отправить отзыв</button>
+      </form>
+      <div class="form-success" id="review-success">
+        <div class="icon">🙏</div>
+        <h3>Спасибо за отзыв!</h3>
+        <p>Он появится здесь после проверки.</p>
+      </div>
+    </div>
   </div>
 </section>
+
 </main>
 
 <!-- FOOTER -->
@@ -85,19 +116,21 @@
 <a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="vk-float" aria-label="Наша группа ВКонтакте">
   <img src="images/logo.jpg" alt="" class="vk-logo" width="26" height="26">
   <span class="vk-label">ВКонтакте</span>
+  <span class="vk-label-mobile">VK</span>
 </a>
 
 <script src="scripts/common.js"></script>
 <script src="scripts/reviews.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const root = document.getElementById('reviews-root');
-  const empty = document.getElementById('reviews-empty');
+  // Render reviews
+  var root = document.getElementById('reviews-root');
+  var empty = document.getElementById('reviews-empty');
   if (typeof REVIEWS_DATA !== 'undefined' && REVIEWS_DATA.length > 0) {
     REVIEWS_DATA.forEach(function(r) {
-      const card = document.createElement('div');
+      var card = document.createElement('div');
       card.className = 'review-card';
-      const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+      var stars = '\u2605'.repeat(r.stars) + '\u2606'.repeat(5 - r.stars);
       card.innerHTML =
         '<div class="review-stars">' + stars + '</div>' +
         '<p class="review-text">' + escapeHtml(r.text) + '</p>' +
@@ -109,6 +142,48 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   } else {
     empty.style.display = 'block';
+  }
+
+  // Star rating
+  var stars = document.querySelectorAll('#star-rating .star');
+  var starsInput = document.getElementById('stars-input');
+  stars.forEach(function(star) {
+    star.addEventListener('click', function() {
+      var val = parseInt(this.getAttribute('data-value'));
+      starsInput.value = val;
+      stars.forEach(function(s) {
+        var v = parseInt(s.getAttribute('data-value'));
+        s.textContent = v <= val ? '\u2605' : '\u2606';
+        s.classList.toggle('active', v <= val);
+      });
+    });
+    star.addEventListener('mouseenter', function() {
+      var val = parseInt(this.getAttribute('data-value'));
+      stars.forEach(function(s) {
+        var v = parseInt(s.getAttribute('data-value'));
+        s.classList.toggle('hover', v <= val);
+      });
+    });
+    star.addEventListener('mouseleave', function() {
+      stars.forEach(function(s) { s.classList.remove('hover'); });
+    });
+  });
+
+  // Review form submission
+  var form = document.getElementById('review-form');
+  var header = document.getElementById('review-form-header');
+  var success = document.getElementById('review-success');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var data = Object.fromEntries(new FormData(this).entries());
+      if (data.stars === '0') { alert('Поставьте оценку'); return; }
+      // TODO: Send via Telegram when bot is set up
+      console.log('Review:', data);
+      header.classList.add('hidden');
+      form.style.display = 'none';
+      success.classList.add('show');
+    });
   }
 });
 </script>
