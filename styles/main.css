@@ -258,8 +258,8 @@ body.lb-open{overflow:hidden}
   .materials{padding:16px}
   .mat-table td:first-child{width:30%}
   .mat-table td:nth-child(2),.mat-table th:nth-child(2){width:22%;text-align:center}
-  .mat-tip-text{bottom:auto;top:calc(100% + 8px)}
-  .mat-tip-text::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:#18181b}
+  .mat-tip-text{bottom:auto;top:calc(100% + 8px);left:0;transform:none;max-width:calc(100vw - 80px);white-space:normal;word-wrap:break-word}
+  .mat-tip-text::after{top:auto;bottom:100%;left:12px;transform:none;border-top-color:transparent;border-bottom-color:#18181b}
 }
 
 /* ── MESH GRADIENT BG (order) ── */
