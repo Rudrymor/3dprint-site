@@ -359,6 +359,19 @@ document.addEventListener('DOMContentLoaded', function() {
       stored.push(review);
       localStorage.setItem('3dprint_reviews', JSON.stringify(stored));
 
+      // Отправить отзыв в Telegram
+      var tgMsg = [
+        '⭐ Новый отзыв',
+        '',
+        '👤 Имя: ' + review.name,
+        '⭐ Оценка: ' + review.stars + '/5',
+        '💬 Текст: ' + review.text
+      ].join('\n');
+      var tgToken = '8925866786:AAEc5Km-bBwAufsorhBZ78Kl6YjRMO3opWo';
+      var tgChat = '2030385539';
+      fetch('https://api.telegram.org/bot' + tgToken + '/sendMessage?chat_id=' + tgChat + '&text=' + encodeURIComponent(tgMsg))
+        .catch(function(err) { console.error('Telegram error:', err); });
+
       // Add to list immediately
       var row = document.createElement('div');
       row.className = 'review-row';

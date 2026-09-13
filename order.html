@@ -185,40 +185,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
     
-    // Формируем сообщение для Telegram
-    // Примечание: file input не отправляется через fetch API в Telegram
-    // Если нужна отправка файлов — требуется бэкенд-сервер или бот-посредник
-    const message = `
-🆕 Новая заявка на 3D-печать
+    // Rate-limit: не чаще 1 заявки в 2 минуты
+    var lastOrder = parseInt(localStorage.getItem('3dprint_last_order') || '0', 10);
+    var now = Date.now();
+    if (now - lastOrder < 120000) {
+      alert('Подождите минуту перед следующей заявкой.');
+      return;
+    }
 
-👤 Имя: ${data.name}
-📱 Контакт: ${data.contact}
-📦 Материал: ${data.material || 'Не указан'}
-📝 Описание: ${data.description}
-📏 Размеры: ${data.size || 'Не указаны'}
-🔢 Количество: ${data.quantity || '1 шт.'}
-    `.trim();
-    
-    // TODO: Раскомментировать и настроить для отправки в Telegram
-    // Замените <BOT_TOKEN> и <CHAT_ID> на реальные значения
-    // const encodedMessage = encodeURIComponent(message);
-    // fetch(`https://api.telegram.org/bot<BOT_TOKEN>/sendMessage?chat_id=<CHAT_ID>&text=${encodedMessage}`)
-    //   .then(() => {
-    //     header.classList.add('hidden');
-    //     form.style.display = 'none';
-    //     success.classList.add('show');
-    //   })
-    //   .catch(err => {
-    //     console.error('Ошибка отправки:', err);
-    //     alert('Ошибка отправки. Попробуйте ещё раз или свяжитесь через ВКонтакте.');
-    //   });
-    
-    // Временно: просто показываем успех (для тестирования)
-    console.log('Данные заявки:', data);
-    console.log('Сообщение для Telegram:', message);
-    header.classList.add('hidden');
-    form.style.display = 'none';
-    success.classList.add('show');
+    // Формируем сообщение для Telegram
+    const message = [
+      '🆕 Новая заявка на 3D-печать',
+      '',
+      '👤 Имя: ' + data.name,
+      '📱 Контакт: ' + data.contact,
+      '📦 Материал: ' + (data.material || 'Не указан'),
+      '📝 Описание: ' + data.description,
+      '📏 Размеры: ' + (data.size || 'Не указаны'),
+      '🔢 Количество: ' + (data.quantity || '1 шт.')
+    ].join('\n');
+
+    const BOT_TOKEN = '8925866786:AAEc5Km-bBwAufsorhBZ78Kl6YjRMO3opWo';
+    const CHAT_ID = '2030385539';
+    const encodedMessage = encodeURIComponent(message);
+
+    fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + encodedMessage)
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        localStorage.setItem('3dprint_last_order', String(now));
+        header.classList.add('hidden');
+        form.style.display = 'none';
+        success.classList.add('show');
+      })
+      .catch(function(err) {
+        console.error('Ошибка отправки:', err);
+        alert('Ошибка отправки. Попробуйте ещё раз или свяжитесь через ВКонтакте.');
+      });
   });
 });
 </script>
