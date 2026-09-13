@@ -205,11 +205,12 @@ document.addEventListener('DOMContentLoaded', function() {
       '🔢 Количество: ' + (data.quantity || '1 шт.')
     ].join('\n');
 
-    const BOT_TOKEN = '8925866786:AAEc5Km-bBwAufsorhBZ78Kl6YjRMO3opWo';
-    const CHAT_ID = '2030385539';
-    const encodedMessage = encodeURIComponent(message);
-
-    fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + encodedMessage)
+    // Отправка через Cloudflare Worker (токен скрыт на сервере)
+    fetch('https://tg-proxy.metalkor91.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: message })
+    })
       .then(function(res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         localStorage.setItem('3dprint_last_order', String(now));

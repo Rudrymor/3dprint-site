@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
       stored.push(review);
       localStorage.setItem('3dprint_reviews', JSON.stringify(stored));
 
-      // Отправить отзыв в Telegram
+      // Отправить отзыв в Telegram через Worker
       var tgMsg = [
         '⭐ Новый отзыв',
         '',
@@ -367,10 +367,11 @@ document.addEventListener('DOMContentLoaded', function() {
         '⭐ Оценка: ' + review.stars + '/5',
         '💬 Текст: ' + review.text
       ].join('\n');
-      var tgToken = '8925866786:AAEc5Km-bBwAufsorhBZ78Kl6YjRMO3opWo';
-      var tgChat = '2030385539';
-      fetch('https://api.telegram.org/bot' + tgToken + '/sendMessage?chat_id=' + tgChat + '&text=' + encodeURIComponent(tgMsg))
-        .catch(function(err) { console.error('Telegram error:', err); });
+      fetch('https://tg-proxy.metalkor91.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: tgMsg })
+      }).catch(function(err) { console.error('Telegram error:', err); });
 
       // Add to list immediately
       var row = document.createElement('div');
