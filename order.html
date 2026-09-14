@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=9">
+<link rel="stylesheet" href="styles/main.css?v=10">
 </head>
 <body>
 
@@ -33,7 +33,7 @@
       <!-- ФОРМА HEADER (скрывается при успехе) -->
       <div class="form-header form-header-center" id="form-header">
         <h3>Заявка на проект</h3>
-        <p class="sub">Заполните форму — отвечу</p>
+        <p class="sub">Заполните форму - свяжемся с вами для уточнения деталей</p>
       </div>
       
       <form id="order-form">
@@ -46,26 +46,34 @@
           <input type="tel" name="contact" placeholder="+7 ... или @username" required autocomplete="tel">
         </div>
         <div class="form-row">
-          <label>Что нужно напечатать?</label>
-          <textarea name="description" placeholder="Описание детали, назначение, особые требования..." required></textarea>
+          <label for="desc-input">Краткое описание проекта</label>
+          <div class="desc-wrap">
+            <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required></textarea>
+            <button type="button" class="attach-btn" id="attach-btn" aria-label="Прикрепить файлы с компьютера" title="Прикрепить файлы">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+          </div>
+          <input type="file" id="attach-input" multiple hidden accept=".stl,.obj,.3mf,.step,.stp,.igs,.iges,.dwg,.f3d,.zip,.rar,.pdf,.jpg,.jpeg,.png,.webp,.heic,.gif">
+          <div class="attach-list" id="attach-list"></div>
+          <p class="attach-note" id="attach-note">Можно приложить фото, чертёж или 3D-модель — до 5 файлов, 15 МБ каждый</p>
         </div>
         <div class="form-row">
           <label>Материал</label>
           <select name="material">
             <option value="">Выберите материал</option>
-            <option value="PLA">PLA — универсальный, для декора</option>
+            <option value="PLA">PLA — универсальный</option>
             <option value="PETG">PETG — прочный, хим. стойкий</option>
-            <option value="ABS">ABS — термостойкий, для механизмов</option>
+            <option value="ABS">ABS — термостойкий, ударопрочный</option>
             <option value="other">Другой / не знаю</option>
           </select>
         </div>
         <div class="form-row form-row-inline">
           <div>
-            <label>Размеры (если известны)</label>
-            <input type="text" name="size" placeholder="Д × Ш × В в мм">
+            <label>Цвет материала</label>
+            <input type="text" name="color" placeholder="Например: чёрный, белый, красный">
           </div>
           <div>
-            <label>Количество</label>
+            <label>Количество копий</label>
             <input type="text" name="quantity" placeholder="1 шт." value="1 шт.">
           </div>
         </div>
@@ -91,7 +99,7 @@
           <thead>
             <tr>
               <th>Материал</th>
-              <th>°C</th>
+              <th>Термостойкость</th>
               <th class="mat-cell-full">Применение</th>
               <th class="mat-tip mat-tip-header">?</th>
             </tr>
@@ -99,26 +107,26 @@
           <tbody>
             <tr>
               <td>PLA</td>
-              <td>≤60</td>
-              <td class="mat-cell-full">Декор, игрушки, макеты</td>
-              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Декор, игрушки, макеты, ночники</span></td>
+              <td>до 60 °C</td>
+              <td class="mat-cell-full">Декоративные изделия, игрушки, макеты</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Декоративные изделия, игрушки, макеты</span></td>
             </tr>
             <tr>
               <td>PETG</td>
-              <td>≤80</td>
-              <td class="mat-cell-full">Кронштейны, корпуса, чехлы</td>
-              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Кронштейны, корпуса, крепления, чехлы</span></td>
+              <td>до 80 °C</td>
+              <td class="mat-cell-full">Кронштейны, корпуса, шестерни</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Кронштейны, корпуса, шестерни</span></td>
             </tr>
             <tr>
               <td>ABS</td>
-              <td>≤100</td>
-              <td class="mat-cell-full">Авто-детали, термостойкие корпуса</td>
-              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Авто-детали, термостойкие корпуса</span></td>
+              <td>до 90 °C</td>
+              <td class="mat-cell-full">Термостойкие и ударопрочные изделия</td>
+              <td class="mat-tip"><span class="mat-tip-icon">?</span><span class="mat-tip-text">Термостойкие и ударопрочные изделия</span></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="mat-hint"><strong>Простое правило:</strong> для декора — PLA, для нагрузок — PETG, для жары — ABS.</p>
+      <p class="mat-hint"><strong>Простое правило:</strong> для декора — PLA, для деталей под нагрузкой — PETG, для прочных и термостойких — ABS.</p>
     </div>
   </div>
 </section>
@@ -171,6 +179,95 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
+// ─── ПРИКРЕПЛЕНИЕ ФАЙЛОВ ───
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('attach-input');
+  var btn = document.getElementById('attach-btn');
+  var list = document.getElementById('attach-list');
+  var note = document.getElementById('attach-note');
+  if (!input || !btn || !list) return;
+
+  var MAX_FILES = 5;
+  var MAX_SIZE = 15 * 1024 * 1024;   // 15 МБ на файл
+  var MAX_TOTAL = 40 * 1024 * 1024;  // 40 МБ на всю заявку
+  var files = [];
+
+  function fmtSize(b) {
+    if (b < 1024) return b + ' Б';
+    if (b < 1024 * 1024) return Math.round(b / 1024) + ' КБ';
+    return (b / 1024 / 1024).toFixed(1) + ' МБ';
+  }
+
+  function totalSize() {
+    return files.reduce(function(sum, f) { return sum + f.size; }, 0);
+  }
+
+  function render() {
+    list.innerHTML = '';
+    files.forEach(function(f, i) {
+      var chip = document.createElement('span');
+      chip.className = 'attach-chip';
+
+      var name = document.createElement('span');
+      name.className = 'attach-chip-name';
+      name.textContent = f.name;
+
+      var size = document.createElement('span');
+      size.className = 'attach-chip-size';
+      size.textContent = fmtSize(f.size);
+
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'attach-chip-del';
+      del.setAttribute('aria-label', 'Убрать файл ' + f.name);
+      del.textContent = '\u00d7';
+      del.addEventListener('click', function() {
+        files.splice(i, 1);
+        render();
+      });
+
+      chip.appendChild(name);
+      chip.appendChild(size);
+      chip.appendChild(del);
+      list.appendChild(chip);
+    });
+
+    list.classList.toggle('has-files', files.length > 0);
+    if (note) {
+      note.textContent = files.length
+        ? 'Приложено ' + files.length + ' из ' + MAX_FILES + ' файлов (' + fmtSize(totalSize()) + ')'
+        : 'Можно приложить фото, чертёж или 3D-модель — до ' + MAX_FILES + ' файлов, 15 МБ каждый';
+    }
+  }
+
+  btn.addEventListener('click', function() { input.click(); });
+
+  input.addEventListener('change', function() {
+    Array.prototype.forEach.call(input.files, function(f) {
+      if (files.length >= MAX_FILES) {
+        alert('К заявке можно приложить максимум ' + MAX_FILES + ' файлов.');
+        return;
+      }
+      if (f.size > MAX_SIZE) {
+        alert('Файл «' + f.name + '» больше 15 МБ. Вставьте ссылку на него в описании проекта.');
+        return;
+      }
+      if (totalSize() + f.size > MAX_TOTAL) {
+        alert('Общий размер вложений больше 40 МБ. Уберите лишнее или пришлите ссылку в описании.');
+        return;
+      }
+      var dup = files.some(function(x) { return x.name === f.name && x.size === f.size; });
+      if (!dup) files.push(f);
+    });
+    input.value = '';
+    render();
+  });
+
+  window.getAttachedFiles = function() { return files; };
+  render();
+});
+</script>
+<script>
 // ─── ФОРМА ЗАЯВКИ ───
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('order-form');
@@ -178,6 +275,37 @@ document.addEventListener('DOMContentLoaded', function() {
   const success = document.getElementById('form-success');
   
   if (!form) return;
+
+  // файлы, прикреплённые к заявке (см. блок «ПРИКРЕПЛЕНИЕ ФАЙЛОВ»)
+  function attachments() {
+    return window.getAttachedFiles ? window.getAttachedFiles() : [];
+  }
+
+  var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
+
+  // Отправка заявки: текст + файлы (multipart). Токен бота скрыт на сервере.
+  // Если сервер не принял вложения — заявка всё равно уходит текстом, файлы клиент пришлёт ответом.
+  function sendOrder(message, files) {
+    var payload = new FormData();
+    payload.append('text', message);
+    files.forEach(function(f) { payload.append('files', f, f.name); });
+
+    return fetch(WORKER_URL, { method: 'POST', body: payload }).then(function(res) {
+      if (res.ok || !files.length) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return true;
+      }
+      console.warn('Вложения не приняты сервером (HTTP ' + res.status + '), повторяю текстом');
+      return fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: message + '\n\n⚠️ Вложения не удалось отправить автоматически — попросите прислать файлы в ответ на это сообщение.' })
+      }).then(function(res2) {
+        if (!res2.ok) throw new Error('HTTP ' + res2.status);
+        return true;
+      });
+    });
+  }
   
   form.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -201,18 +329,13 @@ document.addEventListener('DOMContentLoaded', function() {
       '📱 Контакт: ' + data.contact,
       '📦 Материал: ' + (data.material || 'Не указан'),
       '📝 Описание: ' + data.description,
-      '📏 Размеры: ' + (data.size || 'Не указаны'),
-      '🔢 Количество: ' + (data.quantity || '1 шт.')
+      '🎨 Цвет материала: ' + (data.color || 'Не указан'),
+      '🔢 Количество копий: ' + (data.quantity || '1 шт.'),
+      '📎 Файлы: ' + (attachments().length ? attachments().map(function(f) { return f.name; }).join(', ') : 'нет')
     ].join('\n');
 
-    // Отправка через Cloudflare Worker (токен скрыт на сервере)
-    fetch('https://tg-proxy.metalkor91.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: message })
-    })
-      .then(function(res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+    sendOrder(message, attachments())
+      .then(function() {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');
         form.style.display = 'none';

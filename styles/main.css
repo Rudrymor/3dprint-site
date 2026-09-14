@@ -28,7 +28,7 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .nav-inner .logo{flex-shrink:0}
 .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:48px}
 @keyframes logoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.nav-link{color:#ff6b35;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
+.nav-link{color:#ff6b35;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
 .nav-link:hover{color:#ffa366}
 .nav-centered .nav-inner{justify-content:center}
 /* главная: логотип по центру, ссылки — над артами (Процесс над принтером, Услуги над фигуркой) */
@@ -40,6 +40,17 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
   .nav-home .nav-link{position:absolute;top:50%;transform:translate(-50%,-50%)}
   .nav-home .nav-link-left{left:calc(var(--art-offset) + var(--art-w)/2)}
   .nav-home .nav-link-right{left:calc(100% - var(--fig-offset) - var(--fig-w)/2)}
+  /* небольшое анимированное движение ссылок: лёгкое «парение» + дыхание свечения */
+  .nav-home .nav-link{animation:navLinkFloat 3.4s ease-in-out infinite}
+  .nav-home .nav-link-right{animation-delay:1.7s}
+  .nav-home .nav-link:hover{animation-play-state:paused}
+}
+@keyframes navLinkFloat{
+  0%,100%{transform:translate(-50%,-50%);text-shadow:0 0 0 rgba(255,107,53,0)}
+  50%{transform:translate(-50%,calc(-50% - 4px));text-shadow:0 0 14px rgba(255,107,53,.55)}
+}
+@media(prefers-reduced-motion:reduce){
+  .nav-home .nav-link{animation:none}
 }
 
 /* mobile hamburger */
@@ -248,6 +259,21 @@ body.lb-open{overflow:hidden}
 .form-row-inline{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;margin-top:8px}
 .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.4)}
+/* ── прикрепление файлов к заявке ── */
+.desc-wrap{position:relative}
+.desc-wrap textarea{padding-right:56px}
+.attach-btn{position:absolute;right:10px;bottom:10px;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#a1a1aa;cursor:pointer;transition:all .2s}
+.attach-btn:hover{color:#ffd60a;border-color:rgba(255,214,0,.4);background:rgba(255,214,0,.08);transform:translateY(-1px)}
+.attach-btn:focus-visible{outline:none;border-color:rgba(255,214,0,.5);box-shadow:0 0 0 3px rgba(255,214,0,.15)}
+.attach-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.attach-list{display:none;flex-wrap:wrap;gap:8px;margin-top:10px}
+.attach-list.has-files{display:flex}
+.attach-chip{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:6px 8px 6px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:13px;color:#a1a1aa}
+.attach-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.attach-chip-size{color:#71717a;flex-shrink:0;font-size:12px}
+.attach-chip-del{background:none;border:none;color:#71717a;font-size:16px;line-height:1;cursor:pointer;padding:0 2px;border-radius:6px;transition:color .2s}
+.attach-chip-del:hover{color:#ff6b35}
+.attach-note{margin-top:10px;font-size:12px;color:#71717a;line-height:1.5}
 .form-note{text-align:center;margin-top:14px;font-size:13px;color:#71717a}
 
 /* ── FORM SUCCESS ── */
@@ -295,6 +321,7 @@ body.lb-open{overflow:hidden}
   .materials{padding:16px}
   .mat-table td:first-child{width:30%}
   .mat-table td:nth-child(2),.mat-table th:nth-child(2){width:22%;text-align:center}
+  .mat-table th:nth-child(2){white-space:normal;line-height:1.25;font-size:11px;letter-spacing:.5px}
   .mat-tip{position:static}
   .mat-tip-text{display:none;position:fixed;left:16px;right:16px;bottom:24px;top:auto;transform:none;background:#18181b;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;font-size:14px;color:#e4e4e7;white-space:normal;word-wrap:break-word;z-index:9999;max-width:none;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.6)}
   .mat-tip-text::after{display:none}
@@ -374,6 +401,8 @@ footer p{font-size:13px;color:#71717a}
   .nav-no-toggle .nav-links .logo{font-size:18px}
   .nav-no-toggle .nav-inner{justify-content:center}
   .form-row-inline{grid-template-columns:1fr}
+  .attach-chip-name{max-width:140px}
+  .attach-chip{width:100%;justify-content:space-between}
   .form-card{padding:28px}
   .materials{padding:20px}
 }
