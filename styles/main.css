@@ -11,6 +11,14 @@ body{font-family:'Outfit',system-ui,sans-serif;background:#09090b;color:#fafafa;
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 
+/* ── ГЕОМЕТРИЯ HERO-АРТОВ (общая для hero и nav) ── */
+:root{
+  --art-offset:clamp(28px,5vw,96px);                          /* отступ принтера/фигурки от края */
+  --art-w:clamp(240px,calc(46vw - 350px),410px);              /* ширина принтера (46vw — чтобы на 1200-1500px не липнуть к тексту) */
+  --fig-h:clamp(280px,calc((46vw - 350px)*1.1667),478px);     /* высота фигурки = высоте принтера */
+  --fig-w:calc(var(--fig-h)*0.5263);                          /* ширина фигурки (310/589, ассет с восстановленным ухом) */
+}
+
 /* ── NAV ── */
 nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100}
 /* тонкая полоска — отделяет закреплённую навигацию от содержимого страницы */
@@ -22,8 +30,16 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .nav-link{color:#ff6b35;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
 .nav-link:hover{color:#ffa366}
 .nav-centered .nav-inner{justify-content:center}
-/* главная: логотип у левого края, принтер — под ним */
-.nav-home .nav-inner{max-width:none;padding:0 24px}
+/* главная: логотип по центру, ссылки — над артами (Процесс над принтером, Услуги над фигуркой) */
+.nav-home .nav-inner{justify-content:center;max-width:none;padding:0 24px}
+.nav-home .nav-link{white-space:nowrap}
+.nav-home .nav-toggle{position:absolute;left:16px;top:50%;transform:translateY(-50%)}
+@media(min-width:769px){
+  .nav-home .nav-links{position:static;transform:none;display:block;width:0;height:0}
+  .nav-home .nav-link{position:absolute;top:50%;transform:translate(-50%,-50%)}
+  .nav-home .nav-link-left{left:calc(var(--art-offset) + var(--art-w)/2)}
+  .nav-home .nav-link-right{left:calc(100% - var(--art-offset) - var(--fig-w)/2)}
+}
 
 /* mobile hamburger */
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px;color:#ff6b35}
@@ -46,17 +62,25 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .hero-services{list-style:none;display:flex;flex-direction:column;margin:0 auto 40px;padding:0}
 .hero-svc-main{display:block;font-size:clamp(36px,5vw,62px);font-weight:800;line-height:1.12;letter-spacing:-2px;color:#ff6b35}
 .hero-svc-sub{display:block;font-size:clamp(18px,2.2vw,25px);font-weight:600;line-height:1.6;color:#ffd60a}
+/* «3D» переливается разными цветами, «Моделирование»/«печать» вибрируют */
+/* background-image, а не шорткат background: шорткат сбрасывает background-clip обратно в border-box
+   и «3D» превращается в сплошной градиентный прямоугольник */
+.svc-3d{background-image:linear-gradient(135deg,#ff6b35,#ffd60a,#adff2f,#06b6d4,#8b5cf6,#ff3e6c);background-size:400% 400%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:svc3dShift 6s ease-in-out infinite}
+.svc-3d-2{background-image:linear-gradient(135deg,#06b6d4,#8b5cf6,#ff3e6c,#ffd60a,#adff2f,#ff6b35);background-size:400% 400%;animation-duration:7.5s;animation-direction:reverse}
+@keyframes svc3dShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.svc-word{display:inline-block;animation:svcWordVibrate 2.6s ease-in-out infinite}
+@keyframes svcWordVibrate{0%,100%{transform:translate3d(0,0,0) rotate(0)}15%{transform:translate3d(.7px,-.6px,0) rotate(-.4deg)}30%{transform:translate3d(-.6px,.5px,0) rotate(.35deg)}45%{transform:translate3d(.5px,.7px,0) rotate(-.3deg)}60%{transform:translate3d(-.7px,-.5px,0) rotate(.25deg)}80%{transform:translate3d(.4px,.6px,0) rotate(-.2deg)}}
 .hero-buttons{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
 .btn-hero{padding:18px 36px;border-radius:14px;font-size:18px;font-weight:700;transition:all .25s;white-space:nowrap;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4);background-size:300% 300%;color:#09090b;border:none;animation:logoShift 4s ease infinite}
 .btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.3);background-size:400% 400%}
 
 /* ── HERO PRINTER ── */
-.hero-printer{position:absolute;left:24px;top:100px;z-index:1;width:clamp(240px,calc(50vw - 350px),410px)}
+.hero-printer{position:absolute;left:var(--art-offset);top:100px;z-index:1;width:var(--art-w)}
 .printer-svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 30px rgba(139,92,246,.25))}
 
 /* ── HERO FIGURE (index) — зеркало принтера справа ── */
 /* ассет: images/figure-hero.webp (вырез фигурки из фото, прозрачный фон) */
-.hero-figure{position:absolute;right:24px;top:100px;z-index:1;height:clamp(280px,calc((50vw - 350px)*1.1667),478px);pointer-events:none}
+.hero-figure{position:absolute;right:var(--art-offset);top:100px;z-index:1;height:var(--fig-h);pointer-events:none}
 .hero-figure::before{content:"";position:absolute;inset:-70px -60px;background:radial-gradient(ellipse at 50% 45%,rgba(255,107,53,.20),rgba(255,214,10,.09) 45%,transparent 72%);filter:blur(18px)}
 .hero-figure img{position:relative;display:block;height:100%;width:auto;filter:drop-shadow(0 26px 44px rgba(0,0,0,.6));animation:figFloat 6s ease-in-out infinite}
 @keyframes figFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
