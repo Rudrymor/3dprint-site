@@ -314,7 +314,7 @@ body.lb-open{overflow:hidden}
   .mat-cell-full{display:none !important;width:0 !important;padding:0 !important;overflow:hidden}
   .mat-table th.mat-cell-full{display:none !important;width:0 !important;padding:0 !important}
   .mat-tip{display:inline-flex}
-  .mat-tip-header{display:table-cell !important;font-size:14px;text-align:center;width:36px;padding:10px 4px !important}
+  .mat-tip-header{display:none !important}
   .mat-table{min-width:0 !important;table-layout:fixed;width:100%}
   .mat-table th{letter-spacing:0 !important;text-transform:none !important;font-size:13px}
   .mat-table th,.mat-table td{padding:10px 6px;font-size:13px;white-space:nowrap}
