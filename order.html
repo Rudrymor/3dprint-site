@@ -322,8 +322,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Формируем сообщение для Telegram
+    var orderNum = parseInt(localStorage.getItem('3dprint_order_count') || '0', 10) + 1;
+    localStorage.setItem('3dprint_order_count', String(orderNum));
+    var nowDate = new Date();
+    var dateStr = nowDate.toLocaleDateString('ru-RU') + ' ' + nowDate.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
     const message = [
-      '🆕 Новая заявка на 3D-печать',
+      '🆕 Заявка #' + orderNum,
+      '📅 ' + dateStr,
       '',
       '👤 Имя: ' + data.name,
       '📱 Контакт: ' + data.contact,
