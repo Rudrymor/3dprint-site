@@ -116,6 +116,28 @@ const CATALOG_DATA = [
     "price_s": "",
     "price_m": "480 ₽",
     "price_l": "720 ₽"
+  },
+  {
+    "id": 11,
+    "name": "Диорама «Похищение коровы»",
+    "description": "Low-poly сцена: домик, хвойный лес и летающая тарелка с лучом над фермой.",
+    "image": "images/toy-2.jpg",
+    "category": "decor",
+    "material": "PLA",
+    "price_s": "",
+    "price_m": "",
+    "price_l": ""
+  },
+  {
+    "id": 12,
+    "name": "Фэнтези-воин с посохом",
+    "description": "Коллекционная миниатюра: рогатый шлем, плащ и посох с навершием. Модель под покраску.",
+    "image": "images/toy-3.jpg",
+    "category": "decor",
+    "material": "PLA",
+    "price_s": "",
+    "price_m": "",
+    "price_l": ""
   }
 ];
 
