@@ -6,3 +6,4 @@ dist/
 worker/.wrangler/
 __pycache__/
 *.pyc
+tmp/
