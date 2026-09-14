@@ -337,8 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');
         form.style.display = 'none';
-        var orderNum = result && result.order ? result.order : '?';
-        success.querySelector('h2').textContent = 'Заявка #' + orderNum + ' отправлена!';
         success.classList.add('show');
       })
       .catch(function(err) {
