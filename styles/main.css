@@ -54,6 +54,13 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .hero-printer{position:absolute;left:24px;top:100px;z-index:1;width:clamp(240px,calc(50vw - 350px),410px)}
 .printer-svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 30px rgba(139,92,246,.25))}
 
+/* ── HERO FIGURE (index) — зеркало принтера справа ── */
+/* ассет: images/figure-hero.webp (вырез фигурки из фото, прозрачный фон) */
+.hero-figure{position:absolute;right:24px;top:100px;z-index:1;height:clamp(280px,calc((50vw - 350px)*1.1667),478px);pointer-events:none}
+.hero-figure::before{content:"";position:absolute;inset:-70px -60px;background:radial-gradient(ellipse at 50% 45%,rgba(255,107,53,.20),rgba(255,214,10,.09) 45%,transparent 72%);filter:blur(18px)}
+.hero-figure img{position:relative;display:block;height:100%;width:auto;filter:drop-shadow(0 26px 44px rgba(0,0,0,.6));animation:figFloat 6s ease-in-out infinite}
+@keyframes figFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
 /* Print head sliding */
 .print-head{animation:printHeadSlide 4s ease-in-out infinite}
 @keyframes printHeadSlide{0%,100%{transform:translateX(-60px)}50%{transform:translateX(60px)}}
@@ -300,6 +307,7 @@ footer p{font-size:13px;color:#71717a}
 @media(max-width:1200px){
   .hero-inner{flex-direction:column;gap:24px}
   .hero-printer{position:static;width:210px;margin:0 auto 28px}
+  .hero-figure{display:none}
 }
 @media(max-width:1024px){
   .process-grid{grid-template-columns:repeat(2,1fr)}
