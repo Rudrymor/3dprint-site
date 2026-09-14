@@ -22,6 +22,8 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .nav-link{color:#ff6b35;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
 .nav-link:hover{color:#ffa366}
 .nav-centered .nav-inner{justify-content:center}
+/* главная: логотип у левого края, принтер — под ним */
+.nav-home .nav-inner{max-width:none;padding:0 24px}
 
 /* mobile hamburger */
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px;color:#ff6b35}
@@ -49,8 +51,8 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.3);background-size:400% 400%}
 
 /* ── HERO PRINTER ── */
-.hero-printer{position:absolute;left:0;top:0;width:220px}
-.printer-svg{width:100%;height:auto;filter:drop-shadow(0 0 30px rgba(139,92,246,.25))}
+.hero-printer{position:absolute;left:24px;top:100px;z-index:1;width:clamp(240px,calc(50vw - 350px),410px)}
+.printer-svg{display:block;width:100%;height:auto;filter:drop-shadow(0 0 30px rgba(139,92,246,.25))}
 
 /* Print head sliding */
 .print-head{animation:printHeadSlide 4s ease-in-out infinite}
@@ -297,7 +299,7 @@ footer p{font-size:13px;color:#71717a}
 /* ── RESPONSIVE ── */
 @media(max-width:1200px){
   .hero-inner{flex-direction:column;gap:24px}
-  .hero-printer{position:static;order:-1;width:180px}
+  .hero-printer{position:static;width:210px;margin:0 auto 28px}
 }
 @media(max-width:1024px){
   .process-grid{grid-template-columns:repeat(2,1fr)}
@@ -307,7 +309,7 @@ footer p{font-size:13px;color:#71717a}
   .container,.order-container{padding:0 20px}
   .hero{padding:60px 0 60px}
   .hero-inner{flex-direction:column;gap:24px}
-  .hero-printer{position:static;order:-1;width:160px}
+  .hero-printer{position:static;width:170px;margin:0 auto 24px}
   .hero-content{text-align:center}
   section{padding:70px 0}
   .process-grid{grid-template-columns:1fr}
