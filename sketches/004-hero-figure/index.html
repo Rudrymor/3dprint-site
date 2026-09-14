@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hero с фигуркой — 3 варианта (3DArtStudio)</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../styles/main.css">
+<style>
+/* ── каркас скетч-страницы ── */
+.sk-head{padding:36px 24px 10px;max-width:1400px;margin:0 auto}
+.sk-head h1{font-size:26px;font-weight:800;margin:0 0 10px}
+.sk-head p{color:#a1a1aa;font-size:14px;margin:0;max-width:760px;line-height:1.6}
+.sk-block{border-top:1px solid rgba(255,255,255,.07);margin-top:32px}
+.sk-label{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:22px 24px 14px;max-width:1400px;margin:0 auto}
+.sk-label .n{font-size:12px;font-weight:800;letter-spacing:2px;color:#ff6b35}
+.sk-label h2{font-size:20px;font-weight:700;margin:0}
+.sk-label p{color:#71717a;font-size:13px;margin:0}
+.mock{position:relative}
+.sk-notes{display:flex;gap:28px;flex-wrap:wrap;padding:16px 24px 32px;max-width:1400px;margin:0 auto;font-size:13px;line-height:1.7}
+.sk-notes .plus{color:#22c55e}
+.sk-notes .minus{color:#ff6b35}
+
+/* ── A: зеркало принтера ── */
+#vA .hero-fig{position:absolute;right:24px;top:100px;height:478px;z-index:1;display:block}
+#vA .hero-fig .glow{position:absolute;inset:-70px -60px;background:radial-gradient(ellipse at 50% 45%,rgba(255,107,53,.20),rgba(255,214,10,.09) 45%,transparent 72%);filter:blur(18px)}
+#vA .hero-fig img{position:relative;display:block;height:100%;width:auto;filter:drop-shadow(0 26px 44px rgba(0,0,0,.6));animation:figFloat 6s ease-in-out infinite}
+@keyframes figFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
+/* ── B: экспонат на подиуме ── */
+#vB .hero-fig{position:absolute;right:60px;top:52px;height:540px;z-index:1;display:block}
+#vB .hero-fig::before{content:"";position:absolute;left:50%;bottom:-6px;transform:translate(-50%,50%);width:250px;height:44px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,rgba(6,182,212,.40),rgba(139,92,246,.14) 55%,transparent 76%);box-shadow:0 0 50px rgba(6,182,212,.22)}
+#vB .hero-fig .corner{position:absolute;inset:-26px -26px -46px;border:1px solid rgba(255,255,255,.07);border-radius:26px;background:linear-gradient(160deg,rgba(255,255,255,.035),transparent 60%)}
+#vB .hero-fig img{position:relative;display:block;height:100%;width:auto;filter:drop-shadow(0 30px 46px rgba(0,0,0,.65))}
+#vB .hero-fig .cap{position:absolute;left:50%;bottom:-52px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:2.4px;text-transform:uppercase;color:#7dd3fc}
+
+/* ── C: маскот, выходит за кадр ── */
+#vC .hero-fig{position:absolute;right:-30px;top:14px;height:600px;z-index:1;display:block}
+#vC .hero-fig img{position:relative;display:block;height:100%;width:auto;filter:drop-shadow(0 30px 50px rgba(0,0,0,.6));animation:figFloat 7s ease-in-out infinite}
+#vC .orbit{position:absolute;left:52%;top:34%;transform:translate(-50%,-50%);width:300px;height:300px;border:1px dashed rgba(255,214,10,.28);border-radius:50%;animation:spin 46s linear infinite}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+#vC .cap-v{position:absolute;right:78px;top:50%;transform:translateY(-50%) rotate(90deg);white-space:nowrap;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#ffd60a;opacity:.75}
+
+@media(max-width:1200px){
+  #vA .hero-fig,#vB .hero-fig,#vC .hero-fig{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="sk-head">
+  <h1>Hero-секция с фигуркой: три варианта</h1>
+  <p>Слева — анимированный принтер (как сейчас), справа — вырезанная из фото фигурка кота. Фигурка вырезана автоматически из «игрушка.jpg» (фон убран), поэтому её можно свободно ставить на тёмный фон и заменять на новое фото после покраски. Ниже — три направления на реальных стилях сайта.</p>
+</div>
+
+<!-- ── ВАРИАНТ A ── -->
+<div class="sk-block" id="vA">
+  <div class="sk-label"><span class="n">ВАРИАНТ A</span><h2>Зеркало принтера</h2><p>симметрия: арт слева и справа, высота фигурки = высота блока услуг</p></div>
+  <div class="mock">
+    <section class="hero">
+      <div class="hero-bg-orbs"></div>
+      <div class="hero-printer"></div>
+      <div class="hero-fig">
+        <span class="glow"></span>
+        <img src="figure@2x.webp" srcset="figure.webp 245w, figure@2x.webp 304w" sizes="245px" alt="Авторская 3D-фигурка" width="245" height="478">
+      </div>
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge"><span class="dot"></span> Принимаем заказы</div>
+            <ul class="hero-services">
+              <li class="hero-svc-main">3D Моделирование</li>
+              <li class="hero-svc-main">3D печать</li>
+              <li class="hero-svc-sub">проектирование по чертежу</li>
+              <li class="hero-svc-sub">проектирование по оригиналу детали</li>
+              <li class="hero-svc-sub">изготовление авторской 3D фигурки</li>
+              <li class="hero-svc-sub">векторные рисунки</li>
+            </ul>
+            <div class="hero-buttons"><a href="#vA" class="btn-hero">Заказать проект</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="sk-notes"><span class="plus">+ спокойно и ровно, повторяет логику принтера</span><span class="plus">+ ничего не перекрывает текст</span><span class="minus">− фигурка мелкая (245×478), на первый взгляд читается как «ещё один декор»</span></div>
+</div>
+
+<!-- ── ВАРИАНТ B ── -->
+<div class="sk-block" id="vB">
+  <div class="sk-label"><span class="n">ВАРИАНТ B</span><h2>Экспонат на подиуме</h2><p>фигурка крупнее, со подставкой-свечением, тонкой рамкой и подписью</p></div>
+  <div class="mock">
+    <section class="hero">
+      <div class="hero-bg-orbs"></div>
+      <div class="hero-printer"></div>
+      <div class="hero-fig">
+        <span class="corner"></span>
+        <img src="figure@2x.webp" srcset="figure.webp 245w, figure@2x.webp 304w" sizes="278px" alt="Авторская 3D-фигурка" width="245" height="478">
+        <span class="cap">Авторская фигурка</span>
+      </div>
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge"><span class="dot"></span> Принимаем заказы</div>
+            <ul class="hero-services">
+              <li class="hero-svc-main">3D Моделирование</li>
+              <li class="hero-svc-main">3D печать</li>
+              <li class="hero-svc-sub">проектирование по чертежу</li>
+              <li class="hero-svc-sub">проектирование по оригиналу детали</li>
+              <li class="hero-svc-sub">изготовление авторской 3D фигурки</li>
+              <li class="hero-svc-sub">векторные рисунки</li>
+            </ul>
+            <div class="hero-buttons"><a href="#vB" class="btn-hero">Заказать проект</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="sk-notes"><span class="plus">+ фигурка звучит как продукт: подставка + подпись</span><span class="plus">+ хорошо работает после покраски — подиум держит композицию</span><span class="minus">− рамка добавляет «карточку», есть риск наезда на текст на 1250–1400px</span></div>
+</div>
+
+<!-- ── ВАРИАНТ C ── -->
+<div class="sk-block" id="vC">
+  <div class="sk-label"><span class="n">ВАРИАНТ C</span><h2>Маскот за краем кадра</h2><p>фигурка крупная, выходит за правый край, орбита и вертикальная подпись</p></div>
+  <div class="mock">
+    <section class="hero">
+      <div class="hero-bg-orbs"></div>
+      <div class="hero-printer"></div>
+      <div class="hero-fig">
+        <span class="orbit"></span>
+        <img src="figure@2x.webp" srcset="figure.webp 245w, figure@2x.webp 304w" sizes="300px" alt="Авторская 3D-фигурка" width="245" height="478">
+        <span class="cap-v">Собственная модель</span>
+      </div>
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge"><span class="dot"></span> Принимаем заказы</div>
+            <ul class="hero-services">
+              <li class="hero-svc-main">3D Моделирование</li>
+              <li class="hero-svc-main">3D печать</li>
+              <li class="hero-svc-sub">проектирование по чертежу</li>
+              <li class="hero-svc-sub">проектирование по оригиналу детали</li>
+              <li class="hero-svc-sub">изготовление авторской 3D фигурки</li>
+              <li class="hero-svc-sub">векторные рисунки</li>
+            </ul>
+            <div class="hero-buttons"><a href="#vC" class="btn-hero">Заказать проект</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="sk-notes"><span class="plus">+ самый выразительный, фигурка сразу заметна</span><span class="minus">− вылезает за край: на 1300–1500px может залезть под текст услуг</span><span class="minus">− орбита спорит с орбами фона</span></div>
+</div>
+
+<template id="printer-tpl">
+  <svg class="printer-svg" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg">
+    <rect class="printer-frame" x="30" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
+    <rect class="printer-frame" x="258" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
+    <rect class="printer-frame" x="30" y="20" width="240" height="12" fill="url(#frameGrad)" rx="2"/>
+    <rect class="printer-base" x="20" y="290" width="260" height="20" fill="url(#baseGrad)" rx="4"/>
+    <rect class="printer-base" x="30" y="300" width="240" height="35" fill="url(#baseGrad2)" rx="4"/>
+    <rect class="printer-display" x="210" y="310" width="50" height="18" fill="#09090b" rx="2" stroke="#06b6d4" stroke-width="1"/>
+    <text class="printer-display-text" x="235" y="323" text-anchor="middle" fill="#06b6d4" font-size="10" font-weight="bold">100%</text>
+    <circle class="printer-led" cx="200" cy="319" r="4" fill="#22c55e"/>
+    <g class="printer-fan" transform="translate(55, 319)">
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+      <line class="fan-blade" x1="-8" y1="0" x2="8" y2="0" stroke="#8b5cf6" stroke-width="2"/>
+      <line class="fan-blade" x1="0" y1="-8" x2="0" y2="8" stroke="#8b5cf6" stroke-width="2"/>
+    </g>
+    <g class="printer-spool">
+      <circle cx="60" cy="80" r="25" fill="none" stroke="#ec4899" stroke-width="3"/>
+      <circle cx="60" cy="80" r="8" fill="#ec4899" opacity="0.6"/>
+      <path class="filament-path" d="M 85 80 Q 120 100 150 120" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="5,5"/>
+    </g>
+    <rect class="head-rail" x="42" y="110" width="216" height="8" fill="url(#railGrad)" rx="2"/>
+    <g class="print-head">
+      <rect x="140" y="100" width="50" height="30" fill="url(#headGrad)" rx="4"/>
+      <polygon class="nozzle" points="165,130 160,140 170,140" fill="#ffd60a"/>
+      <ellipse class="nozzle-glow" cx="165" cy="142" rx="3" ry="5" fill="#ffd60a" opacity="0.6"/>
+    </g>
+    <g class="printed-object">
+      <rect class="layer layer-1" x="120" y="270" width="60" height="8" fill="url(#layerGrad1)" rx="1"/>
+      <rect class="layer layer-2" x="125" y="260" width="50" height="8" fill="url(#layerGrad2)" rx="1"/>
+      <rect class="layer layer-3" x="130" y="250" width="40" height="8" fill="url(#layerGrad3)" rx="1"/>
+      <rect class="layer layer-4" x="135" y="240" width="30" height="8" fill="url(#layerGrad4)" rx="1"/>
+      <rect class="layer layer-5" x="140" y="230" width="20" height="8" fill="url(#layerGrad5)" rx="1"/>
+    </g>
+    <defs>
+      <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#06b6d4"/><stop offset="100%" style="stop-color:#0891b2"/></linearGradient>
+      <linearGradient id="baseGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#7c3aed"/></linearGradient>
+      <linearGradient id="baseGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#6d28d9;stop-opacity:0.8"/><stop offset="100%" style="stop-color:#5b21b6;stop-opacity:0.8"/></linearGradient>
+      <linearGradient id="railGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#64748b"/><stop offset="100%" style="stop-color:#475569"/></linearGradient>
+      <linearGradient id="headGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f97316"/><stop offset="100%" style="stop-color:#ea580c"/></linearGradient>
+      <linearGradient id="layerGrad1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#06b6d4"/><stop offset="100%" style="stop-color:#0891b2"/></linearGradient>
+      <linearGradient id="layerGrad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#7c3aed"/></linearGradient>
+      <linearGradient id="layerGrad3" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#ec4899"/><stop offset="100%" style="stop-color:#db2777"/></linearGradient>
+      <linearGradient id="layerGrad4" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f59e0b"/><stop offset="100%" style="stop-color:#d97706"/></linearGradient>
+      <linearGradient id="layerGrad5" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#22c55e"/><stop offset="100%" style="stop-color:#16a34a"/></linearGradient>
+    </defs>
+  </svg>
+</template>
+
+<script>
+// клонируем принтер в каждый мокап (inline SVG нужен для CSS-анимаций из main.css)
+document.querySelectorAll('.hero-printer').forEach(function (slot) {
+  slot.appendChild(document.getElementById('printer-tpl').content.cloneNode(true));
+});
+</script>
+</body>
+</html>
