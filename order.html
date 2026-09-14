@@ -338,6 +338,12 @@ document.addEventListener('DOMContentLoaded', function() {
         header.classList.add('hidden');
         form.style.display = 'none';
         success.classList.add('show');
+        setTimeout(function() {
+          success.classList.remove('show');
+          header.classList.remove('hidden');
+          form.style.display = '';
+          form.reset();
+        }, 3000);
       })
       .catch(function(err) {
         console.error('Ошибка отправки:', err);
