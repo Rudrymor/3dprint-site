@@ -28,7 +28,7 @@ nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;point
 .nav-inner .logo{flex-shrink:0}
 .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:48px}
 @keyframes logoShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.nav-link{color:#ff6b35;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:color .2s}
+.nav-link{color:#ff6b35;font-size:14px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,107,53,.25);transition:color .2s}
 .nav-link:hover{color:#ffa366}
 .nav-centered .nav-inner{justify-content:center}
 /* главная: логотип по центру, ссылки — над артами (Процесс над принтером, Услуги над фигуркой) */
