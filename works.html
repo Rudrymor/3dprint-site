@@ -79,63 +79,6 @@
 </a>
 
 <script src="scripts/common.js?v=3"></script>
-<script src="scripts/catalog.js?v=5"></script>
-<script>
-// ─── ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ───
-document.addEventListener('DOMContentLoaded', () => {
-  // ─── ЛАЙТБОКС ───
-  const imgs = Array.from(document.querySelectorAll('.catalog-card-img img'));
-  if (!imgs.length) return;
-
-  let idx = 0;
-  const box = document.createElement('div');
-  box.className = 'lightbox';
-  box.innerHTML = `
-    <button class="lb-btn lb-close" aria-label="Закрыть">×</button>
-    <button class="lb-btn lb-prev" aria-label="Предыдущая">‹</button>
-    <img class="lb-img" src="" alt="">
-    <button class="lb-btn lb-next" aria-label="Следующая">›</button>
-    <div class="lb-caption"></div>
-  `;
-  document.body.appendChild(box);
-
-  const imgEl = box.querySelector('.lb-img');
-  const capEl = box.querySelector('.lb-caption');
-
-  function show(i) {
-    idx = (i + imgs.length) % imgs.length;
-    const source = imgs[idx];
-    const card = source.closest('.catalog-card');
-    const title = card ? card.querySelector('.catalog-card-title')?.textContent.trim() : '';
-    imgEl.src = source.src;
-    imgEl.alt = source.alt || title;
-    capEl.innerHTML = title ? `<strong>${escapeHtml(title)}</strong>` : '';
-  }
-
-  function open(i) { 
-    show(i); 
-    box.classList.add('open'); 
-    document.body.classList.add('lb-open'); 
-  }
-  
-  function close() { 
-    box.classList.remove('open'); 
-    document.body.classList.remove('lb-open'); 
-  }
-
-  imgs.forEach((im, i) => im.addEventListener('click', () => open(i)));
-  box.querySelector('.lb-close').addEventListener('click', close);
-  box.querySelector('.lb-next').addEventListener('click', (e) => { e.stopPropagation(); show(idx + 1); });
-  box.querySelector('.lb-prev').addEventListener('click', (e) => { e.stopPropagation(); show(idx - 1); });
-  box.addEventListener('click', (e) => { if (e.target === box) close(); });
-  
-  document.addEventListener('keydown', (e) => {
-    if (!box.classList.contains('open')) return;
-    if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight') show(idx + 1);
-    if (e.key === 'ArrowLeft') show(idx - 1);
-  });
-});
-</script>
+<script src="scripts/catalog.js?v=6"></script>
 </body>
 </html>
