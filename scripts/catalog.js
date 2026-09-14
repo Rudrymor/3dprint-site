@@ -152,7 +152,51 @@ function renderCatalog(items) {
   });
 }
 
+// ─── ВЫБОРКА ПО КАТЕГОРИИ ИЗ URL ───
+// works.html?cat=techno — инженерные детали, works.html?cat=decor — фигурки
+// Без параметра показывается весь каталог.
+var CATEGORY_META = {
+  techno: {
+    title: "Инженерные и функциональные детали",
+    sub: "Проектирование 3D модели по чертежу, эскизу или оригиналу для последующей 3D печати",
+    label: "работ в этой подборке"
+  },
+  decor: {
+    title: "Авторские 3D фигурки",
+    sub: "Лимитированная коллекция",
+    label: "работ в этой подборке"
+  }
+};
+
+var CATALOG_VIEW = (function () {
+  var cat = new URLSearchParams(location.search).get("cat");
+  if (cat && CATEGORY_META[cat]) {
+    return {
+      cat: cat,
+      items: CATALOG_DATA.filter(function (i) { return i.category === cat; }),
+      meta: CATEGORY_META[cat]
+    };
+  }
+  return { cat: "", items: CATALOG_DATA, meta: null };
+})();
+
 // ─── ЗАПУСК ───
 if (document.getElementById("catalog-root")) {
-  renderCatalog(CATALOG_DATA);
+  renderCatalog(CATALOG_VIEW.items);
+
+  // Счётчик работ — всегда по текущей выборке
+  var countEl = document.getElementById("work-count");
+  if (countEl) countEl.textContent = CATALOG_VIEW.items.length;
+
+  var labelEl = document.getElementById("work-count-label");
+  if (labelEl && CATALOG_VIEW.meta) labelEl.textContent = CATALOG_VIEW.meta.label;
+
+  // Заголовок страницы под выбранную категорию
+  if (CATALOG_VIEW.meta) {
+    var titleEl = document.getElementById("works-title");
+    var subEl = document.getElementById("works-sub");
+    if (titleEl) titleEl.textContent = CATALOG_VIEW.meta.title;
+    if (subEl) subEl.textContent = CATALOG_VIEW.meta.sub;
+    document.title = CATALOG_VIEW.meta.title + " — 3DArtStudio";
+  }
 }

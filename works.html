@@ -26,8 +26,8 @@
 <!-- HERO -->
 <section class="page-hero">
   <div class="container">
-    <h1>Мои работы</h1>
-    <p>Здесь собраны работы, которые уже помогли клиентам</p>
+    <h1 id="works-title">Мои работы</h1>
+    <p id="works-sub">Здесь собраны работы, которые уже помогли клиентам</p>
   </div>
 </section>
 
@@ -36,7 +36,7 @@
   <div class="container">
     <div class="counter">
       <div class="counter-num" id="work-count">10</div>
-      <div class="counter-label">работ в каталоге</div>
+      <div class="counter-label" id="work-count-label">работ в каталоге</div>
     </div>
   </div>
 </section>
@@ -83,12 +83,6 @@
 <script>
 // ─── ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ───
 document.addEventListener('DOMContentLoaded', () => {
-  // Обновление счётчика работ
-  const countEl = document.getElementById('work-count');
-  if (countEl && typeof CATALOG_DATA !== 'undefined') {
-    countEl.textContent = CATALOG_DATA.length;
-  }
-
   // ─── ЛАЙТБОКС ───
   const imgs = Array.from(document.querySelectorAll('.catalog-card-img img'));
   if (!imgs.length) return;

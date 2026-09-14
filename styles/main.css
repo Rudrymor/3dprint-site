@@ -12,7 +12,9 @@ img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 
 /* ── NAV ── */
-nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100;border-bottom:1px solid rgba(255,255,255,.04)}
+nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-filter:blur(20px);z-index:100}
+/* тонкая полоска — отделяет закреплённую навигацию от содержимого страницы */
+nav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(139,92,246,.5) 25%,rgba(6,182,212,.5) 75%,transparent 100%)}
 .nav-inner{display:flex;justify-content:space-between;align-items:center;position:relative}
 .nav-inner .logo{flex-shrink:0}
 .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:48px}
@@ -33,22 +35,21 @@ nav{padding:20px 0;position:sticky;top:0;background:rgba(9,9,11,.85);backdrop-fi
 .hero-bg-orbs::after{content:"";position:absolute;width:400px;height:400px;bottom:-100px;left:-50px;background:radial-gradient(circle,rgba(139,92,246,.2) 0%,transparent 70%);border-radius:50%;filter:blur(40px);animation:float2 10s ease-in-out infinite}
 @keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,40px)}}
 @keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-50px)}}
-.hero-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:40px}
+.hero-inner{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:40px}
 .hero-content{flex:1;text-align:center}
 .hero-badge{display:inline-flex;align-items:center;gap:10px;padding:10px 24px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:100px;font-size:15px;color:#22c55e;font-weight:600;margin-bottom:28px}
 .hero-badge .dot{width:10px;height:10px;background:#22c55e;border-radius:50%;animation:blink 1.5s infinite;box-shadow:0 0 8px rgba(34,197,94,.5)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hero h1{font-size:clamp(42px,6vw,68px);font-weight:800;line-height:1.05;letter-spacing:-2.5px;margin-bottom:20px;background:linear-gradient(135deg,#ff6b35,#ff3e6c,#ffd60a,#ff6b35);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:h1Shift 5s ease infinite}
 @keyframes h1Shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.hero h1 .gradient{background:none;-webkit-text-fill-color:inherit;color:inherit}
-.hero-sub{font-size:18px;color:#71717a;line-height:1.7;margin:0 auto 40px;max-width:600px}
-.hero-sub-gradient{font-size:24px;font-weight:600;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4,#ffd60a);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:logoShift 4s ease infinite}
+.hero-services{list-style:none;display:flex;flex-direction:column;margin:0 auto 40px;padding:0}
+.hero-svc-main{display:block;font-size:clamp(36px,5vw,62px);font-weight:800;line-height:1.12;letter-spacing:-2px;color:#ff6b35}
+.hero-svc-sub{display:block;font-size:clamp(18px,2.2vw,25px);font-weight:600;line-height:1.6;color:#ffd60a}
 .hero-buttons{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
 .btn-hero{padding:18px 36px;border-radius:14px;font-size:18px;font-weight:700;transition:all .25s;white-space:nowrap;background:linear-gradient(135deg,#ffd60a,#adff2f,#8b5cf6,#06b6d4);background-size:300% 300%;color:#09090b;border:none;animation:logoShift 4s ease infinite}
 .btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.3);background-size:400% 400%}
 
 /* ── HERO PRINTER ── */
-.hero-printer{flex:0 0 280px;position:relative}
+.hero-printer{position:absolute;left:0;top:0;width:220px}
 .printer-svg{width:100%;height:auto;filter:drop-shadow(0 0 30px rgba(139,92,246,.25))}
 
 /* Print head sliding */
@@ -104,10 +105,12 @@ section{padding:100px 0}
 .section-title{text-align:center;font-size:clamp(36px,4.5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px}
 .section-title .gradient{background:linear-gradient(135deg,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .section-sub{text-align:center;font-size:18px;color:#a1a1aa;max-width:600px;margin:0 auto 48px}
+/* тонкая полоска — разграничивает смежные секции */
+.section-divider{height:1px;background:linear-gradient(90deg,transparent 0%,rgba(139,92,246,.5) 25%,rgba(6,182,212,.5) 75%,transparent 100%)}
 
 /* ── SERVICES ── */
 .svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
-.svc{padding:48px 36px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;transition:all .3s;position:relative;overflow:hidden}
+.svc{display:block;padding:48px 36px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;transition:all .3s;position:relative;overflow:hidden}
 .svc::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,#06b6d4,#8b5cf6);opacity:0;transition:opacity .3s}
 .svc:hover{border-color:rgba(139,92,246,.3);transform:translateY(-4px);box-shadow:0 12px 32px rgba(139,92,246,.1)}
 .svc:hover::before{opacity:1}
@@ -120,7 +123,7 @@ section{padding:100px 0}
 .svc p{font-size:16px;color:#a1a1aa;line-height:1.7}
 
 /* ── PROCESS ── */
-.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.process-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
 .process-step{padding:40px 28px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:24px;transition:all .3s;text-align:center}
 .process-step:hover{border-color:rgba(139,92,246,.3);transform:translateY(-4px)}
 .process-step .num{width:64px;height:64px;background:linear-gradient(135deg,rgba(6,182,212,.15),rgba(139,92,246,.15));border:1px solid rgba(139,92,246,.2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#a78bfa;margin:0 auto 24px}
@@ -292,6 +295,10 @@ footer p{font-size:13px;color:#71717a}
 .footer-center{text-align:center}
 
 /* ── RESPONSIVE ── */
+@media(max-width:1200px){
+  .hero-inner{flex-direction:column;gap:24px}
+  .hero-printer{position:static;order:-1;width:180px}
+}
 @media(max-width:1024px){
   .process-grid{grid-template-columns:repeat(2,1fr)}
   .svc-grid{grid-template-columns:1fr}
@@ -300,7 +307,7 @@ footer p{font-size:13px;color:#71717a}
   .container,.order-container{padding:0 20px}
   .hero{padding:60px 0 60px}
   .hero-inner{flex-direction:column;gap:24px}
-  .hero-printer{flex:0 0 auto;width:200px}
+  .hero-printer{position:static;order:-1;width:160px}
   .hero-content{text-align:center}
   section{padding:70px 0}
   .process-grid{grid-template-columns:1fr}
