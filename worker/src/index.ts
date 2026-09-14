@@ -3,7 +3,6 @@ interface Env {
   CHAT_ID: string;
   CATALOG_KV: KVNamespace;
 }
-
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
@@ -20,6 +19,17 @@ function json(data: unknown, status: number, extraHeaders: Record<string, string
     status,
     headers: { ...CORS_GET, 'Content-Type': 'application/json', ...extraHeaders },
   });
+}
+
+// ── Order counter (KV) ──
+const COUNTER_KEY = 'order_counter';
+
+async function getNextOrderNumber(env: Env): Promise<number> {
+  const raw = await env.CATALOG_KV.get(COUNTER_KEY);
+  const current = raw ? parseInt(raw, 10) || 0 : 0;
+  const next = current + 1;
+  await env.CATALOG_KV.put(COUNTER_KEY, String(next));
+  return next;
 }
 
 // ── Telegram ──
@@ -49,7 +59,6 @@ async function getCatalog(env: Env): Promise<Response> {
 }
 
 async function postCatalog(request: Request, env: Env): Promise<Response> {
-  // Принимает JSON { items: [...] } или { action: "add", item: {...} }
   const body = (await request.json()) as {
     items?: CatalogItem[];
     action?: string;
@@ -57,14 +66,12 @@ async function postCatalog(request: Request, env: Env): Promise<Response> {
   };
 
   if (body.items && Array.isArray(body.items)) {
-    // Полная замена каталога
     const data = { items: body.items, updated: new Date().toISOString() };
     await env.CATALOG_KV.put(CATALOG_KEY, JSON.stringify(data));
     return json({ ok: true, count: body.items.length }, 200);
   }
 
   if (body.action === 'add' && body.item) {
-    // Добавление одной работы
     const raw = await env.CATALOG_KV.get(CATALOG_KEY);
     const data = raw ? JSON.parse(raw) : { items: [], updated: null };
     const items: CatalogItem[] = data.items || [];
@@ -80,7 +87,7 @@ async function postCatalog(request: Request, env: Env): Promise<Response> {
   return json({ error: 'Provide items array or {action:"add", item:{...}}' }, 400);
 }
 
-// ── Telegram proxy (existing) ──
+// ── Telegram proxy ──
 async function handleTelegramProxy(request: Request, env: Env): Promise<Response> {
   try {
     const contentType = request.headers.get('content-type') || '';
@@ -89,8 +96,15 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
     if (!contentType.includes('multipart/form-data')) {
       const body = (await request.json()) as { text?: string };
       if (!body.text) return json({ error: 'text required' }, 400);
-      const res = await sendMessage(env, String(body.text).substring(0, 4000));
-      return json(res, res.ok ? 200 : 400);
+
+      // Increment order counter and prepend number to message
+      const orderNum = await getNextOrderNumber(env);
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const fullText = '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + String(body.text).substring(0, 4000);
+
+      const res = await sendMessage(env, fullText);
+      return json({ ok: res.ok, order: orderNum, description: res.description }, res.ok ? 200 : 400);
     }
 
     // multipart/form-data
@@ -103,9 +117,15 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
       return json({ error: 'Файлы слишком большие' }, 413);
     }
 
-    if (text) {
-      const res = await sendMessage(env, text);
-      if (!res.ok) return json(res, 400);
+    // Increment order counter and prepend number to message
+    const orderNum = await getNextOrderNumber(env);
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const fullText = '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + text;
+
+    if (fullText) {
+      const res = await sendMessage(env, fullText);
+      if (!res.ok) return json({ ok: false, order: orderNum, description: res.description }, 400);
     }
 
     let sent = 0;
@@ -118,7 +138,7 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
       if (!d.ok) return json({ ok: false, sent, error: d.description }, 400);
       sent++;
     }
-    return json({ ok: true, files: sent }, 200);
+    return json({ ok: true, order: orderNum, files: sent }, 200);
   } catch {
     return json({ error: 'Internal error' }, 500);
   }
@@ -130,7 +150,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS_GET });
     }
@@ -142,7 +161,7 @@ export default {
       return json({ error: 'Method not allowed' }, 405);
     }
 
-    // Telegram proxy — POST only (existing)
+    // Telegram proxy — POST only
     if (request.method === 'POST') {
       return handleTelegramProxy(request, env);
     }

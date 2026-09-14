@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return fetch(WORKER_URL, { method: 'POST', body: payload }).then(function(res) {
       if (res.ok || !files.length) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return true;
+        return res.json();
       }
       console.warn('Вложения не приняты сервером (HTTP ' + res.status + '), повторяю текстом');
       return fetch(WORKER_URL, {
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         body: JSON.stringify({ text: message + '\n\n⚠️ Вложения не удалось отправить автоматически — попросите прислать файлы в ответ на это сообщение.' })
       }).then(function(res2) {
         if (!res2.ok) throw new Error('HTTP ' + res2.status);
-        return true;
+        return res2.json();
       });
     });
   }
@@ -322,15 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Формируем сообщение для Telegram
-    var orderNum = parseInt(localStorage.getItem('3dprint_order_count') || '0', 10) + 1;
-    localStorage.setItem('3dprint_order_count', String(orderNum));
-    var nowDate = new Date();
-    var dateStr = nowDate.toLocaleDateString('ru-RU') + ' ' + nowDate.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-
     const message = [
-      '🆕 Заявка #' + orderNum,
-      '📅 ' + dateStr,
-      '',
       '👤 Имя: ' + data.name,
       '📱 Контакт: ' + data.contact,
       '📦 Материал: ' + (data.material || 'Не указан'),
@@ -341,10 +333,12 @@ document.addEventListener('DOMContentLoaded', function() {
     ].join('\n');
 
     sendOrder(message, attachments())
-      .then(function() {
+      .then(function(result) {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');
         form.style.display = 'none';
+        var orderNum = result && result.order ? result.order : '?';
+        success.querySelector('h2').textContent = 'Заявка #' + orderNum + ' отправлена!';
         success.classList.add('show');
       })
       .catch(function(err) {
