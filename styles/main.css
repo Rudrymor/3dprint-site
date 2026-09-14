@@ -316,12 +316,13 @@ body.lb-open{overflow:hidden}
   .mat-tip{display:inline-flex}
   .mat-tip-header{display:table-cell !important;font-size:14px;text-align:center;width:36px;padding:10px 4px !important}
   .mat-table{min-width:0 !important;table-layout:fixed;width:100%}
+  .mat-table th{letter-spacing:0 !important;text-transform:none !important;font-size:13px}
   .mat-table th,.mat-table td{padding:10px 6px;font-size:13px;white-space:nowrap}
   .mat-scroll{overflow-x:visible}
   .materials{padding:16px}
   .mat-table td:first-child{width:35%}
   .mat-table td:nth-child(2),.mat-table th:nth-child(2){width:40%;text-align:center}
-  .mat-table th:nth-child(1),.mat-table th:nth-child(2){font-size:13px;letter-spacing:0}
+  .mat-table td:nth-child(3),.mat-table th:nth-child(3){width:0 !important;padding:0 !important;visibility:hidden}
   .mat-tip{position:static}
   .mat-tip-text{display:none;position:fixed;left:16px;right:16px;bottom:24px;top:auto;transform:none;background:#18181b;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;font-size:14px;color:#e4e4e7;white-space:normal;word-wrap:break-word;z-index:9999;max-width:none;line-height:1.5;box-shadow:0 8px 32px rgba(0,0,0,.6)}
   .mat-tip-text::after{display:none}
