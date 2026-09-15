@@ -77,6 +77,11 @@
             <input type="text" name="quantity" placeholder="1 шт." value="1 шт.">
           </div>
         </div>
+        <!-- Honeypot — invisible to users, bots fill it -->
+        <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" name="honeypot" id="website" tabindex="-1" autocomplete="off">
+        </div>
         <button type="submit" class="btn-submit">Отправить заявку</button>
         <p class="form-note">Без предоплаты</p>
       </form>
@@ -264,6 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   window.getAttachedFiles = function() { return files; };
+  window.clearAttachments = function() { files = []; input.value = ''; render(); };
   render();
 });
 </script>
@@ -282,27 +288,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
+  var isSubmitting = false;
 
   // Отправка заявки: текст + файлы (multipart). Токен бота скрыт на сервере.
-  // Если сервер не принял вложения — заявка всё равно уходит текстом, файлы клиент пришлёт ответом.
-  function sendOrder(message, files) {
+  function sendOrder(message, files, honeypot) {
     var payload = new FormData();
     payload.append('text', message);
+    if (honeypot) payload.append('honeypot', honeypot);
     files.forEach(function(f) { payload.append('files', f, f.name); });
 
-    return fetch(WORKER_URL, { method: 'POST', body: payload }).then(function(res) {
-      if (res.ok || !files.length) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }
-      console.warn('Вложения не приняты сервером (HTTP ' + res.status + '), повторяю текстом');
-      return fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: message + '\n\n⚠️ Вложения не удалось отправить автоматически — попросите прислать файлы в ответ на это сообщение.' })
-      }).then(function(res2) {
-        if (!res2.ok) throw new Error('HTTP ' + res2.status);
-        return res2.json();
+    return fetch(WORKER_URL + '/api/order', { method: 'POST', body: payload }).then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok || data.ok !== true) {
+          throw new Error(data.error || 'HTTP ' + res.status);
+        }
+        return data;
       });
     });
   }
@@ -310,16 +310,41 @@ document.addEventListener('DOMContentLoaded', function() {
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     
+    // Prevent double submit
+    if (isSubmitting) return;
+    
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
+    
+    // Honeypot check — if filled, silently pretend success
+    if (data.honeypot) {
+      header.classList.add('hidden');
+      form.style.display = 'none';
+      success.classList.add('show');
+      setTimeout(function() {
+        success.classList.remove('show');
+        header.classList.remove('hidden');
+        form.style.display = '';
+        form.reset();
+      }, 3000);
+      return;
+    }
     
     // Rate-limit: не чаще 1 заявки в 2 минуты
     var lastOrder = parseInt(localStorage.getItem('3dprint_last_order') || '0', 10);
     var now = Date.now();
     if (now - lastOrder < 120000) {
-      alert('Подождите минуту перед следующей заявкой.');
+      alert('Подождите 2 минуты перед следующей заявкой.');
       return;
     }
+    
+    // Lock form
+    isSubmitting = true;
+    var submitBtn = form.querySelector('.btn-submit');
+    var originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Отправляем…';
+    submitBtn.disabled = true;
+    submitBtn.setAttribute('aria-busy', 'true');
 
     // Формируем сообщение для Telegram
     const message = [
@@ -332,12 +357,14 @@ document.addEventListener('DOMContentLoaded', function() {
       '📎 Файлы: ' + (attachments().length ? attachments().map(function(f) { return f.name; }).join(', ') : 'нет')
     ].join('\n');
 
-    sendOrder(message, attachments())
+    sendOrder(message, attachments(), data.honeypot || '')
       .then(function(result) {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');
         form.style.display = 'none';
         success.classList.add('show');
+        // Clear attachments
+        if (window.clearAttachments) window.clearAttachments();
         setTimeout(function() {
           success.classList.remove('show');
           header.classList.remove('hidden');
@@ -348,6 +375,12 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(function(err) {
         console.error('Ошибка отправки:', err);
         alert('Ошибка отправки. Попробуйте ещё раз или свяжитесь через ВКонтакте.');
+      })
+      .finally(function() {
+        isSubmitting = false;
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
       });
   });
 });

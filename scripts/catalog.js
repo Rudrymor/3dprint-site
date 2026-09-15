@@ -20,6 +20,18 @@ var CATEGORY_META = {
   }
 };
 
+// ─── ВАЛИДАЦИЯ URL ИЗОБРАЖЕНИЯ ───
+// Дублирует серверную проверку для defense-in-depth
+function isSafeImageUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (/^(https?:|javascript:|data:|\/\/)/i.test(url)) return false;
+  if (!url.startsWith('images/')) return false;
+  if (url.includes('..')) return false;
+  if (url.length > 200) return false;
+  if (!/^images\/[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)) return false;
+  return true;
+}
+
 // ─── ОТРИСОВКА КАТАЛОГА ───
 function renderCatalog(items) {
   var root = document.getElementById("catalog-root");
@@ -41,16 +53,46 @@ function renderCatalog(items) {
     var card = document.createElement("div");
     card.className = "catalog-card";
 
-    var imgHtml = img
-      ? '<img src="' + img + '" alt="' + name + '" loading="lazy">'
-      : '<span style="font-size:40px;opacity:.3">🖨️</span>';
+    var imgContainer = document.createElement("div");
+    imgContainer.className = "catalog-card-img";
 
-    card.innerHTML =
-      '<div class="catalog-card-img">' + imgHtml + '</div>' +
-      '<div class="catalog-card-body">' +
-      '<h3 class="catalog-card-title">' + name + '</h3>' +
-      '<p class="catalog-card-desc">' + desc + '</p>' +
-      '</div>';
+    if (img && isSafeImageUrl(img)) {
+      var imgEl = document.createElement("img");
+      imgEl.src = img;
+      imgEl.alt = name;
+      imgEl.loading = "lazy";
+      imgContainer.appendChild(imgEl);
+    } else if (img && !isSafeImageUrl(img)) {
+      // Blocked potentially malicious URL
+      console.warn("Catalog: blocked unsafe image URL:", img);
+      var placeholder = document.createElement("span");
+      placeholder.style.fontSize = "40px";
+      placeholder.style.opacity = ".3";
+      placeholder.textContent = "🖨️";
+      imgContainer.appendChild(placeholder);
+    } else {
+      var placeholder = document.createElement("span");
+      placeholder.style.fontSize = "40px";
+      placeholder.style.opacity = ".3";
+      placeholder.textContent = "🖨️";
+      imgContainer.appendChild(placeholder);
+    }
+
+    var body = document.createElement("div");
+    body.className = "catalog-card-body";
+
+    var title = document.createElement("h3");
+    title.className = "catalog-card-title";
+    title.textContent = item.name || "";
+
+    var descEl = document.createElement("p");
+    descEl.className = "catalog-card-desc";
+    descEl.textContent = item.description || "";
+
+    body.appendChild(title);
+    body.appendChild(descEl);
+    card.appendChild(imgContainer);
+    card.appendChild(body);
     root.appendChild(card);
   });
 }

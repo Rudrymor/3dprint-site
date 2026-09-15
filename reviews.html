@@ -275,6 +275,11 @@
         <label>Отзыв</label>
         <textarea name="text" placeholder="Что понравилось?" required></textarea>
       </div>
+      <!-- Honeypot — invisible to users, bots fill it -->
+      <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+        <label for="review-website">Website</label>
+        <input type="text" name="honeypot" id="review-website" tabindex="-1" autocomplete="off">
+      </div>
       <button type="submit" class="btn-submit">Отправить</button>
     </form>
     <div class="form-success" id="review-success" style="display:none;text-align:center;padding:20px 0">
@@ -360,17 +365,22 @@ document.addEventListener('DOMContentLoaded', function() {
       localStorage.setItem('3dprint_reviews', JSON.stringify(stored));
 
       // Отправить отзыв в Telegram через Worker
-      var tgMsg = [
-        '⭐ Новый отзыв',
-        '',
-        '👤 Имя: ' + review.name,
-        '⭐ Оценка: ' + review.stars + '/5',
-        '💬 Текст: ' + review.text
-      ].join('\n');
-      fetch('https://tg-proxy.metalkor91.workers.dev', {
+      var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
+      fetch(WORKER_URL + '/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: tgMsg })
+        body: JSON.stringify({
+          name: review.name,
+          text: review.text,
+          rating: review.stars,
+          honeypot: data.honeypot || ''
+        })
+      }).then(function(res) {
+        return res.json();
+      }).then(function(result) {
+        if (!result || result.ok !== true) {
+          console.error('Review rejected:', result);
+        }
       }).catch(function(err) { console.error('Telegram error:', err); });
 
       // Add to list immediately
