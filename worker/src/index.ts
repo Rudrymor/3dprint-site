@@ -1,3 +1,14 @@
+import {
+  Limits,
+  isRequestIdValid,
+  normalizeText,
+  validateReview,
+  validateFiles,
+  tooManyFields,
+  isSafeImageUrl,
+  validateCatalogPayload,
+} from './validators';
+
 interface Env {
   BOT_TOKEN: string;
   CHAT_ID: string;
@@ -5,22 +16,6 @@ interface Env {
   /** Set to enable Turnstile verification. When absent, Turnstile is skipped (graceful degradation). */
   TURNSTILE_SECRET?: string;
 }
-
-// ── Limits ──
-const MAX_FILES = 5;
-const MAX_FILE_SIZE = 15 * 1024 * 1024;  // 15 МБ на файл
-const MAX_TOTAL_SIZE = 40 * 1024 * 1024;  // 40 МБ на всю заявку
-const IDEMPOTENCY_TTL = 86400; // 24 hours in seconds
-const MAX_JSON_BODY = 1024 * 1024; // 1 МБ max JSON body
-const MAX_MULTIPART_BODY = 50 * 1024 * 1024; // 50 МБ max multipart (with overhead)
-const MAX_FIELD_LEN = 10000; // max length for text fields
-
-// ── Allowed origins (supplementary layer, NOT auth) ──
-const ALLOWED_ORIGINS = [
-  'https://rudrymor.github.io',
-  'http://localhost:8080',
-  'http://127.0.0.1:8080',
-];
 
 // ── CORS ──
 const CORS_HEADERS: Record<string, string> = {
@@ -53,7 +48,7 @@ function json(data: unknown, status: number, extraHeaders: Record<string, string
  * Safely parse a JSON body. Returns the parsed object or an error response.
  * Rejects non-objects (null, arrays, strings, numbers).
  */
-async function parseJsonObject(request: Request, maxBytes: number = MAX_JSON_BODY): Promise<
+async function parseJsonObject(request: Request, maxBytes: number = Limits.maxJsonBytes): Promise<
   | { ok: true; body: Record<string, unknown> }
   | { ok: false; response: Response }
 > {
@@ -75,6 +70,13 @@ async function parseJsonObject(request: Request, maxBytes: number = MAX_JSON_BOD
 
   return { ok: true, body: raw as Record<string, unknown> };
 }
+
+// ── Allowed origins (supplementary layer, NOT auth) ──
+const ALLOWED_ORIGINS = [
+  'https://rudrymor.github.io',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
+];
 
 /** Check if Origin header matches allowed list. Returns null if OK, or error Response. */
 function checkOrigin(request: Request): Response | null {
@@ -168,6 +170,9 @@ function getNextOrderNumber(): string {
 }
 
 // ── Idempotency ──
+// ПРИМЕЧАНИЕ (Этап 3): текущая схема check→send→put неатомарна. Полная атомарность —
+// через Durable Object в этапе 3. Здесь request_id уже обязательный (валидируется ниже),
+// а повтор с тем же ID возвращает сохранённый результат.
 async function checkIdempotency(env: Env, requestId: string): Promise<{ exists: boolean; result?: Record<string, unknown> }> {
   const raw = await env.CATALOG_KV.get(`idem:${requestId}`, 'json');
   if (!raw) return { exists: false };
@@ -176,42 +181,53 @@ async function checkIdempotency(env: Env, requestId: string): Promise<{ exists: 
 
 async function storeIdempotency(env: Env, requestId: string, result: Record<string, unknown>): Promise<void> {
   try {
-    await env.CATALOG_KV.put(`idem:${requestId}`, JSON.stringify(result), { expirationTtl: IDEMPOTENCY_TTL });
+    await env.CATALOG_KV.put(`idem:${requestId}`, JSON.stringify(result), { expirationTtl: Limits.idempotencyTtl });
   } catch (err) {
     log('warn', 'KV write failed for idempotency', { requestId, error: String(err) });
   }
 }
 
 // ── Telegram ──
-async function sendMessage(env: Env, text: string): Promise<{ ok: boolean; description?: string }> {
+type TelegramResult = { ok: boolean; description?: string };
+
+async function sendMessage(env: Env, text: string): Promise<TelegramResult> {
   const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: env.CHAT_ID, text }),
   });
-  return (await res.json()) as { ok: boolean; description?: string };
+  return (await res.json()) as TelegramResult;
 }
 
-async function sendDocument(env: Env, file: File): Promise<{ ok: boolean; description?: string }> {
+type SendDocumentResult =
+  | { ok: true }
+  | { ok: false; description?: string }
+  | { ok: false; error: string; kind: 'network' | 'parse' };
+
+async function sendDocument(env: Env, file: File, name: string): Promise<SendDocumentResult> {
   const fd = new FormData();
   fd.append('chat_id', env.CHAT_ID);
-  fd.append('document', file, file.name || 'file');
-  const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
-  return (await res.json()) as { ok: boolean; description?: string };
+  fd.append('document', file, name || 'file');
+  let res: Response;
+  try {
+    res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
+  } catch (err) {
+    return { ok: false, error: String(err), kind: 'network' };
+  }
+  if (!res.ok) {
+    return { ok: false, description: `HTTP ${res.status}` };
+  }
+  let data: { ok?: boolean; description?: string } = {};
+  try {
+    data = (await res.json()) as { ok?: boolean; description?: string };
+  } catch (err) {
+    return { ok: false, error: String(err), kind: 'parse' };
+  }
+  return { ok: data.ok === true, description: data.description };
 }
 
 // ── Catalog API ──
 const CATALOG_KEY = 'catalog';
-
-function isSafeImageUrl(url: string): boolean {
-  if (!url || typeof url !== 'string') return false;
-  if (/^(https?:|javascript:|data:|\/\/)/i.test(url)) return false;
-  if (!url.startsWith('images/')) return false;
-  if (url.includes('..')) return false;
-  if (url.length > 200) return false;
-  if (!/^images\/[a-zA-Z0-9_\-./]+\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)) return false;
-  return true;
-}
 
 async function getCatalog(env: Env): Promise<Response> {
   const raw = await env.CATALOG_KV.get(CATALOG_KEY);
@@ -220,10 +236,33 @@ async function getCatalog(env: Env): Promise<Response> {
   }
   try {
     const data = JSON.parse(raw);
-    return json(data, 200, { 'Cache-Control': 'public, max-age=60' });
+    const v = validateCatalogPayload(data);
+    if (!v.ok) {
+      log('error', 'catalog validation failed', { error: v.error });
+      return json({ error: 'Invalid catalog data' }, 500);
+    }
+    return json({ items: v.items }, 200, { 'Cache-Control': 'public, max-age=60' });
   } catch {
+    log('error', 'catalog JSON parse failed');
     return json({ error: 'Invalid KV data' }, 500);
   }
+}
+
+// ── Shared: обязательный request_id ──
+/** Возвращает нормализованный request_id или ошибку-Response. */
+function validateRequestIdResponse(value: unknown): { ok: true; id: string } | { ok: false; response: Response } {
+  if (!isRequestIdValid(value)) {
+    return { ok: false, response: json({ error: 'request_id is required and must be a valid UUID v4' }, 400) };
+  }
+  // isRequestIdValid гарантирует string
+  return { ok: true, id: value as string };
+}
+
+/**
+ * Общий путь для honeypot: true → «тихий» успех (не раскрываем боту, что поймали).
+ */
+function isHoneypot(v: unknown): boolean {
+  return !!(v && String(v).trim());
 }
 
 // ── Order handler ──
@@ -250,25 +289,23 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     if (tsErr) return tsErr;
 
     // Honeypot
-    if (body.honeypot) {
+    if (isHoneypot(body.honeypot)) {
       log('info', 'order: honeypot triggered', { requestId });
       return json({ ok: true, silent: true }, 200);
     }
 
-    const text = String(body.text || '').substring(0, MAX_FIELD_LEN);
-    if (text.trim().length < 10) {
-      return json({ error: 'Text too short (min 10 characters)' }, 400);
+    // request_id — обязательный UUID v4
+    const rid = validateRequestIdResponse(body.request_id);
+    if (!rid.ok) return rid.response;
+
+    const text = normalizeText(body.text);
+    if (text.length < Limits.textMin) {
+      return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
     }
 
     // Idempotency
-    const idemKey = String(body.request_id || '');
-    if (idemKey) {
-      if (idemKey.length > 200) {
-        return json({ error: 'request_id too long' }, 400);
-      }
-      const idem = await checkIdempotency(env, idemKey);
-      if (idem.exists) return json(idem.result!, 200);
-    }
+    const idem = await checkIdempotency(env, rid.id);
+    if (idem.exists) return json(idem.result!, 200);
 
     const orderNum = getNextOrderNumber();
     const now = new Date();
@@ -278,7 +315,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     const res = await sendMessage(env, fullText);
     const result = { ok: res.ok, order: orderNum, description: res.description };
 
-    if (idemKey) await storeIdempotency(env, idemKey, result);
+    await storeIdempotency(env, rid.id, result);
     log(res.ok ? 'info' : 'error', 'order: telegram result', { requestId, order: orderNum, ok: res.ok });
     return json(result, res.ok ? 200 : 502);
   }
@@ -286,11 +323,16 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   // ── Multipart path (with files) ──
   // Check Content-Length before formData() to prevent oversized multipart.
   const cl = request.headers.get('content-length');
-  if (cl && parseInt(cl, 10) > MAX_MULTIPART_BODY) {
+  if (cl && parseInt(cl, 10) > Limits.maxMultipartBytes) {
     return json({ error: 'Request body too large' }, 413);
   }
 
   const form = await request.formData();
+
+  // Limit number of fields (SEC-04) — защита от абуза служебными полями.
+  if (tooManyFields([...form.keys()].length)) {
+    return json({ error: 'Too many fields' }, 413);
+  }
 
   // Turnstile
   const tsErr = await enforceTurnstile(request, env, form.get('cf-turnstile-response'));
@@ -298,47 +340,29 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
 
   // Honeypot
   const honeypot = form.get('honeypot');
-  if (honeypot) {
+  if (isHoneypot(honeypot)) {
     log('info', 'order: honeypot triggered (multipart)', { requestId });
     return json({ ok: true, silent: true }, 200);
   }
 
-  const text = String(form.get('text') || '').substring(0, MAX_FIELD_LEN);
-  if (text.trim().length < 10) {
-    return json({ error: 'Text too short (min 10 characters)' }, 400);
+  // request_id — обязательный UUID v4
+  const rid = validateRequestIdResponse(form.get('request_id'));
+  if (!rid.ok) return rid.response;
+
+  const text = normalizeText(form.get('text'));
+  if (text.length < Limits.textMin) {
+    return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
   }
 
-  // Idempotency
-  const idemKey = String(form.get('request_id') || '');
-  if (idemKey) {
-    if (idemKey.length > 200) {
-      return json({ error: 'request_id too long' }, 400);
-    }
-    const idem = await checkIdempotency(env, idemKey);
-    if (idem.exists) return json(idem.result!, 200);
-  }
+  // Idempotency (перед отправкой)
+  const idem = await checkIdempotency(env, rid.id);
+  if (idem.exists) return json(idem.result!, 200);
 
-  // Files validation
-  const files = form.getAll('files').filter((v): v is File => v instanceof File && v.size > 0);
-  if (files.length > MAX_FILES) return json({ error: `Too many files (max ${MAX_FILES})` }, 413);
-  if (files.some(f => f.size > MAX_FILE_SIZE) || files.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_SIZE) {
-    return json({ error: 'Files too large' }, 413);
-  }
-
-  // Validate file types
-  const ALLOWED_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-    'application/pdf', 'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/plain',
-  ];
-  for (const file of files) {
-    if (file.type && !ALLOWED_TYPES.includes(file.type)) {
-      return json({ error: `Disallowed file type: ${file.type}` }, 415);
-    }
-  }
+  // Files validation (расширение/MIME/размер/количество)
+  const files = form.getAll('files').filter((v): v is File => v instanceof File);
+  const filesV = validateFiles(files);
+  if (!filesV.ok) return json({ error: filesV.error }, filesV.status);
+  const fileList: File[] = files.filter(f => f.size > 0);
 
   const orderNum = getNextOrderNumber();
   const now = new Date();
@@ -348,29 +372,30 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   const msgRes = await sendMessage(env, fullText);
   if (!msgRes.ok) {
     const result = { ok: false, order: orderNum, description: msgRes.description };
-    if (idemKey) await storeIdempotency(env, idemKey, result);
+    await storeIdempotency(env, rid.id, result);
     log('error', 'order: telegram sendMessage failed', { requestId, order: orderNum, desc: msgRes.description });
     return json(result, 502);
   }
 
   let sent = 0;
-  for (const file of files) {
-    const docRes = await sendDocument(env, file);
+  for (let i = 0; i < fileList.length; i++) {
+    const name = filesV.fileNames[i].name;
+    const docRes = await sendDocument(env, fileList[i], name);
     if (!docRes.ok) {
       const result = {
         ok: false, status: 'partial', order: orderNum,
-        sent, total: files.length,
+        sent, total: fileList.length,
         message: 'Text sent but file delivery failed. Contact VK for file resend.',
       };
-      if (idemKey) await storeIdempotency(env, idemKey, result);
-      log('warn', 'order: partial file failure', { requestId, order: orderNum, sent, total: files.length });
+      await storeIdempotency(env, rid.id, result);
+      log('warn', 'order: partial file failure', { requestId, order: orderNum, sent, total: fileList.length });
       return json(result, 200);
     }
     sent++;
   }
 
   const result = { ok: true, status: 'success', order: orderNum, files: sent };
-  if (idemKey) await storeIdempotency(env, idemKey, result);
+  await storeIdempotency(env, rid.id, result);
   log('info', 'order: complete', { requestId, order: orderNum, files: sent });
   return json(result, 200);
 }
@@ -395,33 +420,31 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
   if (tsErr) return tsErr;
 
   // Honeypot
-  if (body.honeypot) {
+  if (isHoneypot(body.honeypot)) {
     log('info', 'review: honeypot triggered', { requestId });
     return json({ ok: true, silent: true }, 200);
   }
 
-  if (!body.text || !body.name) {
-    return json({ error: 'name and text required' }, 400);
-  }
+  // request_id — обязательный UUID v4
+  const rid = validateRequestIdResponse(body.request_id);
+  if (!rid.ok) return rid.response;
 
-  const name = String(body.name).substring(0, 100);
-  const text = String(body.text).substring(0, 2000);
-  const rating = Math.min(5, Math.max(1, Number(body.rating) || 5));
+  // Валидация содержимого отзыва
+  const v = validateReview(body);
+  if (!v.ok) return json({ error: v.error.message }, v.error.status);
 
-  if (name.trim().length < 2) {
-    return json({ error: 'Name too short' }, 400);
-  }
-  if (text.trim().length < 10) {
-    return json({ error: 'Review too short (min 10 characters)' }, 400);
-  }
+  const idem = await checkIdempotency(env, rid.id);
+  if (idem.exists) return json(idem.result!, 200);
 
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const stars = '⭐'.repeat(rating);
-  const fullText = `📝 Отзыв\n\n${esc(name)} (${stars})\n\n${esc(text)}`;
+  const stars = '⭐'.repeat(v.data.rating);
+  const fullText = `📝 Отзыв\n\n${esc(v.data.name)} (${stars})\n\n${esc(v.data.text)}`;
 
   const res = await sendMessage(env, fullText);
+  const result = { ok: res.ok, description: res.description };
+  await storeIdempotency(env, rid.id, result);
   log(res.ok ? 'info' : 'error', 'review: telegram result', { requestId, ok: res.ok });
-  return json({ ok: res.ok, description: res.description }, res.ok ? 200 : 502);
+  return json(result, res.ok ? 200 : 502);
 }
 
 // ── Router ──
@@ -457,15 +480,3 @@ export default {
     return json({ error: 'Not found' }, 404);
   },
 };
-
-interface CatalogItem {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  category: string;
-  material: string;
-  price_s: string;
-  price_m: string;
-  price_l: string;
-}

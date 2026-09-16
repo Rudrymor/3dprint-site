@@ -410,6 +410,13 @@ document.addEventListener('DOMContentLoaded', function() {
       // Отправить отзыв в Telegram через Worker (не публикуем на сайте)
       var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
       var tsToken = document.getElementById('review-turnstile-token') ? document.getElementById('review-turnstile-token').value : '';
+      // request_id — обязательный UUID v4 (единый контракт с Worker'ом)
+      var requestId = window.crypto && crypto.randomUUID ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0;
+            var v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
       fetch(WORKER_URL + '/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -417,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
           name: review.name,
           text: review.text,
           rating: review.stars,
+          request_id: requestId,
           honeypot: data.honeypot || '',
           'cf-turnstile-response': tsToken
         })
