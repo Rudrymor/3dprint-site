@@ -2,6 +2,8 @@ interface Env {
   BOT_TOKEN: string;
   CHAT_ID: string;
   CATALOG_KV: KVNamespace;
+  /** Set to enable Turnstile verification. When absent, Turnstile is skipped (graceful degradation). */
+  TURNSTILE_SECRET?: string;
 }
 
 // ── Limits ──
@@ -11,12 +13,10 @@ const MAX_TOTAL_SIZE = 40 * 1024 * 1024;  // 40 МБ на всю заявку
 const IDEMPOTENCY_TTL = 86400; // 24 hours in seconds
 const MAX_JSON_BODY = 1024 * 1024; // 1 МБ max JSON body
 const MAX_MULTIPART_BODY = 50 * 1024 * 1024; // 50 МБ max multipart (with overhead)
-const MAX_FIELDS = 20; // max additional multipart fields
 const MAX_FIELD_LEN = 10000; // max length for text fields
 
 // ── Allowed origins (supplementary layer, NOT auth) ──
 const ALLOWED_ORIGINS = [
-  'https://rudrymor.github.io',
   'https://rudrymor.github.io',
   'http://localhost:8080',
   'http://127.0.0.1:8080',
@@ -82,6 +82,79 @@ function checkOrigin(request: Request): Response | null {
   if (!origin) return null; // Allow non-browser clients (curl, server-to-server)
   if (ALLOWED_ORIGINS.some(o => origin.startsWith(o))) return null;
   return json({ error: 'Origin not allowed' }, 403);
+}
+
+function clientIp(request: Request): string {
+  return request.headers.get('CF-Connecting-IP') || 'unknown';
+}
+
+function sanitizeIp(ip: string): string {
+  const parts = ip.split('.');
+  if (parts.length === 4) return parts[0] + '.' + parts[1] + '.' + parts[2] + '.x';
+  return ip.length > 8 ? ip.slice(0, 8) + '…' : ip;
+}
+
+// ── Rate limit (KV-based, per-IP window) ──
+const RATE_WINDOW_SEC = 3600; // 1 hour
+const RATE_ORDER_MAX = 5;     // max orders per IP per hour
+const RATE_REVIEW_MAX = 3;    // max reviews per IP per hour
+const RATE_KV_TTL = RATE_WINDOW_SEC + 3600; // keep key for ~2h
+
+/**
+ * KV-based sliding-window rate limit. Returns null if under limit, or a 429 Response.
+ * Uses a per-IP hour-bucket key with a TTL. Not atomic (KV eventual consistency) but
+ * a reasonable abuse-control layer on top of the browser limits.
+ */
+async function enforceRateLimit(request: Request, env: Env, kind: 'order' | 'review'): Promise<Response | null> {
+  const ip = clientIp(request);
+  const bucket = Math.floor(Date.now() / (RATE_WINDOW_SEC * 1000));
+  const key = `rl:${kind}:${ip}:${bucket}`;
+  const max = kind === 'order' ? RATE_ORDER_MAX : RATE_REVIEW_MAX;
+
+  try {
+    const raw = await env.CATALOG_KV.get(key);
+    const count = raw ? parseInt(raw, 10) : 0;
+    if (count >= max) {
+      log('warn', 'rate-limit exceeded', { kind, ip: sanitizeIp(ip), bucket, count, max });
+      return json({ error: 'Слишком много запросов. Подождите час.' }, 429);
+    }
+    await env.CATALOG_KV.put(key, String(count + 1), { expirationTtl: RATE_KV_TTL });
+    return null;
+  } catch (err) {
+    // Never fail the request because rate limiting broke.
+    log('error', 'rate-limit KV error', { kind, error: String(err) });
+    return null;
+  }
+}
+
+// ── Turnstile (optional; skip when TURNSTILE_SECRET not set) ──
+async function enforceTurnstile(request: Request, env: Env, token?: unknown): Promise<Response | null> {
+  if (!env.TURNSTILE_SECRET) {
+    return null; // Not configured yet — graceful degradation.
+  }
+  const t = String(token || '').trim();
+  if (!t) {
+    return json({ error: 'Missing Turnstile token' }, 403);
+  }
+  try {
+    const form = new URLSearchParams();
+    form.set('secret', env.TURNSTILE_SECRET);
+    form.set('response', t);
+    form.set('remoteip', clientIp(request));
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+    });
+    const data = (await res.json()) as { success?: boolean; 'error-codes'?: string[] };
+    if (!data.success) {
+      log('warn', 'turnstile verification failed', { codes: data['error-codes'] });
+      return json({ error: 'Turnstile verification failed' }, 403);
+    }
+    return null;
+  } catch (err) {
+    log('error', 'turnstile siteverify error', { error: String(err) });
+    return json({ error: 'Turnstile service unavailable' }, 502);
+  }
 }
 
 // ── Order counter ──
@@ -161,13 +234,20 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   const originErr = checkOrigin(request);
   if (originErr) return originErr;
 
+  const rateErr = await enforceRateLimit(request, env, 'order');
+  if (rateErr) return rateErr;
+
   const contentType = request.headers.get('content-type') || '';
 
-  // ── JSON path ──
+  // ── JSON path (no files) ──
   if (!contentType.includes('multipart/form-data')) {
     const parsed = await parseJsonObject(request);
     if (!parsed.ok) return parsed.response;
     const body = parsed.body;
+
+    // Turnstile
+    const tsErr = await enforceTurnstile(request, env, body['cf-turnstile-response']);
+    if (tsErr) return tsErr;
 
     // Honeypot
     if (body.honeypot) {
@@ -203,14 +283,18 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     return json(result, res.ok ? 200 : 502);
   }
 
-  // ── Multipart path ──
-  // Check Content-Length before formData() to prevent oversized multipart
+  // ── Multipart path (with files) ──
+  // Check Content-Length before formData() to prevent oversized multipart.
   const cl = request.headers.get('content-length');
   if (cl && parseInt(cl, 10) > MAX_MULTIPART_BODY) {
     return json({ error: 'Request body too large' }, 413);
   }
 
   const form = await request.formData();
+
+  // Turnstile
+  const tsErr = await enforceTurnstile(request, env, form.get('cf-turnstile-response'));
+  if (tsErr) return tsErr;
 
   // Honeypot
   const honeypot = form.get('honeypot');
@@ -299,9 +383,16 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
   const originErr = checkOrigin(request);
   if (originErr) return originErr;
 
+  const rateErr = await enforceRateLimit(request, env, 'review');
+  if (rateErr) return rateErr;
+
   const parsed = await parseJsonObject(request);
   if (!parsed.ok) return parsed.response;
   const body = parsed.body;
+
+  // Turnstile
+  const tsErr = await enforceTurnstile(request, env, body['cf-turnstile-response']);
+  if (tsErr) return tsErr;
 
   // Honeypot
   if (body.honeypot) {
@@ -339,12 +430,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // Handle CORS preflight
+    // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS_HEADERS });
     }
-
-    // ── Known routes ──
 
     // GET /api/catalog — public read only
     if (path === '/api/catalog') {
@@ -364,7 +453,7 @@ export default {
       return json({ error: 'Method not allowed' }, 405, { Allow: 'POST' });
     }
 
-    // ── Unknown routes → 404 ──
+    // Unknown routes → 404
     return json({ error: 'Not found' }, 404);
   },
 };

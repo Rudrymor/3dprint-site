@@ -12,6 +12,7 @@
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/main.css?v=14">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -85,6 +86,9 @@
           <label for="website">Website</label>
           <input type="text" name="honeypot" id="website" tabindex="-1" autocomplete="off">
         </div>
+        <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в скрипте ниже. -->
+        <div id="order-turnstile" class="order-turnstile" style="margin:4px 0 12px;"></div>
+        <input type="hidden" id="order-turnstile-token" name="cf-turnstile-response">
         <button type="submit" class="btn-submit">Отправить заявку</button>
         <p class="form-note">Без предоплаты</p>
       </form>
@@ -293,6 +297,31 @@ document.addEventListener('DOMContentLoaded', function() {
   var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
   var isSubmitting = false;
 
+  // Turnstile site key. Установите сюда реальный ключ из Cloudflare dashboard,
+  // чтобы включить защиту от ботов (плюс TURNSTILE_SECRET на воркере).
+  var TURNSTILE_SITE_KEY = '';
+  var turnstileReady = false;
+
+  function initTurnstile() {
+    var el = document.getElementById('order-turnstile');
+    var tokenInput = document.getElementById('order-turnstile-token');
+    if (!el || !tokenInput) return;
+    if (!TURNSTILE_SITE_KEY) return; // не настроено — пропускаем
+    if (!(window.turnstile && turnstile.render)) return;
+    turnstile.render(el, {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: function(token) {
+        tokenInput.value = token;
+        turnstileReady = true;
+      },
+      'expired-callback': function() {
+        tokenInput.value = '';
+        turnstileReady = false;
+      }
+    });
+  }
+  initTurnstile();
+
   // Generate unique request ID (UUID v4)
   function generateRequestId() {
     return 'xxxx-xxxx-4xxx'.replace(/[x]/g, function() {
@@ -301,11 +330,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Отправка заявки: текст + файлы (multipart). Токен бота скрыт на сервере.
-  function sendOrder(message, files, honeypot, requestId) {
+  function sendOrder(message, files, honeypot, requestId, turnstileToken) {
     var payload = new FormData();
     payload.append('text', message);
     payload.append('request_id', requestId);
     if (honeypot) payload.append('honeypot', honeypot);
+    if (turnstileToken) payload.append('cf-turnstile-response', turnstileToken);
     files.forEach(function(f) { payload.append('files', f, f.name); });
 
     return fetch(WORKER_URL + '/api/order', { method: 'POST', body: payload }).then(function(res) {
@@ -323,7 +353,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Prevent double submit
     if (isSubmitting) return;
-    
+
+    // Turnstile: если настроен (site key задан) и токен отсутствует — блокируем
+    var tsToken = document.getElementById('order-turnstile-token');
+    if (TURNSTILE_SITE_KEY && tsToken && !tsToken.value) {
+      alert('Подтвердите, что вы не робот.');
+      return;
+    }
+
     const formData = new FormData(this);
     const data = Object.fromEntries(formData.entries());
     
@@ -369,8 +406,9 @@ document.addEventListener('DOMContentLoaded', function() {
     ].join('\n');
 
     var requestId = generateRequestId();
+    var tsTokenVal = document.getElementById('order-turnstile-token') ? document.getElementById('order-turnstile-token').value : '';
 
-    sendOrder(message, attachments(), data.honeypot || '', requestId)
+    sendOrder(message, attachments(), data.honeypot || '', requestId, tsTokenVal)
       .then(function(result) {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');

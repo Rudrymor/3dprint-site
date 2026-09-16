@@ -12,6 +12,7 @@
 <title>Книга клиентов — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles/main.css?v=14">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   /* Warm background */
   body::before {
@@ -283,6 +284,9 @@
         <label for="review-website">Website</label>
         <input type="text" name="honeypot" id="review-website" tabindex="-1" autocomplete="off">
       </div>
+      <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в скрипте ниже. -->
+      <div id="review-turnstile" style="margin:4px 0 12px;"></div>
+      <input type="hidden" id="review-turnstile-token" name="cf-turnstile-response">
       <button type="submit" class="btn-submit">Отправить</button>
     </form>
     <div class="form-success" id="review-success" style="display:none;text-align:center;padding:20px 0">
@@ -358,9 +362,41 @@ document.addEventListener('DOMContentLoaded', function() {
   var form = document.getElementById('review-form');
   var panel = document.getElementById('review-panel');
   var success = document.getElementById('review-success');
+
+  // Turnstile site key. Установите сюда реальный ключ, чтобы включить защиту от ботов.
+  var REVIEW_SITE_KEY = '';
+  var reviewTurnstileReady = false;
+
+  function initReviewTurnstile() {
+    var el = document.getElementById('review-turnstile');
+    var tokenInput = document.getElementById('review-turnstile-token');
+    if (!el || !tokenInput) return;
+    if (!REVIEW_SITE_KEY) return; // не настроено — пропускаем
+    if (!(window.turnstile && turnstile.render)) return;
+    turnstile.render(el, {
+      sitekey: REVIEW_SITE_KEY,
+      callback: function(token) {
+        tokenInput.value = token;
+        reviewTurnstileReady = true;
+      },
+      'expired-callback': function() {
+        tokenInput.value = '';
+        reviewTurnstileReady = false;
+      }
+    });
+  }
+  initReviewTurnstile();
+
   if (form) {
     form.addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // Turnstile: если настроен (site key задан) и токен отсутствует — блокируем
+      if (REVIEW_SITE_KEY) {
+        var tsTok = document.getElementById('review-turnstile-token');
+        if (tsTok && !tsTok.value) { alert('Подтвердите, что вы не робот.'); return; }
+      }
+
       var data = Object.fromEntries(new FormData(this).entries());
       if (data.stars === '0') { alert('Поставьте оценку'); return; }
 
@@ -373,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Отправить отзыв в Telegram через Worker (не публикуем на сайте)
       var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
+      var tsToken = document.getElementById('review-turnstile-token') ? document.getElementById('review-turnstile-token').value : '';
       fetch(WORKER_URL + '/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -380,7 +417,8 @@ document.addEventListener('DOMContentLoaded', function() {
           name: review.name,
           text: review.text,
           rating: review.stars,
-          honeypot: data.honeypot || ''
+          honeypot: data.honeypot || '',
+          'cf-turnstile-response': tsToken
         })
       }).then(function(res) {
         return res.json();
