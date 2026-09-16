@@ -11,9 +11,12 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=13">
+<link rel="stylesheet" href="styles/main.css?v=14">
 </head>
 <body>
+
+<!-- SKIP LINK -->
+<a href="#main-content" class="skip-link">Перейти к основному содержимому</a>
 
 <!-- MESH GRADIENT BACKGROUND -->
 <div class="mesh-bg"></div>
@@ -25,7 +28,7 @@
   </div>
 </nav>
 
-<main>
+<main id="main-content">
 <!-- FORM -->
 <section class="order-section">
   <div class="order-container">
@@ -36,19 +39,19 @@
         <p class="sub">Заполните форму - свяжемся с вами для уточнения деталей</p>
       </div>
       
-      <form id="order-form">
+      <form id="order-form" novalidate>
         <div class="form-row">
-          <label>Ваше имя</label>
-          <input type="text" name="name" placeholder="Как к вам обращаться" required autocomplete="name">
+          <label for="order-name">Ваше имя</label>
+          <input type="text" id="order-name" name="name" placeholder="Как к вам обращаться" required autocomplete="name" maxlength="100">
         </div>
         <div class="form-row">
-          <label>Телефон или Telegram</label>
-          <input type="tel" name="contact" placeholder="+7 ... или @username" required autocomplete="tel">
+          <label for="order-contact">Телефон или Telegram</label>
+          <input type="tel" id="order-contact" name="contact" placeholder="+7 ... или @username" required autocomplete="tel" maxlength="100">
         </div>
         <div class="form-row">
           <label for="desc-input">Краткое описание проекта</label>
           <div class="desc-wrap">
-            <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required></textarea>
+            <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required maxlength="2000" minlength="10"></textarea>
             <button type="button" class="attach-btn" id="attach-btn" aria-label="Прикрепить файлы с компьютера" title="Прикрепить файлы">
               <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
@@ -58,8 +61,8 @@
           <p class="attach-note" id="attach-note">Можно приложить фото, чертёж или 3D-модель — до 5 файлов, 15 МБ каждый</p>
         </div>
         <div class="form-row">
-          <label>Материал</label>
-          <select name="material">
+          <label for="order-material">Материал</label>
+          <select id="order-material" name="material">
             <option value="">Выберите материал</option>
             <option value="PLA">PLA — универсальный</option>
             <option value="PETG">PETG — прочный, хим. стойкий</option>
@@ -69,12 +72,12 @@
         </div>
         <div class="form-row form-row-inline">
           <div>
-            <label>Цвет материала</label>
-            <input type="text" name="color" placeholder="Например: чёрный, белый, красный">
+            <label for="order-color">Цвет материала</label>
+            <input type="text" id="order-color" name="color" placeholder="Например: чёрный, белый, красный" maxlength="100">
           </div>
           <div>
-            <label>Количество копий</label>
-            <input type="text" name="quantity" placeholder="1 шт." value="1 шт.">
+            <label for="order-quantity">Количество копий</label>
+            <input type="number" id="order-quantity" name="quantity" placeholder="1" value="1" min="1" max="999">
           </div>
         </div>
         <!-- Honeypot — invisible to users, bots fill it -->
@@ -87,7 +90,7 @@
       </form>
       
       <!-- УСПЕХ (показывается после отправки) -->
-      <div class="form-success" id="form-success">
+      <div class="form-success" id="form-success" role="status" aria-live="polite">
         <div class="icon">✅</div>
         <h3>Заявка отправлена!</h3>
         <p>Свяжемся с вами. Проверьте Telegram или телефон.</p>
@@ -151,7 +154,7 @@
     <span class="vk-label-mobile">VK</span>
 </a>
 
-<script src="scripts/common.js?v=3"></script>
+<script src="scripts/common.js?v=4"></script>
 <script>
 // ─── МОБИЛЬНЫЕ ТУЛТИПЫ МАТЕРИАЛОВ ───
 document.addEventListener('DOMContentLoaded', function() {
@@ -361,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
       '📦 Материал: ' + (data.material || 'Не указан'),
       '📝 Описание: ' + data.description,
       '🎨 Цвет материала: ' + (data.color || 'Не указан'),
-      '🔢 Количество копий: ' + (data.quantity || '1 шт.'),
+      '🔢 Количество копий: ' + (data.quantity ? data.quantity + ' шт.' : '1 шт.'),
       '📎 Файлы: ' + (attachments().length ? attachments().map(function(f) { return f.name; }).join(', ') : 'нет')
     ].join('\n');
 

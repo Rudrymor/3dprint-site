@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Книга клиентов — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=13">
+<link rel="stylesheet" href="styles/main.css?v=14">
 <style>
   /* Warm background */
   body::before {
@@ -205,6 +205,9 @@
 </head>
 <body>
 
+<!-- SKIP LINK -->
+<a href="#main-content" class="skip-link">Перейти к основному содержимому</a>
+
 <!-- NAV -->
 <nav class="nav-no-toggle nav-centered">
   <div class="container nav-inner">
@@ -212,7 +215,7 @@
   </div>
 </nav>
 
-<main class="reviews-page">
+<main id="main-content" class="reviews-page">
 <!-- HERO -->
 <section class="page-hero">
   <div class="container">
@@ -257,12 +260,12 @@
     <p class="sub">Расскажите о своём опыте</p>
     <form id="review-form">
       <div class="form-row">
-        <label>Ваше имя</label>
-        <input type="text" name="name" placeholder="Как к вам обращаться" required>
+        <label for="review-name">Ваше имя</label>
+        <input type="text" id="review-name" name="name" placeholder="Как к вам обращаться" required maxlength="100">
       </div>
       <div class="form-row">
-        <label>Оценка</label>
-        <div class="star-rating" id="star-rating">
+        <label id="review-rating-label">Оценка</label>
+        <div class="star-rating" id="star-rating" role="radiogroup" aria-labelledby="review-rating-label">
           <span class="star" data-value="1">☆</span>
           <span class="star" data-value="2">☆</span>
           <span class="star" data-value="3">☆</span>
@@ -272,8 +275,8 @@
         <input type="hidden" name="stars" id="stars-input" value="0">
       </div>
       <div class="form-row">
-        <label>Отзыв</label>
-        <textarea name="text" placeholder="Что понравилось?" required></textarea>
+        <label for="review-text">Отзыв</label>
+        <textarea id="review-text" name="text" placeholder="Расскажите о вашем опыте" required maxlength="2000" minlength="10"></textarea>
       </div>
       <!-- Honeypot — invisible to users, bots fill it -->
       <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
@@ -289,8 +292,8 @@
   </div>
 </div>
 
-<script src="scripts/common.js?v=3"></script>
-<script src="scripts/reviews.js?v=4"></script>
+<script src="scripts/common.js?v=4"></script>
+<script src="scripts/reviews.js?v=5"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   var root = document.getElementById('reviews-root');
@@ -299,20 +302,46 @@ document.addEventListener('DOMContentLoaded', function() {
   // Reviews are loaded by reviews.js (loadReviews)
   // We just need to handle the form, star rating, and FAB
 
-  // Star rating
+  // Star rating — keyboard accessible
   var stars = document.querySelectorAll('#star-rating .star');
   var starsInput = document.getElementById('stars-input');
   stars.forEach(function(star) {
+    star.setAttribute('tabindex', '0');
+    star.setAttribute('role', 'radio');
+    star.setAttribute('aria-label', star.getAttribute('data-value') + ' из 5');
     star.addEventListener('click', function() {
       var val = parseInt(this.getAttribute('data-value'));
       starsInput.value = val;
-      stars.forEach(function(s) {
-        var v = parseInt(s.getAttribute('data-value'));
-        s.textContent = v <= val ? '\u2605' : '\u2606';
-        s.classList.toggle('active', v <= val);
-      });
+      updateStars(val);
+    });
+    star.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        var next = Math.min(5, parseInt(this.getAttribute('data-value')) + 1);
+        starsInput.value = next;
+        updateStars(next);
+        document.querySelector('#star-rating .star[data-value="' + next + '"]').focus();
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        var prev = Math.max(1, parseInt(this.getAttribute('data-value')) - 1);
+        starsInput.value = prev;
+        updateStars(prev);
+        document.querySelector('#star-rating .star[data-value="' + prev + '"]').focus();
+      }
     });
   });
+  function updateStars(val) {
+    stars.forEach(function(s) {
+      var v = parseInt(s.getAttribute('data-value'));
+      s.textContent = v <= val ? '\u2605' : '\u2606';
+      s.classList.toggle('active', v <= val);
+    });
+  }
 
   // FAB toggle
   var fab = document.getElementById('review-fab');
@@ -341,12 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
         stars: parseInt(data.stars),
         date: new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})
       };
-      var stored = [];
-      try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
-      stored.push(review);
-      localStorage.setItem('3dprint_reviews', JSON.stringify(stored));
 
-      // Отправить отзыв в Telegram через Worker
+      // Отправить отзыв в Telegram через Worker (не публикуем на сайте)
       var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
       fetch(WORKER_URL + '/api/review', {
         method: 'POST',
@@ -364,9 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error('Review rejected:', result);
         }
       }).catch(function(err) { console.error('Telegram error:', err); });
-
-      // Re-render reviews list using the shared function
-      loadReviews();
 
       form.style.display = 'none';
       success.style.display = 'block';

@@ -122,8 +122,12 @@ function initLightbox() {
   if (!imgs.length) return;
 
   var idx = 0;
+  var lastFocused = null;
   var box = document.createElement('div');
   box.className = 'lightbox';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-label', 'Просмотр изображения');
   box.innerHTML =
     '<button class="lb-btn lb-close" aria-label="Закрыть">×</button>' +
     '<button class="lb-btn lb-prev" aria-label="Предыдущая">‹</button>' +
@@ -146,15 +150,31 @@ function initLightbox() {
   }
 
   function open(i) {
+    lastFocused = document.activeElement;
     show(i);
     box.classList.add('open');
     document.body.classList.add('lb-open');
+    box.querySelector('.lb-close').focus();
   }
 
   function close() {
     box.classList.remove('open');
     document.body.classList.remove('lb-open');
+    if (lastFocused) lastFocused.focus();
   }
+
+  // Focus trap
+  box.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    var focusable = box.querySelectorAll('button');
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 
   imgs.forEach(function (im, i) { im.addEventListener('click', function () { open(i); }); });
   box.querySelector('.lb-close').addEventListener('click', close);

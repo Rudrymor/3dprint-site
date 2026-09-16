@@ -69,12 +69,11 @@ function renderReviews(items) {
 }
 
 // ─── ЗАГРУЗКА ОТЗЫВОВ ───
+// Показываем только курированные отзывы из кода.
+// Пользовательская форма отправляет отзыв в Telegram (владельцу), не публикует на сайте.
 function loadReviews() {
-  var stored = [];
-  try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
-  var allReviews = (REVIEWS_DATA || []).concat(stored);
-  renderReviews(allReviews);
-  return allReviews;
+  renderReviews(REVIEWS_DATA || []);
+  return REVIEWS_DATA || [];
 }
 
 // ─── ЗАПУСК ───

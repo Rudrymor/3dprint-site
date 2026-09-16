@@ -34,6 +34,7 @@ function initMobileNav() {
     links.classList.remove('open');
     overlay.classList.remove('active');
     toggle.setAttribute('aria-expanded', 'false');
+    toggle.focus();
   }
   
   toggle.addEventListener('click', () => {
