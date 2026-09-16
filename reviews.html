@@ -290,32 +290,14 @@
 </div>
 
 <script src="scripts/common.js?v=3"></script>
-<script src="scripts/reviews.js?v=3"></script>
+<script src="scripts/reviews.js?v=4"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   var root = document.getElementById('reviews-root');
   var empty = document.getElementById('reviews-empty');
 
-  // Load reviews
-  var stored = [];
-  try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
-  var allReviews = (typeof REVIEWS_DATA !== 'undefined' ? REVIEWS_DATA : []).concat(stored);
-
-  if (allReviews.length > 0) {
-    allReviews.forEach(function(r) {
-      var row = document.createElement('div');
-      row.className = 'review-row';
-      var stars = '\u2605'.repeat(r.stars) + '\u2606'.repeat(5 - r.stars);
-      row.innerHTML =
-        '<span class="review-row-name">' + escapeHtml(r.name) + '</span>' +
-        '<span class="review-row-stars">' + stars + '</span>' +
-        '<span class="review-row-text">' + escapeHtml(r.text) + '</span>' +
-        '<span class="review-row-date">' + escapeHtml(r.date) + '</span>';
-      root.appendChild(row);
-    });
-  } else {
-    empty.style.display = 'block';
-  }
+  // Reviews are loaded by reviews.js (loadReviews)
+  // We just need to handle the form, star rating, and FAB
 
   // Star rating
   var stars = document.querySelectorAll('#star-rating .star');
@@ -383,17 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }).catch(function(err) { console.error('Telegram error:', err); });
 
-      // Add to list immediately
-      var row = document.createElement('div');
-      row.className = 'review-row';
-      var s = '\u2605'.repeat(review.stars) + '\u2606'.repeat(5 - review.stars);
-      row.innerHTML =
-        '<span class="review-row-name">' + escapeHtml(review.name) + '</span>' +
-        '<span class="review-row-stars">' + s + '</span>' +
-        '<span class="review-row-text">' + escapeHtml(review.text) + '</span>' +
-        '<span class="review-row-date">' + escapeHtml(review.date) + '</span>';
-      root.appendChild(row);
-      empty.style.display = 'none';
+      // Re-render reviews list using the shared function
+      loadReviews();
 
       form.style.display = 'none';
       success.style.display = 'block';

@@ -32,10 +32,29 @@ function isSafeImageUrl(url) {
   return true;
 }
 
+// ─── ВАЛИДАЦИЯ ЭЛЕМЕНТА КАТАЛОГА ───
+function validateCatalogItem(item) {
+  if (!item || typeof item !== 'object') return false;
+  // name: string, 1-200 chars
+  if (typeof item.name !== 'string' || item.name.length < 1 || item.name.length > 200) return false;
+  // description: string, max 1000 chars
+  if (typeof item.description !== 'string' || item.description.length > 1000) return false;
+  // image: string, validated by isSafeImageUrl
+  if (item.image && typeof item.image !== 'string') return false;
+  // category: must be 'techno' or 'decor' or empty
+  if (item.category && item.category !== 'techno' && item.category !== 'decor') return false;
+  // id: number (optional)
+  if (item.id !== undefined && (typeof item.id !== 'number' || !Number.isInteger(item.id))) return false;
+  return true;
+}
+
 // ─── ОТРИСОВКА КАТАЛОГА ───
 function renderCatalog(items) {
   var root = document.getElementById("catalog-root");
   if (!root) return;
+
+  // Filter out invalid items (defense-in-depth)
+  items = items.filter(validateCatalogItem);
 
   if (!items.length) {
     root.innerHTML = '<p style="text-align:center;color:#71717a;padding:40px 0;">Каталог загружается…</p>';

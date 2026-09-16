@@ -449,7 +449,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="src", required=True)
     ap.add_argument("--out", dest="dst")
-    ap.add_argument("--axis", type=float, default=None)
+    ap.add_argument("--axis", type=int, default=None)
     ap.add_argument("--no-head", action="store_true")
     ap.add_argument("--no-paint", action="store_true")
     ap.add_argument("--quality", type=int, default=88)

@@ -19,7 +19,7 @@
 //     "date": "Август 2026"
 //   },
 
-const REVIEWS_DATA = [
+var REVIEWS_DATA = [
   {
     "name": "Алексей",
     "text": "Заказывал чехол для ключа Audi — сделали быстро, встал как родной. Рекомендую!",
@@ -36,40 +36,48 @@ const REVIEWS_DATA = [
 
 // ─── ОТРИСОВКА ОТЗЫВОВ (список) ───
 function renderReviews(items) {
-  const section = document.getElementById("reviews-section");
-  const root = document.getElementById("reviews-root");
-  if (!section || !root) return;
+  var root = document.getElementById("reviews-root");
+  var empty = document.getElementById("reviews-empty");
+  if (!root) return;
 
   if (!items.length) {
-    section.style.display = "none";
+    root.style.display = "none";
+    if (empty) empty.style.display = "block";
     return;
   }
 
-  section.style.display = "";
+  root.style.display = "";
+  if (empty) empty.style.display = "none";
   root.innerHTML = "";
 
-  items.forEach(item => {
-    const name = escapeHtml(item.name || "");
-    const text = escapeHtml(item.text || "");
-    const rating = Math.max(1, Math.min(5, parseInt(item.stars || item.rating, 10) || 5));
-    const date = escapeHtml(item.date || "");
-    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+  items.forEach(function(item) {
+    var name = escapeHtml(item.name || "");
+    var text = escapeHtml(item.text || "");
+    var rating = Math.max(1, Math.min(5, parseInt(item.stars || item.rating, 10) || 5));
+    var date = escapeHtml(item.date || "");
+    var stars = "\u2605".repeat(rating) + "\u2606".repeat(5 - rating);
 
-    const row = document.createElement("div");
+    var row = document.createElement("div");
     row.className = "review-row";
     row.innerHTML =
-      `<span class="review-row-name">${name}</span>` +
-      `<span class="review-row-stars">${stars}</span>` +
-      `<span class="review-row-text">${text}</span>` +
-      `<span class="review-row-date">${date}</span>`;
+      '<span class="review-row-name">' + name + '</span>' +
+      '<span class="review-row-stars">' + stars + '</span>' +
+      '<span class="review-row-text">' + text + '</span>' +
+      '<span class="review-row-date">' + date + '</span>';
     root.appendChild(row);
   });
 }
 
-// ─── ЗАПУСК ───
-if (document.getElementById("reviews-root")) {
+// ─── ЗАГРУЗКА ОТЗЫВОВ ───
+function loadReviews() {
   var stored = [];
   try { stored = JSON.parse(localStorage.getItem('3dprint_reviews') || '[]'); } catch(e) {}
   var allReviews = (REVIEWS_DATA || []).concat(stored);
   renderReviews(allReviews);
+  return allReviews;
+}
+
+// ─── ЗАПУСК ───
+if (document.getElementById("reviews-root")) {
+  loadReviews();
 }

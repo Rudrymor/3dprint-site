@@ -4,9 +4,10 @@ interface Env {
   CATALOG_KV: KVNamespace;
 }
 const MAX_FILES = 5;
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
-const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_SIZE = 15 * 1024 * 1024;  // 15 МБ на файл (согласовано с клиентом)
+const MAX_TOTAL_SIZE = 40 * 1024 * 1024;  // 40 МБ на всю заявку (согласовано с клиентом)
 const IDEMPOTENCY_TTL = 86400; // 24 hours in seconds
+const MAX_JSON_BODY = 1024 * 1024; // 1 МБ max JSON body
 
 // ── CORS ──
 const CORS_GET: Record<string, string> = {
@@ -101,6 +102,11 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
 
     // JSON { text, honeypot, request_id }
     if (!contentType.includes('multipart/form-data')) {
+      // Limit JSON body size
+      const cl = request.headers.get('content-length');
+      if (cl && parseInt(cl, 10) > MAX_JSON_BODY) {
+        return json({ error: 'Request body too large' }, 413);
+      }
       let body: { text?: string; honeypot?: string; request_id?: string };
       try {
         body = await request.json();
@@ -230,6 +236,11 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
 
 // ── Telegram proxy for reviews ──
 async function handleReviewProxy(request: Request, env: Env): Promise<Response> {
+  // Limit JSON body size
+  const cl = request.headers.get('content-length');
+  if (cl && parseInt(cl, 10) > MAX_JSON_BODY) {
+    return json({ error: 'Request body too large' }, 413);
+  }
   let body: { name?: string; text?: string; rating?: number; honeypot?: string };
   try {
     body = await request.json();
