@@ -758,6 +758,7 @@ https://tg-proxy.metalkor91.workers.dev/api/catalog
 - Не считать TypeScript-интерфейс runtime-валидацией.
 - Не менять лимиты Telegram без проверки актуальной документации.
 - Не объявлять проект полностью безопасным только потому, что `node --check` и Python compileall проходят.
+- **Не переходить к следующему этапу без коммита и push текущего.** Каждый завершённый этап: `git add -A && git commit -m "..." && git push origin main`. Проверять remote tracking (`git log --oneline origin/main -1`) — push мог вернуть silent 403.
 
 ---
 
