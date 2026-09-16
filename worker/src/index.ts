@@ -6,6 +6,7 @@ interface Env {
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
+const IDEMPOTENCY_TTL = 86400; // 24 hours in seconds
 
 // ── CORS ──
 const CORS_GET: Record<string, string> = {
@@ -34,6 +35,17 @@ function getNextOrderNumber(): string {
   const dd = String(now.getDate()).padStart(2, '0');
   const random = Math.floor(1000 + Math.random() * 9000); // 1000-9999
   return `${yy}${mm}${dd}-${random}`;
+}
+
+// ── Idempotency ──
+async function checkIdempotency(env: Env, requestId: string): Promise<{ exists: boolean; result?: { ok: boolean; order?: string; files?: number; error?: string } }> {
+  const raw = await env.CATALOG_KV.get(`idem:${requestId}`, 'json');
+  if (!raw) return { exists: false };
+  return { exists: true, result: raw as { ok: boolean; order?: string; files?: number; error?: string } };
+}
+
+async function storeIdempotency(env: Env, requestId: string, result: { ok: boolean; order?: string; files?: number; error?: string }): Promise<void> {
+  await env.CATALOG_KV.put(`idem:${requestId}`, JSON.stringify(result), { expirationTtl: IDEMPOTENCY_TTL });
 }
 
 // ── Telegram ──
@@ -87,22 +99,28 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
   try {
     const contentType = request.headers.get('content-type') || '';
 
-    // JSON { text, honeypot }
+    // JSON { text, honeypot, request_id }
     if (!contentType.includes('multipart/form-data')) {
-      let body: { text?: string; honeypot?: string };
+      let body: { text?: string; honeypot?: string; request_id?: string };
       try {
         body = await request.json();
       } catch {
         return json({ error: 'Invalid JSON' }, 400);
       }
-      
+
       // Honeypot check — bots fill hidden fields
       if (body.honeypot) {
         return json({ ok: true, silent: true }, 200);
       }
-      
+
       if (!body.text) return json({ error: 'text required' }, 400);
-      
+
+      // Idempotency check
+      if (body.request_id) {
+        const idem = await checkIdempotency(env, body.request_id);
+        if (idem.exists) return json(idem.result!, 200);
+      }
+
       // Validate text length
       const text = String(body.text).substring(0, 4000);
       if (text.trim().length < 10) {
@@ -116,37 +134,50 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
       const fullText = '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + text;
 
       const res = await sendMessage(env, fullText);
-      return json({ ok: res.ok, order: orderNum, description: res.description }, res.ok ? 200 : 400);
+      const result = { ok: res.ok, order: orderNum, description: res.description };
+
+      // Store for idempotency
+      if (body.request_id) {
+        await storeIdempotency(env, body.request_id, result);
+      }
+
+      return json(result, res.ok ? 200 : 400);
     }
 
     // multipart/form-data
     const form = await request.formData();
-    
+
     // Honeypot check
     const honeypot = form.get('honeypot');
     if (honeypot) {
       return json({ ok: true, silent: true }, 200);
     }
-    
+
     const text = String(form.get('text') || '').substring(0, 4000);
-    
+    const requestId = String(form.get('request_id') || '');
+
     // Validate text length
     if (text.trim().length < 10) {
       return json({ error: 'Текст слишком короткий (минимум 10 символов)' }, 400);
     }
-    
+
+    // Idempotency check
+    if (requestId) {
+      const idem = await checkIdempotency(env, requestId);
+      if (idem.exists) return json(idem.result!, 200);
+    }
+
     const files = form.getAll('files').filter((v): v is File => v instanceof File && v.size > 0);
 
     if (files.length > MAX_FILES) return json({ error: `Не больше ${MAX_FILES} файлов` }, 413);
     if (files.some((f) => f.size > MAX_FILE_SIZE) || files.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_SIZE) {
       return json({ error: 'Файлы слишком большие' }, 413);
     }
-    
+
     // Validate file types (allow common document types)
     const ALLOWED_TYPES = [
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-      'application/pdf',
-      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'text/plain'
     ];
@@ -164,7 +195,11 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
 
     if (fullText) {
       const res = await sendMessage(env, fullText);
-      if (!res.ok) return json({ ok: false, order: orderNum, description: res.description }, 400);
+      if (!res.ok) {
+        const result = { ok: false, order: orderNum, description: res.description };
+        if (requestId) await storeIdempotency(env, requestId, result);
+        return json(result, 400);
+      }
     }
 
     let sent = 0;
@@ -174,10 +209,19 @@ async function handleTelegramProxy(request: Request, env: Env): Promise<Response
       fd.append('document', file, file.name || 'file');
       const r = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
       const d = (await r.json()) as { ok: boolean; description?: string };
-      if (!d.ok) return json({ ok: false, sent, error: d.description }, 400);
+      if (!d.ok) {
+        // Partial failure: text was sent but file failed.
+        // Return explicit error so client knows NOT to retry.
+        const result = { ok: false, sent, total: files.length, partial: true, error: d.description, message: 'Текст отправлен, но файл не доставлен. Не повторяйте заявку — свяжитесь через ВКонтакте для отправки файлов.' };
+        if (requestId) await storeIdempotency(env, requestId, result);
+        return json(result, 200);
+      }
       sent++;
     }
-    return json({ ok: true, order: orderNum, files: sent }, 200);
+
+    const result = { ok: true, order: orderNum, files: sent };
+    if (requestId) await storeIdempotency(env, requestId, result);
+    return json(result, 200);
   } catch (err) {
     console.error('Order handler error:', err instanceof Error ? err.message : 'unknown');
     return json({ error: 'Internal error' }, 500);

@@ -290,10 +290,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
   var isSubmitting = false;
 
+  // Generate unique request ID (UUID v4)
+  function generateRequestId() {
+    return 'xxxx-xxxx-4xxx'.replace(/[x]/g, function() {
+      return Math.floor(Math.random() * 16).toString(16);
+    }) + '-' + Date.now().toString(36);
+  }
+
   // Отправка заявки: текст + файлы (multipart). Токен бота скрыт на сервере.
-  function sendOrder(message, files, honeypot) {
+  function sendOrder(message, files, honeypot, requestId) {
     var payload = new FormData();
     payload.append('text', message);
+    payload.append('request_id', requestId);
     if (honeypot) payload.append('honeypot', honeypot);
     files.forEach(function(f) { payload.append('files', f, f.name); });
 
@@ -357,11 +365,21 @@ document.addEventListener('DOMContentLoaded', function() {
       '📎 Файлы: ' + (attachments().length ? attachments().map(function(f) { return f.name; }).join(', ') : 'нет')
     ].join('\n');
 
-    sendOrder(message, attachments(), data.honeypot || '')
+    var requestId = generateRequestId();
+
+    sendOrder(message, attachments(), data.honeypot || '', requestId)
       .then(function(result) {
         localStorage.setItem('3dprint_last_order', String(now));
         header.classList.add('hidden');
         form.style.display = 'none';
+        // Show partial failure message if files weren't delivered
+        if (result.partial) {
+          success.querySelector('h3').textContent = 'Заявка отправлена (частично)';
+          success.querySelector('p').textContent = result.message || 'Текст доставлен, но файлы нет. Свяжитесь через ВКонтакте для отправки файлов.';
+        } else {
+          success.querySelector('h3').textContent = 'Заявка отправлена!';
+          success.querySelector('p').textContent = 'Свяжемся с вами. Проверьте Telegram или телефон.';
+        }
         success.classList.add('show');
         // Clear attachments
         if (window.clearAttachments) window.clearAttachments();
@@ -370,7 +388,10 @@ document.addEventListener('DOMContentLoaded', function() {
           header.classList.remove('hidden');
           form.style.display = '';
           form.reset();
-        }, 3000);
+          // Reset success text
+          success.querySelector('h3').textContent = 'Заявка отправлена!';
+          success.querySelector('p').textContent = 'Свяжемся с вами. Проверьте Telegram или телефон.';
+        }, 5000);
       })
       .catch(function(err) {
         console.error('Ошибка отправки:', err);
