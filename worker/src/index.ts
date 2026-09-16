@@ -5,14 +5,18 @@ import {
   validateReview,
   validateFiles,
   tooManyFields,
-  isSafeImageUrl,
   validateCatalogPayload,
 } from './validators';
+import { claimIdempotency, finalizeIdempotency } from './idempotency';
+// Durable Object для атомарной idempotency — re-export, чтобы wrangler
+// нашёл класс в этом модуле (см. [[migrations]] в wrangler.toml).
+export { IdempotencyObject } from './idempotency';
 
 interface Env {
   BOT_TOKEN: string;
   CHAT_ID: string;
   CATALOG_KV: KVNamespace;
+  IDEMPOTENCY: DurableObjectNamespace;
   /** Set to enable Turnstile verification. When absent, Turnstile is skipped (graceful degradation). */
   TURNSTILE_SECRET?: string;
 }
@@ -169,24 +173,6 @@ function getNextOrderNumber(): string {
   return `${yy}${mm}${dd}-${random}`;
 }
 
-// ── Idempotency ──
-// ПРИМЕЧАНИЕ (Этап 3): текущая схема check→send→put неатомарна. Полная атомарность —
-// через Durable Object в этапе 3. Здесь request_id уже обязательный (валидируется ниже),
-// а повтор с тем же ID возвращает сохранённый результат.
-async function checkIdempotency(env: Env, requestId: string): Promise<{ exists: boolean; result?: Record<string, unknown> }> {
-  const raw = await env.CATALOG_KV.get(`idem:${requestId}`, 'json');
-  if (!raw) return { exists: false };
-  return { exists: true, result: raw as Record<string, unknown> };
-}
-
-async function storeIdempotency(env: Env, requestId: string, result: Record<string, unknown>): Promise<void> {
-  try {
-    await env.CATALOG_KV.put(`idem:${requestId}`, JSON.stringify(result), { expirationTtl: Limits.idempotencyTtl });
-  } catch (err) {
-    log('warn', 'KV write failed for idempotency', { requestId, error: String(err) });
-  }
-}
-
 // ── Telegram ──
 type TelegramResult = { ok: boolean; description?: string };
 
@@ -303,9 +289,14 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
       return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
     }
 
-    // Idempotency
-    const idem = await checkIdempotency(env, rid.id);
-    if (idem.exists) return json(idem.result!, 200);
+    // Idempotency — атомарный claim через Durable Object (этап 3).
+    // Первый запрос занимает ключ и шлёт; параллельный дубликат того же ID
+    // получает 409 и НЕ шлёт; repeat с завершённым ID возвращает прежний ответ.
+    const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
+    if (!claim.ok) {
+      // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
+      return json(claim.result ?? { error: 'Заявка уже обрабатывается. Подождите.' }, claim.status);
+    }
 
     const orderNum = getNextOrderNumber();
     const now = new Date();
@@ -315,7 +306,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     const res = await sendMessage(env, fullText);
     const result = { ok: res.ok, order: orderNum, description: res.description };
 
-    await storeIdempotency(env, rid.id, result);
+    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
     log(res.ok ? 'info' : 'error', 'order: telegram result', { requestId, order: orderNum, ok: res.ok });
     return json(result, res.ok ? 200 : 502);
   }
@@ -354,9 +345,12 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
   }
 
-  // Idempotency (перед отправкой)
-  const idem = await checkIdempotency(env, rid.id);
-  if (idem.exists) return json(idem.result!, 200);
+  // Idempotency — атомарный claim через Durable Object (этап 3).
+  const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
+  if (!claim.ok) {
+    // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
+    return json(claim.result ?? { error: 'Заявка уже обрабатывается. Подождите.' }, claim.status);
+  }
 
   // Files validation (расширение/MIME/размер/количество)
   const files = form.getAll('files').filter((v): v is File => v instanceof File);
@@ -372,7 +366,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   const msgRes = await sendMessage(env, fullText);
   if (!msgRes.ok) {
     const result = { ok: false, order: orderNum, description: msgRes.description };
-    await storeIdempotency(env, rid.id, result);
+    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
     log('error', 'order: telegram sendMessage failed', { requestId, order: orderNum, desc: msgRes.description });
     return json(result, 502);
   }
@@ -387,7 +381,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
         sent, total: fileList.length,
         message: 'Text sent but file delivery failed. Contact VK for file resend.',
       };
-      await storeIdempotency(env, rid.id, result);
+      await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
       log('warn', 'order: partial file failure', { requestId, order: orderNum, sent, total: fileList.length });
       return json(result, 200);
     }
@@ -395,7 +389,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   }
 
   const result = { ok: true, status: 'success', order: orderNum, files: sent };
-  await storeIdempotency(env, rid.id, result);
+  await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
   log('info', 'order: complete', { requestId, order: orderNum, files: sent });
   return json(result, 200);
 }
@@ -433,8 +427,12 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
   const v = validateReview(body);
   if (!v.ok) return json({ error: v.error.message }, v.error.status);
 
-  const idem = await checkIdempotency(env, rid.id);
-  if (idem.exists) return json(idem.result!, 200);
+  // Idempotency — атомарный claim через Durable Object (этап 3).
+  const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
+  if (!claim.ok) {
+    // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
+    return json(claim.result ?? { error: 'Отзыв уже обрабатывается. Подождите.' }, claim.status);
+  }
 
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const stars = '⭐'.repeat(v.data.rating);
@@ -442,7 +440,7 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
 
   const res = await sendMessage(env, fullText);
   const result = { ok: res.ok, description: res.description };
-  await storeIdempotency(env, rid.id, result);
+  await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
   log(res.ok ? 'info' : 'error', 'review: telegram result', { requestId, ok: res.ok });
   return json(result, res.ok ? 200 : 502);
 }
@@ -477,6 +475,6 @@ export default {
     }
 
     // Unknown routes → 404
-    return json({ error: 'Not found' }, 404);
-  },
-};
+        return json({ error: 'Not found' }, 404);
+      },
+    };

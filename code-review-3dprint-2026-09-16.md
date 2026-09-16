@@ -25,7 +25,8 @@
 | 1 (часть 2) — Turnstile | `2626cb0` | ✅ | `enforceTurnstile()` на воркере + виджет на фронтенде. **Требует: реальные site/secret keys от владельца** |
 | 1 (часть 3) — Rate limit | `2626cb0` | ✅ | KV-based per-IP лимитер (order 5/ч, review 3/ч → 429) |
 | 1 (часть 4) — CHAT_ID в secret | — | ⏳ | `CHAT_ID` в `wrangler.toml` `[vars]`; вынос в secret требует `wrangler secret put` (владелец) |
-| 2 — единый input contract |  | 🚧 | `worker/src/validators.ts`: order/review/catalog/request_id/files, обязательный UUID v4 request_id, MIME/расширение синхронизированы, лимиты field-count |
+| 2 — единый input contract | `33abe5f` | ✅ | `worker/src/validators.ts`: order/review/catalog/request_id/files, обязательный UUID v4 request_id, MIME/расширение синхронизированы, лимиты field-count |
+| 3 — атомарная idempotency |  | ✅ | Durable Object `IdempotencyObject` (SQLite storage): атомарный claim → pending → sent/partial/failed; параллельный дубликат ID → 409; replay возвращает прежний результат; бывший KV-путь удалён |
 
 ### Secret scan по git-истории (87 коммитов)
 
