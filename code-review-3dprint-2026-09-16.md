@@ -3,17 +3,38 @@
 ## Статус отчёта
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
-- Дата: 2026-09-16 12:17 RTZ.
-- Проверенный commit: `5a9bb2b`.
-- Ветка: `main`.
-- `HEAD` и `origin/main`: совпадают на момент проверки.
-- Рабочее дерево до создания этого отчёта: чистое.
+- Дата ревью: 2026-09-16 12:17 RTZ.
+- Дата обновления: 2026-09-16 12:48 RTZ.
+- Baseline commit: `5a9bb2b` (ветка `main`).
+- Текущая ветка: `fix/security-and-ux`.
+- Текущий HEAD: `7b1e5cb` (`origin/fix/security-and-ux` синхронизирован).
+- Рабочее дерево: чистое.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
 - Production Pages: `https://rudrymor.github.io/3dprint-site/`.
 - Production Worker: `https://tg-proxy.metalkor91.workers.dev`.
 - Wiki: `C:\Users\metal\wiki\3D-печать.md`.
-- Отчёт подготовлен как инструкция другой модели. В этом проходе исходный код, Worker, KV, Telegram и wiki не исправлялись.
+
+### Ход исправлений
+
+| Этап | Коммит | Статус | Описание |
+|---|---|---|---|
+| 0 — Baseline | `5be0aeb` | ✅ | Ветка `fix/security-and-ux`, ревью-документ как reference |
+| 0 — Восстановление | `7b1e5cb` | ✅ | Восстановлен `code-review-2026-09-15.md` из baseline |
+| 1 (часть 1) — Worker security | `442c73e` | ✅ | Удалены legacy routes, parseJsonObject, checkOrigin, structured logging, Content-Length до formData |
+| 1 (часть 2) — Turnstile | — | ⏳ | Требует TURNSTILE_SECRET + фронтенд-интеграцию |
+| 1 (часть 3) — Rate limit | — | ⏳ | Требует KV-based или Cloudflare WAF rate limiting |
+
+### Secret scan по git-истории (87 коммитов)
+
+| Проверка | Результат |
+|---|---|
+| BOT_TOKEN в коде | ✅ Только `env.BOT_TOKEN` (Cloudflare secret), хардкода нет |
+| .env с секретами | ✅ Никогда не коммился |
+| Private keys / SSH | ✅ Не найдены |
+| Cloudflare API токены | ✅ Только имена переменных в `.env.example` (плейсхолдеры) |
+| Хардкод токенов | ✅ Не найден |
+| CHAT_ID | ⚠️ `2030385539` в `wrangler.toml` `[vars]` — это Telegram chat ID (не токен), но виден в deployed source. Рекомендация: вынести в secret. |
 
 ---
 
@@ -133,16 +154,16 @@ npx wrangler deploy --dry-run
 | P1-3: очистка вложений | ✅/частично | Полный success очищает файлы; partial response до очистки не доходит |
 | P1-4: двойная отправка заказа | ✅ | `isSubmitting`, disabled и `aria-busy` присутствуют |
 | P1-5: HTML parse mode | ✅ | `sendMessage` отправляет plain text |
-| P1-6: malformed JSON | ⚠️ | Синтаксически повреждённый JSON даёт 400, но валидный JSON `null` даёт 500 |
+| P1-6: malformed JSON | ✅ | `parseJsonObject()` отвергает `null`/`[]`/строки с 400; синтаксически повреждённый JSON → 400 |
 | P2-1: runtime-валидация каталога | ❌ | Worker возвращает распарсенный KV без схемы |
-| P2-2: лимит размера JSON | ⚠️ | Проверяется JSON `Content-Length`; multipart body не ограничен до `formData()` |
+| P2-2: лимит размера JSON | ✅ | `parseJsonObject()` проверяет `Content-Length`; multipart проверяется до `formData()` через `MAX_MULTIPART_BODY` |
 | P2-3: текст rate-limit | ✅ | Сообщение исправлено на «Подождите 2 минуты» |
 | P2-4: проверка `result.ok` | ⚠️ | Заказ проверяет результат, review только логирует ошибку и всё равно показывает success |
 | P2-5: модель отзывов | ✅ | Курированные отзывы + отправка владельцу в Telegram |
 | P2-6: дублирование renderer отзывов | ✅ | Основной renderer находится в `scripts/reviews.js` |
 | P2-7: `figure_hero.py --axis` | ✅ | Тип аргумента исправлен на `int`, smoke-тест прошёл |
 | P2-8: лимиты файлов | ⚠️ | Размеры синхронизированы, но MIME и расширения расходятся |
-| P2-9: логирование | ⚠️ | Логи добавлены, но нет timeout/error classification для Telegram |
+| P2-9: логирование | ✅ | Structured JSON logging с request ID, timestamps, level classification (info/warn/error) |
 | Accessibility | ⚠️ | Базовые улучшения есть, но формы, stars, lightbox и drawer требуют доработки |
 | README | ⚠️ | Основная архитектура обновлена, но seed и image-инструкции противоречат коду |
 | Wiki | ❌ | Остались инструкции про старый POST catalog и старую архитектуру |
@@ -153,11 +174,23 @@ npx wrangler deploy --dry-run
 
 ## SEC-01 / P0 — публичный Telegram proxy без server-side защиты
 
-**Файлы:**
+**Статус:** 🔧 Частично исправлено (commit `442c73e`). Legacy routes удалены, добавлены checkOrigin и structured logging. Turnstile и rate limit — открыты.
 
-- `worker/src/index.ts:99–233`
-- `worker/src/index.ts:238–284`
-- `worker/src/index.ts:305–323`
+**Файлы:** `worker/src/index.ts` (пересмотрено).
+
+### Что исправлено (442c73e)
+
+1. Удалены маршруты `/api/proxy` и `POST /` → теперь возвращают 404.
+2. Добавлен `checkOrigin()` — проверка `Origin` header (дополнительный слой).
+3. Добавлен structured logging с request ID.
+4. Добавлена валидация `request_id` (макс. 200 символов).
+5. Разделены client error (4xx) / upstream error (502) / internal error (5xx).
+
+### Что остаётся открытым
+
+1. **Turnstile** — нет `TURNSTILE_SECRET` в env; фронтенд не интегрирован.
+2. **Rate limit** — нет server-side rate limiting (KV-based или Cloudflare WAF).
+3. **CHAT_ID** в `wrangler.toml` `[vars]` виден в deployed source → рекомендация вынести в secret.
 
 ### Проблема
 
@@ -296,9 +329,10 @@ URL: https://tg-proxy.metalkor91.workers.dev/api/order
 
 ## BUG-02 / P1 — partial file failure несовместим с клиентом
 
-**Worker:** `worker/src/index.ts:219–223`.
+**Статус:** 🔧 Частично исправлено (commit `442c73e`). Worker теперь возвращает `status: 'partial'` / `status: 'success'`. Клиентская обработка — открыта (Этап 4).
 
-**Client:** `order.html:311–317, 373–402`.
+**Worker:** `worker/src/index.ts` — `handleOrder()` возвращает `status` поле.
+**Client:** `order.html` — пока не обновлён.
 
 ### Проблема
 
@@ -482,7 +516,9 @@ if (file.type && !ALLOWED_TYPES.includes(file.type)) {
 
 ## SEC-04 / P1 — multipart разбирается до ограничения полного body
 
-**Файл:** `worker/src/index.ts:153–180`.
+**Статус:** ✅ Исправлено (commit `442c73e`). Добавлена проверка `Content-Length` до `formData()` через `MAX_MULTIPART_BODY` (50 МБ).
+
+**Файлы:** `worker/src/index.ts` — проверка в `handleOrder()` перед `request.formData()`.
 
 ### Проблема
 
@@ -523,7 +559,9 @@ const form = await request.formData();
 
 ## REL-01 / P1 — Telegram fetch без timeout и безопасного разбора ответа
 
-**Файл:** `worker/src/index.ts:53–60, 211–217`.
+**Статус:** 🔧 Частично исправлено (commit `442c73e`). Вынесен `sendDocument()` helper, structured logging. Timeout и AbortController — открыты.
+
+**Файлы:** `worker/src/index.ts` — `sendDocument()` и `sendMessage()` как отдельные функции.
 
 ### Проблемы
 
@@ -610,7 +648,9 @@ var items = data && Array.isArray(data.items) ? data.items : [];
 
 ## BUG-03 / P2 — корректный JSON `null` даёт 500
 
-**Файлы:** `worker/src/index.ts:110–115, 244–259`.
+**Статус:** ✅ Исправлено (commit `442c73e`). Добавлена `parseJsonObject()`, отвергающая `null`/`[]`/строки с 400.
+
+**Файлы:** `worker/src/index.ts` — новая функция `parseJsonObject()`.
 
 ### Проблема
 
