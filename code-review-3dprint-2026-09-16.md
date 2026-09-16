@@ -4,7 +4,7 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-16 12:48 RTZ.
+- Дата обновления: 2026-09-16 12:58 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
 - Текущий HEAD: `7b1e5cb` (`origin/fix/security-and-ux` синхронизирован).
@@ -22,8 +22,9 @@
 | 0 — Baseline | `5be0aeb` | ✅ | Ветка `fix/security-and-ux`, ревью-документ как reference |
 | 0 — Восстановление | `7b1e5cb` | ✅ | Восстановлен `code-review-2026-09-15.md` из baseline |
 | 1 (часть 1) — Worker security | `442c73e` | ✅ | Удалены legacy routes, parseJsonObject, checkOrigin, structured logging, Content-Length до formData |
-| 1 (часть 2) — Turnstile | — | ⏳ | Требует TURNSTILE_SECRET + фронтенд-интеграцию |
-| 1 (часть 3) — Rate limit | — | ⏳ | Требует KV-based или Cloudflare WAF rate limiting |
+| 1 (часть 2) — Turnstile | `2626cb0` | ✅ | `enforceTurnstile()` на воркере + виджет на фронтенде. **Требует: реальные site/secret keys от владельца** |
+| 1 (часть 3) — Rate limit | `2626cb0` | ✅ | KV-based per-IP лимитер (order 5/ч, review 3/ч → 429) |
+| 1 (часть 4) — CHAT_ID в secret | — | ⏳ | `CHAT_ID` в `wrangler.toml` `[vars]`; вынос в secret требует `wrangler secret put` (владелец) |
 
 ### Secret scan по git-истории (87 коммитов)
 
@@ -174,23 +175,25 @@ npx wrangler deploy --dry-run
 
 ## SEC-01 / P0 — публичный Telegram proxy без server-side защиты
 
-**Статус:** 🔧 Частично исправлено (commit `442c73e`). Legacy routes удалены, добавлены checkOrigin и structured logging. Turnstile и rate limit — открыты.
+**Статус:** ✅ Исправлено (commits `442c73e`, `2626cb0`). Legacy routes удалены, добавлены checkOrigin, Turnstile, rate limit, structured logging.
 
-**Файлы:** `worker/src/index.ts` (пересмотрено).
+**Файлы:** `worker/src/index.ts`.
 
-### Что исправлено (442c73e)
+### Что исправлено
 
 1. Удалены маршруты `/api/proxy` и `POST /` → теперь возвращают 404.
 2. Добавлен `checkOrigin()` — проверка `Origin` header (дополнительный слой).
 3. Добавлен structured logging с request ID.
 4. Добавлена валидация `request_id` (макс. 200 символов).
 5. Разделены client error (4xx) / upstream error (502) / internal error (5xx).
+6. Добавлен `enforceTurnstile()` — Cloudflare siteverify (`TURNSTILE_SECRET`).
+7. Добавлен `enforceRateLimit()` — KV-based per-IP (order 5/ч, review 3/ч → 429).
+8. Добавлен Turnstile-виджет на фронтенде (`order.html`, `reviews.html`).
 
-### Что остаётся открытым
+### Что остаётся (требует действий владельца в Cloudflare dashboard)
 
-1. **Turnstile** — нет `TURNSTILE_SECRET` в env; фронтенд не интегрирован.
-2. **Rate limit** — нет server-side rate limiting (KV-based или Cloudflare WAF).
-3. **CHAT_ID** в `wrangler.toml` `[vars]` виден в deployed source → рекомендация вынести в secret.
+1. **Turnstile keys** — создать widget, вписать `TURNSTILE_SITE_KEY` в HTML и `TURNSTILE_SECRET` как secret воркера (`wrangler secret put TURNSTILE_SECRET`). Пока не настроено — graceful degradation (пропуск).
+2. **CHAT_ID** в `wrangler.toml` `[vars]` виден в deployed source → вынести в secret (`wrangler secret put CHAT_ID`).
 
 ### Проблема
 
