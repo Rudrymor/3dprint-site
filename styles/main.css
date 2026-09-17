@@ -287,6 +287,20 @@ body.lb-open{overflow:hidden}
 .form-success h3{font-size:22px;font-weight:700;margin-bottom:10px}
 .form-success p{font-size:15px;color:#a1a1aa;margin-bottom:24px}
 .form-success .btn-submit{display:inline-block;width:auto;padding:14px 32px;margin-top:0}
+.form-success-order{margin-bottom:22px;font-size:13px;color:#71717a;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.form-success .btn-submit-secondary{display:inline-block;width:auto;padding:14px 32px;margin:0 0 0 10px;background:none;border:1px solid rgba(255,255,255,.16);color:#a1a1aa}
+.form-success .btn-submit-secondary:hover{transform:none;box-shadow:none;background:rgba(255,255,255,.05);color:#fafafa}
+
+/* ── Состояния формы заявки (этап 4) ── */
+.is-hidden{display:none !important}
+.form-row [aria-invalid="true"]{border-color:rgba(248,113,113,.65);box-shadow:0 0 0 3px rgba(248,113,113,.12)}
+.form-row [aria-invalid="true"]:focus{border-color:rgba(248,113,113,.75);box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+.field-error{margin-top:8px;font-size:13px;line-height:1.45;color:#f87171}
+.form-status{margin-top:14px;font-size:14px;line-height:1.5;text-align:center;color:#a1a1aa}
+.form-status:empty{display:none}
+.form-status.is-error{color:#f87171}
+.form-status.is-info{color:#67e8f9}
+.attach-note.is-error{color:#f87171}
 
 /* ── FORM HEADER (скрывается при успехе) ── */
 .form-header.hidden{display:none}

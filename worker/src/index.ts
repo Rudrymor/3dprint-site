@@ -3,9 +3,11 @@ import {
   isRequestIdValid,
   normalizeText,
   validateReview,
+  validateOrder,
   validateFiles,
   tooManyFields,
   validateCatalogPayload,
+  type OrderInput,
 } from './validators';
 import { claimIdempotency, finalizeIdempotency } from './idempotency';
 // Durable Object для атомарной idempotency — re-export, чтобы wrangler
@@ -252,6 +254,50 @@ function isHoneypot(v: unknown): boolean {
 }
 
 // ── Order handler ──
+/**
+ * Легаси-путь: старый клиент (до деплоя Pages на этапе 10) слал готовую строку
+ * `text`. Пока новый клиент не в проде, Worker принимает оба контракта.
+ * После деплоя Pages поставить false и удалить ветку (см. ревью, этап 10).
+ */
+const ALLOW_LEGACY_TEXT = true;
+
+/** Собирает служебный текст заявки для Telegram из ПРОВЕРЕННЫХ полей. */
+function buildOrderText(
+  orderNum: string,
+  dateStr: string,
+  o: OrderInput,
+  fileNames: string[],
+  filesTotal: number,
+): string {
+  const lines = [
+    '🆕 Заявка #' + orderNum,
+    '📅 ' + dateStr,
+    '',
+    '👤 Имя: ' + o.name,
+    '📱 Контакт: ' + o.contact,
+    '📦 Материал: ' + (o.material || 'Не указан'),
+    '🎨 Цвет: ' + (o.color || 'Не указан'),
+    '🔢 Копий: ' + o.quantity,
+    '📎 Файлы: ' + (fileNames.length ? fileNames.join(', ') + ' (' + filesTotal + ')' : 'нет'),
+  ];
+  // Свободный текст — последним блоком и с префиксом «│ »: даже если внутри
+  // описания есть строка вида «📦 Материал: …», она визуально остаётся внутри
+  // блока описания, а не выглядит отдельным полем заявки.
+  if (o.description) {
+    lines.push('', '📝 Описание:');
+    o.description.split('\n').forEach(line => lines.push(line ? '│ ' + line : '│'));
+  }
+  return lines.join('\n');
+}
+
+function formatOrderDate(now: Date): string {
+  return (
+    now.toLocaleDateString('ru-RU') +
+    ' ' +
+    now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  );
+}
+
 async function handleOrder(request: Request, env: Env): Promise<Response> {
   const requestId = crypto.randomUUID();
   log('info', 'order: incoming', { requestId });
@@ -263,132 +309,155 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   if (rateErr) return rateErr;
 
   const contentType = request.headers.get('content-type') || '';
+  const isMultipart = contentType.includes('multipart/form-data');
 
-  // ── JSON path (no files) ──
-  if (!contentType.includes('multipart/form-data')) {
+  // ── Читаем вход: multipart (с файлами) или JSON (без файлов) ──
+  let get: (key: string) => unknown;
+  let files: File[] = [];
+
+  if (isMultipart) {
+    // Content-Length проверяем ДО formData(), чтобы не парсить гигантский body.
+    const cl = request.headers.get('content-length');
+    if (cl && parseInt(cl, 10) > Limits.maxMultipartBytes) {
+      return json({ ok: false, status: 'invalid', error: 'Request body too large' }, 413);
+    }
+    const form = await request.formData();
+    if (tooManyFields([...form.keys()].length)) {
+      return json({ ok: false, status: 'invalid', error: 'Too many fields' }, 413);
+    }
+    get = (key: string) => form.get(key);
+    files = form.getAll('files').filter((v): v is File => v instanceof File);
+  } else {
     const parsed = await parseJsonObject(request);
     if (!parsed.ok) return parsed.response;
     const body = parsed.body;
-
-    // Turnstile
-    const tsErr = await enforceTurnstile(request, env, body['cf-turnstile-response']);
-    if (tsErr) return tsErr;
-
-    // Honeypot
-    if (isHoneypot(body.honeypot)) {
-      log('info', 'order: honeypot triggered', { requestId });
-      return json({ ok: true, silent: true }, 200);
-    }
-
-    // request_id — обязательный UUID v4
-    const rid = validateRequestIdResponse(body.request_id);
-    if (!rid.ok) return rid.response;
-
-    const text = normalizeText(body.text);
-    if (text.length < Limits.textMin) {
-      return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
-    }
-
-    // Idempotency — атомарный claim через Durable Object (этап 3).
-    // Первый запрос занимает ключ и шлёт; параллельный дубликат того же ID
-    // получает 409 и НЕ шлёт; repeat с завершённым ID возвращает прежний ответ.
-    const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
-    if (!claim.ok) {
-      // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
-      return json(claim.result ?? { error: 'Заявка уже обрабатывается. Подождите.' }, claim.status);
-    }
-
-    const orderNum = getNextOrderNumber();
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const fullText = '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + text;
-
-    const res = await sendMessage(env, fullText);
-    const result = { ok: res.ok, order: orderNum, description: res.description };
-
-    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
-    log(res.ok ? 'info' : 'error', 'order: telegram result', { requestId, order: orderNum, ok: res.ok });
-    return json(result, res.ok ? 200 : 502);
+    get = (key: string) => body[key];
   }
 
-  // ── Multipart path (with files) ──
-  // Check Content-Length before formData() to prevent oversized multipart.
-  const cl = request.headers.get('content-length');
-  if (cl && parseInt(cl, 10) > Limits.maxMultipartBytes) {
-    return json({ error: 'Request body too large' }, 413);
-  }
-
-  const form = await request.formData();
-
-  // Limit number of fields (SEC-04) — защита от абуза служебными полями.
-  if (tooManyFields([...form.keys()].length)) {
-    return json({ error: 'Too many fields' }, 413);
-  }
-
-  // Turnstile
-  const tsErr = await enforceTurnstile(request, env, form.get('cf-turnstile-response'));
+  // Turnstile (если настроен secret; иначе — no-op)
+  const tsErr = await enforceTurnstile(request, env, get('cf-turnstile-response'));
   if (tsErr) return tsErr;
 
-  // Honeypot
-  const honeypot = form.get('honeypot');
-  if (isHoneypot(honeypot)) {
-    log('info', 'order: honeypot triggered (multipart)', { requestId });
-    return json({ ok: true, silent: true }, 200);
+  // Honeypot — «тихий» успех, ничего не отправляем и не раскрываем бота
+  if (isHoneypot(get('honeypot'))) {
+    log('info', 'order: honeypot triggered', { requestId, multipart: isMultipart });
+    return json({ ok: true, status: 'success', silent: true }, 200);
   }
 
   // request_id — обязательный UUID v4
-  const rid = validateRequestIdResponse(form.get('request_id'));
+  const rid = validateRequestIdResponse(get('request_id'));
   if (!rid.ok) return rid.response;
 
-  const text = normalizeText(form.get('text'));
-  if (text.length < Limits.textMin) {
-    return json({ error: `Text too short (min ${Limits.textMin} characters)` }, 400);
+  // Структурированные поля (BUG-01): текст для Telegram собирает сервер.
+  const structured = validateOrder({
+    name: get('name'),
+    contact: get('contact'),
+    description: get('description'),
+    material: get('material'),
+    color: get('color'),
+    quantity: get('quantity'),
+  });
+
+  // Легаси-контракт (только пока в проде старый клиент): готовая строка `text`.
+  const legacyText =
+    ALLOW_LEGACY_TEXT && !structured.ok ? normalizeText(get('text')) : '';
+
+  if (!structured.ok && legacyText.length < Limits.textMin) {
+    log('warn', 'order: validation failed', { requestId, fields: Object.keys(structured.fields).join(',') });
+    return json(
+      { ok: false, status: 'invalid', error: 'Проверьте поля формы', fields: structured.fields },
+      400,
+    );
+  }
+  if (!structured.ok) {
+    log('warn', 'order: legacy text payload accepted', { requestId });
   }
 
-  // Idempotency — атомарный claim через Durable Object (этап 3).
+  // ── Валидация файлов ДО claim: иначе отклонённый файл «съедает» request_id
+  // и повторная отправка после исправления получала бы 409. ──
+  let fileNames: string[] = [];
+  if (isMultipart) {
+    const filesV = validateFiles(files);
+    if (!filesV.ok) {
+      log('warn', 'order: files rejected', { requestId, status: filesV.status });
+      return json({ ok: false, status: 'invalid', error: filesV.error }, filesV.status);
+    }
+    // Имена берём из валидированного списка, пустые файлы отбрасываем:
+    // fileNames[i] соответствует files[i] после фильтра.
+    fileNames = filesV.fileNames.map(f => f.name);
+    files = files.filter(f => f.size > 0);
+  }
+
+  // ── Idempotency: атомарный claim через Durable Object (этап 3) ──
+  // Первый запрос занимает ключ и шлёт; параллельный дубликат того же ID
+  // получает 409 и НЕ шлёт; repeat с завершённым ID возвращает прежний ответ.
   const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
   if (!claim.ok) {
     // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
-    return json(claim.result ?? { error: 'Заявка уже обрабатывается. Подождите.' }, claim.status);
+    return json(
+      claim.result ?? { ok: false, status: 'pending', error: 'Заявка уже обрабатывается. Подождите.' },
+      claim.status,
+    );
   }
 
-  // Files validation (расширение/MIME/размер/количество)
-  const files = form.getAll('files').filter((v): v is File => v instanceof File);
-  const filesV = validateFiles(files);
-  if (!filesV.ok) return json({ error: filesV.error }, filesV.status);
-  const fileList: File[] = files.filter(f => f.size > 0);
-
   const orderNum = getNextOrderNumber();
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  const fullText = '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + text;
+  const dateStr = formatOrderDate(new Date());
+  const fullText = structured.ok
+    ? buildOrderText(orderNum, dateStr, structured.data, fileNames, files.length)
+    : '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + legacyText;
 
-  const msgRes = await sendMessage(env, fullText);
+  // ── Отправка в Telegram ──
+  let msgRes: TelegramResult;
+  try {
+    msgRes = await sendMessage(env, fullText);
+  } catch (err) {
+    // Результат upstream неизвестен. Автоматически НЕ повторяем: сообщение
+    // могло уйти. Фиксируем терминальное состояние, чтобы ретрай с тем же
+    // request_id не создал дубль, и честно говорим об этом пользователю.
+    const result = {
+      ok: false,
+      status: 'unknown',
+      order: orderNum,
+      message: 'Ответ Telegram не получен. Заявка может быть доставлена — не отправляйте её повторно, свяжитесь через ВКонтакте.',
+    };
+    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
+    log('error', 'order: telegram send unknown', { requestId, order: orderNum, error: String(err) });
+    return json(result, 502);
+  }
+
   if (!msgRes.ok) {
-    const result = { ok: false, order: orderNum, description: msgRes.description };
+    const result = {
+      ok: false,
+      status: 'rejected',
+      order: orderNum,
+      description: msgRes.description,
+      message: 'Telegram отклонил заявку. Попробуйте ещё раз или свяжитесь через ВКонтакте.',
+    };
     await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
     log('error', 'order: telegram sendMessage failed', { requestId, order: orderNum, desc: msgRes.description });
     return json(result, 502);
   }
 
   let sent = 0;
-  for (let i = 0; i < fileList.length; i++) {
-    const name = filesV.fileNames[i].name;
-    const docRes = await sendDocument(env, fileList[i], name);
+  for (let i = 0; i < files.length; i++) {
+    const docRes = await sendDocument(env, files[i], fileNames[i]);
     if (!docRes.ok) {
       const result = {
-        ok: false, status: 'partial', order: orderNum,
-        sent, total: fileList.length,
-        message: 'Text sent but file delivery failed. Contact VK for file resend.',
+        ok: false,
+        status: 'partial',
+        order: orderNum,
+        sent,
+        total: files.length,
+        message: `Текст заявки отправлен, файлы — нет (доставлено ${sent} из ${files.length}). Пришлите файлы во ВКонтакте.`,
       };
       await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
-      log('warn', 'order: partial file failure', { requestId, order: orderNum, sent, total: fileList.length });
+      log('warn', 'order: partial file failure', { requestId, order: orderNum, sent, total: files.length });
       return json(result, 200);
     }
     sent++;
   }
 
-  const result = { ok: true, status: 'success', order: orderNum, files: sent };
+  const result = { ok: true, status: 'success', order: orderNum, files: sent, total: files.length };
   await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
   log('info', 'order: complete', { requestId, order: orderNum, files: sent });
   return json(result, 200);

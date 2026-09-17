@@ -15,6 +15,15 @@ export const Limits = {
   // text
   textMin: 10,
   textMax: 10000,
+  orderNameMin: 2,
+  orderNameMax: 100,
+  orderContactMin: 3,
+  orderContactMax: 100,
+  orderDescMin: 10,
+  orderDescMax: 2000,
+  orderColorMax: 100,
+  orderQtyMin: 1,
+  orderQtyMax: 999,
   reviewNameMax: 100,
   reviewTextMin: 10,
   reviewTextMax: 2000,
@@ -39,6 +48,97 @@ export function isRequestIdValid(value: unknown): boolean {
 export function normalizeText(value: unknown, max = Limits.textMax): string {
   if (typeof value !== 'string') return '';
   return value.slice(0, max).trim();
+}
+
+// ── order (структурированные поля заявки, BUG-01) ──
+// Сервер получает отдельные поля, а НЕ готовую Telegram-строку: иначе клиент
+// (или любой, кто подделает запрос) полностью контролирует текст сообщения.
+export const ORDER_MATERIALS = new Set(['PLA', 'PETG', 'ABS', 'other']);
+
+export type OrderInput = {
+  name: string;
+  contact: string;
+  description: string;
+  material: string;
+  color: string;
+  quantity: number;
+};
+
+/**
+ * Однострочное поле: переводы строк и табы схлопываются в пробел, повторы
+ * пробелов убираются. Так пользователь не может вставить в имя/контакт
+ * поддельную служебную строку («📎 Файлы: нет») — текст для Telegram
+ * собирает сервер из проверенных значений.
+ */
+export function singleLine(value: unknown, max: number): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim().slice(0, max);
+}
+
+/** Описание — многострочное: сохраняем абзацы, но убираем \r и длинные пустоты. */
+export function normalizeDescription(value: unknown, max = Limits.orderDescMax): string {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+$/gm, '')
+    .trim()
+    .slice(0, max);
+}
+
+export type OrderFieldErrors = Record<string, string>;
+
+/**
+ * Валидирует структурированные поля заявки. Возвращает нормализованные данные
+ * либо карту ошибок по полям (клиент показывает их рядом с конкретным полем).
+ */
+export function validateOrder(input: unknown):
+  | { ok: true; data: OrderInput }
+  | { ok: false; fields: OrderFieldErrors } {
+  const b: Record<string, unknown> =
+    input && typeof input === 'object' && !Array.isArray(input) ? (input as Record<string, unknown>) : {};
+  const fields: OrderFieldErrors = {};
+
+  const name = singleLine(b.name, Limits.orderNameMax);
+  if (name.length < Limits.orderNameMin) {
+    fields.name = `Укажите имя (от ${Limits.orderNameMin} до ${Limits.orderNameMax} символов)`;
+  }
+
+  const contact = singleLine(b.contact, Limits.orderContactMax);
+  if (contact.length < Limits.orderContactMin) {
+    fields.contact = `Укажите телефон или Telegram (от ${Limits.orderContactMin} до ${Limits.orderContactMax} символов)`;
+  }
+
+  const description = normalizeDescription(b.description);
+  if (description.length < Limits.orderDescMin) {
+    fields.description = `Опишите проект подробнее — минимум ${Limits.orderDescMin} символов`;
+  }
+
+  // Материал необязателен, но если указан — только из allowlist.
+  let material = '';
+  if (b.material !== undefined && b.material !== null && String(b.material) !== '') {
+    material = singleLine(b.material, 20);
+    if (!ORDER_MATERIALS.has(material)) {
+      fields.material = 'Неизвестный материал';
+    }
+  }
+
+  const color = singleLine(b.color, Limits.orderColorMax);
+
+  // Количество: отсутствует → 1; иначе строгий целый int в диапазоне.
+  let quantity = 1;
+  if (b.quantity !== undefined && b.quantity !== null && String(b.quantity) !== '') {
+    const raw = typeof b.quantity === 'string' ? b.quantity.trim() : b.quantity;
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < Limits.orderQtyMin || n > Limits.orderQtyMax) {
+      fields.quantity = `Количество — целое число от ${Limits.orderQtyMin} до ${Limits.orderQtyMax}`;
+    } else {
+      quantity = n;
+    }
+  }
+
+  if (Object.keys(fields).length > 0) return { ok: false, fields };
+  return { ok: true, data: { name, contact, description, material, color, quantity } };
 }
 
 // ── review ──

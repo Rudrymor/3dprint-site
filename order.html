@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=14">
+<link rel="stylesheet" href="styles/main.css?v=15">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
@@ -40,23 +40,26 @@
         <p class="sub">Заполните форму - свяжемся с вами для уточнения деталей</p>
       </div>
       
-      <form id="order-form" novalidate>
+      <form id="order-form">
         <div class="form-row">
           <label for="order-name">Ваше имя</label>
-          <input type="text" id="order-name" name="name" placeholder="Как к вам обращаться" required autocomplete="name" maxlength="100">
+          <input type="text" id="order-name" name="name" placeholder="Как к вам обращаться" required autocomplete="name" maxlength="100" aria-describedby="order-name-error">
+          <p class="field-error is-hidden" id="order-name-error"></p>
         </div>
         <div class="form-row">
           <label for="order-contact">Телефон или Telegram</label>
-          <input type="tel" id="order-contact" name="contact" placeholder="+7 ... или @username" required autocomplete="tel" maxlength="100">
+          <input type="tel" id="order-contact" name="contact" placeholder="+7 ... или @username" required autocomplete="tel" maxlength="100" aria-describedby="order-contact-error">
+          <p class="field-error is-hidden" id="order-contact-error"></p>
         </div>
         <div class="form-row">
           <label for="desc-input">Краткое описание проекта</label>
           <div class="desc-wrap">
-            <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required maxlength="2000" minlength="10"></textarea>
+            <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required maxlength="2000" minlength="10" aria-describedby="desc-input-error"></textarea>
             <button type="button" class="attach-btn" id="attach-btn" aria-label="Прикрепить файлы с компьютера" title="Прикрепить файлы">
               <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
           </div>
+          <p class="field-error is-hidden" id="desc-input-error"></p>
           <input type="file" id="attach-input" multiple hidden accept=".stl,.obj,.3mf,.step,.stp,.igs,.iges,.dwg,.f3d,.zip,.rar,.pdf,.jpg,.jpeg,.png,.webp,.heic,.gif">
           <div class="attach-list" id="attach-list"></div>
           <p class="attach-note" id="attach-note">Можно приложить фото, чертёж или 3D-модель — до 5 файлов, 15 МБ каждый</p>
@@ -78,7 +81,8 @@
           </div>
           <div>
             <label for="order-quantity">Количество копий</label>
-            <input type="number" id="order-quantity" name="quantity" placeholder="1" value="1" min="1" max="999">
+            <input type="number" id="order-quantity" name="quantity" placeholder="1" value="1" min="1" max="999" aria-describedby="order-quantity-error">
+            <p class="field-error is-hidden" id="order-quantity-error"></p>
           </div>
         </div>
         <!-- Honeypot — invisible to users, bots fill it -->
@@ -86,19 +90,22 @@
           <label for="website">Website</label>
           <input type="text" name="honeypot" id="website" tabindex="-1" autocomplete="off">
         </div>
-        <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в скрипте ниже. -->
+        <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в scripts/order.js. -->
         <div id="order-turnstile" class="order-turnstile" style="margin:4px 0 12px;"></div>
         <input type="hidden" id="order-turnstile-token" name="cf-turnstile-response">
         <button type="submit" class="btn-submit">Отправить заявку</button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
         <p class="form-note">Без предоплаты</p>
       </form>
       
       <!-- УСПЕХ (показывается после отправки) -->
-      <div class="form-success" id="form-success" role="status" aria-live="polite">
-        <div class="icon">✅</div>
-        <h3>Заявка отправлена!</h3>
-        <p>Свяжемся с вами. Проверьте Telegram или телефон.</p>
+      <div class="form-success" id="form-success" role="status" aria-live="polite" tabindex="-1">
+        <div class="icon" id="form-success-icon">✅</div>
+        <h3 id="form-success-title">Заявка отправлена!</h3>
+        <p id="form-success-text">Свяжемся с вами. Проверьте Telegram или телефон.</p>
+        <p class="form-success-order is-hidden" id="form-success-order"></p>
         <a href="works.html" class="btn-submit">Смотреть работы</a>
+        <a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="btn-submit btn-submit-secondary is-hidden" id="form-success-vk">Прислать файлы в VK</a>
       </div>
     </div>
 
@@ -159,296 +166,6 @@
 </a>
 
 <script src="scripts/common.js?v=4"></script>
-<script>
-// ─── МОБИЛЬНЫЕ ТУЛТИПЫ МАТЕРИАЛОВ ───
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.innerWidth > 768) return;
-
-  var tips = document.querySelectorAll('.mat-tip');
-
-  tips.forEach(function(tip) {
-    var icon = tip.querySelector('.mat-tip-icon');
-    if (!icon) return;
-
-    icon.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var isActive = tip.classList.contains('active');
-
-      // Закрыть все остальные
-      tips.forEach(function(t) { t.classList.remove('active'); });
-
-      // Переключить текущий
-      if (!isActive) {
-        tip.classList.add('active');
-      }
-    });
-  });
-
-  // Закрыть при клике вне тултипа
-  document.addEventListener('click', function() {
-    tips.forEach(function(t) { t.classList.remove('active'); });
-  });
-});
-</script>
-<script>
-// ─── ПРИКРЕПЛЕНИЕ ФАЙЛОВ ───
-document.addEventListener('DOMContentLoaded', function() {
-  var input = document.getElementById('attach-input');
-  var btn = document.getElementById('attach-btn');
-  var list = document.getElementById('attach-list');
-  var note = document.getElementById('attach-note');
-  if (!input || !btn || !list) return;
-
-  var MAX_FILES = 5;
-  var MAX_SIZE = 15 * 1024 * 1024;   // 15 МБ на файл
-  var MAX_TOTAL = 40 * 1024 * 1024;  // 40 МБ на всю заявку
-  var files = [];
-
-  function fmtSize(b) {
-    if (b < 1024) return b + ' Б';
-    if (b < 1024 * 1024) return Math.round(b / 1024) + ' КБ';
-    return (b / 1024 / 1024).toFixed(1) + ' МБ';
-  }
-
-  function totalSize() {
-    return files.reduce(function(sum, f) { return sum + f.size; }, 0);
-  }
-
-  function render() {
-    list.innerHTML = '';
-    files.forEach(function(f, i) {
-      var chip = document.createElement('span');
-      chip.className = 'attach-chip';
-
-      var name = document.createElement('span');
-      name.className = 'attach-chip-name';
-      name.textContent = f.name;
-
-      var size = document.createElement('span');
-      size.className = 'attach-chip-size';
-      size.textContent = fmtSize(f.size);
-
-      var del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'attach-chip-del';
-      del.setAttribute('aria-label', 'Убрать файл ' + f.name);
-      del.textContent = '\u00d7';
-      del.addEventListener('click', function() {
-        files.splice(i, 1);
-        render();
-      });
-
-      chip.appendChild(name);
-      chip.appendChild(size);
-      chip.appendChild(del);
-      list.appendChild(chip);
-    });
-
-    list.classList.toggle('has-files', files.length > 0);
-    if (note) {
-      note.textContent = files.length
-        ? 'Приложено ' + files.length + ' из ' + MAX_FILES + ' файлов (' + fmtSize(totalSize()) + ')'
-        : 'Можно приложить фото, чертёж или 3D-модель — до ' + MAX_FILES + ' файлов, 15 МБ каждый';
-    }
-  }
-
-  btn.addEventListener('click', function() { input.click(); });
-
-  input.addEventListener('change', function() {
-    Array.prototype.forEach.call(input.files, function(f) {
-      if (files.length >= MAX_FILES) {
-        alert('К заявке можно приложить максимум ' + MAX_FILES + ' файлов.');
-        return;
-      }
-      if (f.size > MAX_SIZE) {
-        alert('Файл «' + f.name + '» больше 15 МБ. Вставьте ссылку на него в описании проекта.');
-        return;
-      }
-      if (totalSize() + f.size > MAX_TOTAL) {
-        alert('Общий размер вложений больше 40 МБ. Уберите лишнее или пришлите ссылку в описании.');
-        return;
-      }
-      var dup = files.some(function(x) { return x.name === f.name && x.size === f.size; });
-      if (!dup) files.push(f);
-    });
-    input.value = '';
-    render();
-  });
-
-  window.getAttachedFiles = function() { return files; };
-  window.clearAttachments = function() { files = []; input.value = ''; render(); };
-  render();
-});
-</script>
-<script>
-// ─── ФОРМА ЗАЯВКИ ───
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('order-form');
-  const header = document.getElementById('form-header');
-  const success = document.getElementById('form-success');
-  
-  if (!form) return;
-
-  // файлы, прикреплённые к заявке (см. блок «ПРИКРЕПЛЕНИЕ ФАЙЛОВ»)
-  function attachments() {
-    return window.getAttachedFiles ? window.getAttachedFiles() : [];
-  }
-
-  var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
-  var isSubmitting = false;
-
-  // Turnstile site key. Установите сюда реальный ключ из Cloudflare dashboard,
-  // чтобы включить защиту от ботов (плюс TURNSTILE_SECRET на воркере).
-  var TURNSTILE_SITE_KEY = '';
-  var turnstileReady = false;
-
-  function initTurnstile() {
-    var el = document.getElementById('order-turnstile');
-    var tokenInput = document.getElementById('order-turnstile-token');
-    if (!el || !tokenInput) return;
-    if (!TURNSTILE_SITE_KEY) return; // не настроено — пропускаем
-    if (!(window.turnstile && turnstile.render)) return;
-    turnstile.render(el, {
-      sitekey: TURNSTILE_SITE_KEY,
-      callback: function(token) {
-        tokenInput.value = token;
-        turnstileReady = true;
-      },
-      'expired-callback': function() {
-        tokenInput.value = '';
-        turnstileReady = false;
-      }
-    });
-  }
-  initTurnstile();
-
-  // Generate unique request ID (UUID v4 — единый контракт с Worker'ом)
-  function generateRequestId() {
-    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0;
-      var v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-  // Отправка заявки: текст + файлы (multipart). Токен бота скрыт на сервере.
-  function sendOrder(message, files, honeypot, requestId, turnstileToken) {
-    var payload = new FormData();
-    payload.append('text', message);
-    payload.append('request_id', requestId);
-    if (honeypot) payload.append('honeypot', honeypot);
-    if (turnstileToken) payload.append('cf-turnstile-response', turnstileToken);
-    files.forEach(function(f) { payload.append('files', f, f.name); });
-
-    return fetch(WORKER_URL + '/api/order', { method: 'POST', body: payload }).then(function(res) {
-      return res.json().then(function(data) {
-        if (!res.ok || data.ok !== true) {
-          throw new Error(data.error || 'HTTP ' + res.status);
-        }
-        return data;
-      });
-    });
-  }
-  
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Prevent double submit
-    if (isSubmitting) return;
-
-    // Turnstile: если настроен (site key задан) и токен отсутствует — блокируем
-    var tsToken = document.getElementById('order-turnstile-token');
-    if (TURNSTILE_SITE_KEY && tsToken && !tsToken.value) {
-      alert('Подтвердите, что вы не робот.');
-      return;
-    }
-
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
-    
-    // Honeypot check — if filled, silently pretend success
-    if (data.honeypot) {
-      header.classList.add('hidden');
-      form.style.display = 'none';
-      success.classList.add('show');
-      setTimeout(function() {
-        success.classList.remove('show');
-        header.classList.remove('hidden');
-        form.style.display = '';
-        form.reset();
-      }, 3000);
-      return;
-    }
-    
-    // Rate-limit: не чаще 1 заявки в 2 минуты
-    var lastOrder = parseInt(localStorage.getItem('3dprint_last_order') || '0', 10);
-    var now = Date.now();
-    if (now - lastOrder < 120000) {
-      alert('Подождите 2 минуты перед следующей заявкой.');
-      return;
-    }
-    
-    // Lock form
-    isSubmitting = true;
-    var submitBtn = form.querySelector('.btn-submit');
-    var originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Отправляем…';
-    submitBtn.disabled = true;
-    submitBtn.setAttribute('aria-busy', 'true');
-
-    // Формируем сообщение для Telegram
-    const message = [
-      '👤 Имя: ' + data.name,
-      '📱 Контакт: ' + data.contact,
-      '📦 Материал: ' + (data.material || 'Не указан'),
-      '📝 Описание: ' + data.description,
-      '🎨 Цвет материала: ' + (data.color || 'Не указан'),
-      '🔢 Количество копий: ' + (data.quantity ? data.quantity + ' шт.' : '1 шт.'),
-      '📎 Файлы: ' + (attachments().length ? attachments().map(function(f) { return f.name; }).join(', ') : 'нет')
-    ].join('\n');
-
-    var requestId = generateRequestId();
-    var tsTokenVal = document.getElementById('order-turnstile-token') ? document.getElementById('order-turnstile-token').value : '';
-
-    sendOrder(message, attachments(), data.honeypot || '', requestId, tsTokenVal)
-      .then(function(result) {
-        localStorage.setItem('3dprint_last_order', String(now));
-        header.classList.add('hidden');
-        form.style.display = 'none';
-        // Show partial failure message if files weren't delivered
-        if (result.partial) {
-          success.querySelector('h3').textContent = 'Заявка отправлена (частично)';
-          success.querySelector('p').textContent = result.message || 'Текст доставлен, но файлы нет. Свяжитесь через ВКонтакте для отправки файлов.';
-        } else {
-          success.querySelector('h3').textContent = 'Заявка отправлена!';
-          success.querySelector('p').textContent = 'Свяжемся с вами. Проверьте Telegram или телефон.';
-        }
-        success.classList.add('show');
-        // Clear attachments
-        if (window.clearAttachments) window.clearAttachments();
-        setTimeout(function() {
-          success.classList.remove('show');
-          header.classList.remove('hidden');
-          form.style.display = '';
-          form.reset();
-          // Reset success text
-          success.querySelector('h3').textContent = 'Заявка отправлена!';
-          success.querySelector('p').textContent = 'Свяжемся с вами. Проверьте Telegram или телефон.';
-        }, 5000);
-      })
-      .catch(function(err) {
-        console.error('Ошибка отправки:', err);
-        alert('Ошибка отправки. Попробуйте ещё раз или свяжитесь через ВКонтакте.');
-      })
-      .finally(function() {
-        isSubmitting = false;
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-        submitBtn.removeAttribute('aria-busy');
-      });
-  });
-});
-</script>
+<script src="scripts/order.js?v=1"></script>
 </body>
 </html>
