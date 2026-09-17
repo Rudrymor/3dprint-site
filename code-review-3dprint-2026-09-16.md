@@ -4,7 +4,7 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-17 12:45 RTZ.
+- Дата обновления: 2026-09-17 13:00 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
 - Текущий HEAD: `eb89760` (`origin/fix/security-and-ux` синхронизирован).
@@ -809,6 +809,31 @@ success
 
 ---
 
+## UX-04 / P3 — HTML-entities в тексте отзыва доходят до Telegram как есть
+
+**Источник:** найдено при работе над этапом 4 (2026-09-17), перенесено в этап 5.
+
+**Файл:** `worker/src/index.ts` — `handleReview()`.
+
+### Проблема
+
+Имя и текст отзыва прогоняются через `esc()` (`&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`), но `sendMessage()` вызывается **без** `parse_mode`. В этом режиме Telegram HTML не разбирает, поэтому в чате видны буквальные сущности. Пример: отзыв «деталь 5×5 & крепления» приходит как «деталь 5×5 `&amp;` крепления».
+
+Дополнительно: сообщение заявки (`handleOrder()`, этап 4) собирается **без** экранирования — то есть order и review сегодня ведут себя по-разному.
+
+### Инструкция по исправлению (этап 5)
+
+1. **Предпочтительно:** убрать `esc()` и оставить `sendMessage()` без `parse_mode` — текст уходит как есть; инъекции нет, потому что HTML не парсится. Поведение order и review становится одинаковым.
+2. Альтернатива: добавить `parse_mode: 'HTML'` в `sendMessage()` — тогда экранирование обязательно для **обоих** сообщений (order тоже), иначе сообщение с `<` будет отклонено Telegram с 400.
+
+### Acceptance criteria
+
+- Отзыв с символами `&`, `<`, `>` приходит в Telegram в исходном виде.
+- Order и review ведут себя одинаково.
+- Автотест в `worker/tests/run-tests.js`: mock Telegram получает текст с этими символами без изменений.
+
+---
+
 # 5. Accessibility, UX и performance
 
 ## A11Y-01 — звёзды не имеют корректного radio state
@@ -1334,17 +1359,20 @@ legacy routes — removed
 
 ## Этап 5 — review form
 
+**Статус:** ⏳ следующий шаг (не начат).
+
 Вынести inline review logic в `scripts/review-form.js`.
 
 Исправить:
 
-- ожидание ответа Worker;
+- ожидание ответа Worker (сейчас «спасибо» показывается, не дождавшись ответа — UX-01);
 - false success;
-- double submit;
-- request ID;
-- server-side rate limit;
-- aria state stars;
-- focus management FAB/panel.
+- double submit (UX-02);
+- request ID (UUID v4 — контракт этапа 2);
+- server-side rate limit уже есть (KV per-IP, 3/ч → 429) — нужна клиентская обработка 429;
+- aria state stars (A11Y-01), focus management FAB/panel (A11Y-03, A11Y-04);
+- **UX-04 (перенесено с этапа 4):** убрать `esc()` при `sendMessage()` без `parse_mode` — иначе в Telegram видно `&amp;`; заодно выровнять поведение order и review;
+- автотесты на новый контракт в `worker/tests/run-tests.js` (по образцу этапа 4).
 
 ## Этап 6 — catalog и lightbox
 
