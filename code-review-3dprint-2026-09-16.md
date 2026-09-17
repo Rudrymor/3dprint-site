@@ -7,7 +7,7 @@
 - Дата обновления: 2026-09-17 13:00 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: `eb89760` (`origin/fix/security-and-ux` синхронизирован).
+- Текущий HEAD: актуальный — `git log -1` в ветке (последнее обновление этого документа: `2099d90`, `origin/fix/security-and-ux` синхронизирован).
 - Рабочее дерево: чистое.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
