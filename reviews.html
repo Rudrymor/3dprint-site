@@ -49,15 +49,21 @@
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 8px 28px rgba(255,214,0,.35);
-    transition: all .25s;
+    transition: transform .25s, box-shadow .25s;
   }
   .review-fab-btn:hover {
     transform: translateY(-3px) scale(1.03);
     box-shadow: 0 12px 36px rgba(255,214,0,.5);
   }
+  .review-fab-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(6,182,212,.6), 0 8px 28px rgba(255,214,0,.35);
+  }
   .review-fab-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* ── EXPANDED FORM PANEL ── */
+  /* Панель открывается только классом .panel-open (клик/клавиатура), не :hover —
+     иначе мышью её нельзя было бы ни закрыть осознанно, ни открыть с клавиатуры. */
   .review-panel {
     position: fixed;
     bottom: 80px;
@@ -74,13 +80,15 @@
     opacity: 0;
     visibility: hidden;
     transform: translateY(12px);
-    transition: all .3s ease;
+    /* visibility переключается без задержки при открытии и с задержкой при
+       закрытии — иначе «плавное появление» мешает перевести фокус в панель. */
+    transition: opacity .3s ease, transform .3s ease, visibility 0s linear .3s;
   }
-  .review-fab:hover .review-panel,
   .review-fab.panel-open .review-panel {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    transition: opacity .3s ease, transform .3s ease, visibility 0s linear 0s;
   }
   .review-panel h3 {
     font-size: 18px;
@@ -94,7 +102,8 @@
     margin-bottom: 18px;
   }
   .review-panel .form-row { margin-bottom: 14px; }
-  .review-panel .form-row label {
+  .review-panel .form-row label,
+  .review-panel .form-row .form-label {
     display: block;
     font-size: 12px;
     color: #a1a1aa;
@@ -111,7 +120,7 @@
     color: #fafafa;
     font-family: 'Outfit', sans-serif;
     font-size: 14px;
-    transition: all .25s;
+    transition: border-color .25s, box-shadow .25s;
   }
   .review-panel input:focus, .review-panel textarea:focus {
     outline: none;
@@ -131,11 +140,47 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all .25s;
+    transition: transform .25s, box-shadow .25s;
   }
   .review-panel .btn-submit:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(139,92,246,.4);
+  }
+  .review-panel .btn-submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(6,182,212,.5);
+  }
+  .review-panel .btn-submit[disabled] {
+    opacity: .7;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+  }
+  .review-panel .field-error { font-size: 12px; margin-top: 6px; }
+  .review-panel .form-status { margin-top: 12px; font-size: 13px; }
+  .review-panel .form-success h3 { font-size: 16px; margin-bottom: 6px; color: #fafafa; }
+  .review-panel .form-success p { font-size: 14px; color: #a1a1aa; }
+
+  /* ── STARS (radio-группа) ── */
+  .star-rating { margin-bottom: 0; }
+  .star-rating .star {
+    background: none;
+    border: 0;
+    padding: 0 2px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: #3f3f46;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color .15s;
+  }
+  .star-rating .star.active,
+  .star-rating .star:hover { color: #ffd60a; }
+  .star-rating .star:focus-visible {
+    outline: none;
+    color: #ffd60a;
+    box-shadow: 0 0 0 3px rgba(255,214,0,.4);
   }
 
   /* ── REVIEWS LIST ── */
@@ -252,206 +297,58 @@
 
 <!-- FLOATING REVIEW FORM -->
 <div class="review-fab" id="review-fab">
-  <button class="review-fab-btn" id="review-fab-btn">
-    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  <button type="button" class="review-fab-btn" id="review-fab-btn" aria-expanded="false" aria-controls="review-panel" aria-label="Оставить отзыв">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
     <span>Отзыв</span>
   </button>
-  <div class="review-panel" id="review-panel">
-    <h3>Оставить отзыв</h3>
+  <div class="review-panel" id="review-panel" role="dialog" aria-labelledby="review-panel-title">
+    <h3 id="review-panel-title">Оставить отзыв</h3>
     <p class="sub">Расскажите о своём опыте</p>
     <form id="review-form">
       <div class="form-row">
         <label for="review-name">Ваше имя</label>
-        <input type="text" id="review-name" name="name" placeholder="Как к вам обращаться" required maxlength="100">
+        <input type="text" id="review-name" name="name" placeholder="Как к вам обращаться" required autocomplete="name" maxlength="100" aria-describedby="review-name-error">
+        <p class="field-error is-hidden" id="review-name-error"></p>
       </div>
       <div class="form-row">
-        <label id="review-rating-label">Оценка</label>
-        <div class="star-rating" id="star-rating" role="radiogroup" aria-labelledby="review-rating-label">
-          <span class="star" data-value="1">☆</span>
-          <span class="star" data-value="2">☆</span>
-          <span class="star" data-value="3">☆</span>
-          <span class="star" data-value="4">☆</span>
-          <span class="star" data-value="5">☆</span>
+        <span class="form-label" id="review-rating-label">Оценка</span>
+        <div class="star-rating" id="star-rating" role="radiogroup" aria-labelledby="review-rating-label" aria-required="true" aria-describedby="review-rating-error">
+          <button type="button" class="star" role="radio" aria-checked="false" data-value="1" aria-label="1 из 5" tabindex="0">☆</button>
+          <button type="button" class="star" role="radio" aria-checked="false" data-value="2" aria-label="2 из 5" tabindex="-1">☆</button>
+          <button type="button" class="star" role="radio" aria-checked="false" data-value="3" aria-label="3 из 5" tabindex="-1">☆</button>
+          <button type="button" class="star" role="radio" aria-checked="false" data-value="4" aria-label="4 из 5" tabindex="-1">☆</button>
+          <button type="button" class="star" role="radio" aria-checked="false" data-value="5" aria-label="5 из 5" tabindex="-1">☆</button>
         </div>
         <input type="hidden" name="stars" id="stars-input" value="0">
+        <p class="field-error is-hidden" id="review-rating-error"></p>
       </div>
       <div class="form-row">
         <label for="review-text">Отзыв</label>
-        <textarea id="review-text" name="text" placeholder="Расскажите о вашем опыте" required maxlength="2000" minlength="10"></textarea>
+        <textarea id="review-text" name="text" placeholder="Расскажите о вашем опыте" required maxlength="2000" minlength="10" aria-describedby="review-text-error"></textarea>
+        <p class="field-error is-hidden" id="review-text-error"></p>
       </div>
       <!-- Honeypot — invisible to users, bots fill it -->
       <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
         <label for="review-website">Website</label>
         <input type="text" name="honeypot" id="review-website" tabindex="-1" autocomplete="off">
       </div>
-      <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в скрипте ниже. -->
+      <!-- Turnstile (для защиты от ботов). Виджет загружается только при заданном SITE_KEY в scripts/review-form.js. -->
       <div id="review-turnstile" style="margin:4px 0 12px;"></div>
       <input type="hidden" id="review-turnstile-token" name="cf-turnstile-response">
       <button type="submit" class="btn-submit">Отправить</button>
+      <p class="form-status" id="review-status" role="status" aria-live="polite"></p>
     </form>
-    <div class="form-success" id="review-success" style="display:none;text-align:center;padding:20px 0">
-      <div style="font-size:36px;margin-bottom:8px">🙏</div>
-      <p style="color:#a1a1aa;font-size:14px">Спасибо за отзыв!</p>
+    <!-- УСПЕХ (показывается только после подтверждения от Worker'а) -->
+    <div class="form-success" id="review-success" role="status" aria-live="polite" tabindex="-1" style="text-align:center;padding:20px 0">
+      <div class="icon" id="review-success-icon" style="font-size:36px;margin-bottom:8px">🙏</div>
+      <h3 id="review-success-title">Спасибо за отзыв!</h3>
+      <p id="review-success-text">Отзыв ушёл владельцу — он появится на сайте после проверки.</p>
     </div>
   </div>
 </div>
 
 <script src="scripts/common.js?v=4"></script>
 <script src="scripts/reviews.js?v=5"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var root = document.getElementById('reviews-root');
-  var empty = document.getElementById('reviews-empty');
-
-  // Reviews are loaded by reviews.js (loadReviews)
-  // We just need to handle the form, star rating, and FAB
-
-  // Star rating — keyboard accessible
-  var stars = document.querySelectorAll('#star-rating .star');
-  var starsInput = document.getElementById('stars-input');
-  stars.forEach(function(star) {
-    star.setAttribute('tabindex', '0');
-    star.setAttribute('role', 'radio');
-    star.setAttribute('aria-label', star.getAttribute('data-value') + ' из 5');
-    star.addEventListener('click', function() {
-      var val = parseInt(this.getAttribute('data-value'));
-      starsInput.value = val;
-      updateStars(val);
-    });
-    star.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        this.click();
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        var next = Math.min(5, parseInt(this.getAttribute('data-value')) + 1);
-        starsInput.value = next;
-        updateStars(next);
-        document.querySelector('#star-rating .star[data-value="' + next + '"]').focus();
-      }
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        var prev = Math.max(1, parseInt(this.getAttribute('data-value')) - 1);
-        starsInput.value = prev;
-        updateStars(prev);
-        document.querySelector('#star-rating .star[data-value="' + prev + '"]').focus();
-      }
-    });
-  });
-  function updateStars(val) {
-    stars.forEach(function(s) {
-      var v = parseInt(s.getAttribute('data-value'));
-      s.textContent = v <= val ? '\u2605' : '\u2606';
-      s.classList.toggle('active', v <= val);
-    });
-  }
-
-  // FAB toggle
-  var fab = document.getElementById('review-fab');
-  var fabBtn = document.getElementById('review-fab-btn');
-  fabBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    fab.classList.toggle('panel-open');
-  });
-  document.addEventListener('click', function(e) {
-    if (!fab.contains(e.target)) fab.classList.remove('panel-open');
-  });
-
-  // Form submit
-  var form = document.getElementById('review-form');
-  var panel = document.getElementById('review-panel');
-  var success = document.getElementById('review-success');
-
-  // Turnstile site key. Установите сюда реальный ключ, чтобы включить защиту от ботов.
-  var REVIEW_SITE_KEY = '';
-  var reviewTurnstileReady = false;
-
-  function initReviewTurnstile() {
-    var el = document.getElementById('review-turnstile');
-    var tokenInput = document.getElementById('review-turnstile-token');
-    if (!el || !tokenInput) return;
-    if (!REVIEW_SITE_KEY) return; // не настроено — пропускаем
-    if (!(window.turnstile && turnstile.render)) return;
-    turnstile.render(el, {
-      sitekey: REVIEW_SITE_KEY,
-      callback: function(token) {
-        tokenInput.value = token;
-        reviewTurnstileReady = true;
-      },
-      'expired-callback': function() {
-        tokenInput.value = '';
-        reviewTurnstileReady = false;
-      }
-    });
-  }
-  initReviewTurnstile();
-
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      // Turnstile: если настроен (site key задан) и токен отсутствует — блокируем
-      if (REVIEW_SITE_KEY) {
-        var tsTok = document.getElementById('review-turnstile-token');
-        if (tsTok && !tsTok.value) { alert('Подтвердите, что вы не робот.'); return; }
-      }
-
-      var data = Object.fromEntries(new FormData(this).entries());
-      if (data.stars === '0') { alert('Поставьте оценку'); return; }
-
-      var review = {
-        name: data.name,
-        text: data.text,
-        stars: parseInt(data.stars),
-        date: new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})
-      };
-
-      // Отправить отзыв в Telegram через Worker (не публикуем на сайте)
-      var WORKER_URL = 'https://tg-proxy.metalkor91.workers.dev';
-      var tsToken = document.getElementById('review-turnstile-token') ? document.getElementById('review-turnstile-token').value : '';
-      // request_id — обязательный UUID v4 (единый контракт с Worker'ом)
-      var requestId = window.crypto && crypto.randomUUID ? crypto.randomUUID()
-        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0;
-            var v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-          });
-      fetch(WORKER_URL + '/api/review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: review.name,
-          text: review.text,
-          rating: review.stars,
-          request_id: requestId,
-          honeypot: data.honeypot || '',
-          'cf-turnstile-response': tsToken
-        })
-      }).then(function(res) {
-        return res.json();
-      }).then(function(result) {
-        if (!result || result.ok !== true) {
-          console.error('Review rejected:', result);
-        }
-      }).catch(function(err) { console.error('Telegram error:', err); });
-
-      form.style.display = 'none';
-      success.style.display = 'block';
-      setTimeout(function() {
-        form.style.display = '';
-        success.style.display = 'none';
-        form.reset();
-        starsInput.value = '0';
-        stars.forEach(function(st) {
-          st.textContent = '\u2606';
-          st.classList.remove('active');
-        });
-        fab.classList.remove('panel-open');
-      }, 2000);
-    });
-  }
-});
-</script>
+<script src="scripts/review-form.js?v=1"></script>
 </body>
 </html>

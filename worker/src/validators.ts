@@ -24,9 +24,12 @@ export const Limits = {
   orderColorMax: 100,
   orderQtyMin: 1,
   orderQtyMax: 999,
+  reviewNameMin: 2,
   reviewNameMax: 100,
   reviewTextMin: 10,
   reviewTextMax: 2000,
+  reviewRatingMin: 1,
+  reviewRatingMax: 5,
   // catalog
   catalogMaxItems: 100,
   catalogNameMax: 200,
@@ -143,36 +146,47 @@ export function validateOrder(input: unknown):
 
 // ── review ──
 export type ReviewInput = { name: string; text: string; rating: number };
-export type ReviewError = { status: number; message: string };
+export type ReviewFieldErrors = Record<string, string>;
+export type ReviewError = { status: number; message: string; fields?: ReviewFieldErrors };
 
 /**
- * Валидирует объект отзыва. Возвращает нормализованные name/text/rating
- * либо ошибку с предсказуемым 4xx статусом.
+ * Валидирует объект отзыва. Возвращает нормализованные name/text/rating либо
+ * ошибку с предсказуемым 4xx статусом. Ошибки содержимого приходят картой
+ * `fields` по именам полей (как у заявки), чтобы клиент показал их рядом
+ * с конкретным полем.
  */
 export function validateReview(input: unknown): { ok: true; data: ReviewInput } | { ok: false; error: ReviewError } {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     return { ok: false, error: { status: 400, message: 'Request body must be a JSON object' } };
   }
   const b = input as Record<string, unknown>;
+  const fields: ReviewFieldErrors = {};
 
-  const name = typeof b.name === 'string' ? b.name.trim() : '';
-  if (name.length < 2 || name.length > Limits.reviewNameMax) {
-    return { ok: false, error: { status: 400, message: 'Name must be 2-100 characters' } };
+  // Имя — однострочное: оно вставляется в текст сообщения Telegram, перевод
+  // строки позволил бы подделать служебную строку (как в validateOrder).
+  const name = singleLine(b.name, Limits.reviewNameMax);
+  if (name.length < Limits.reviewNameMin) {
+    fields.name = `Имя — от ${Limits.reviewNameMin} до ${Limits.reviewNameMax} символов`;
   }
 
-  const text = typeof b.text === 'string' ? b.text.trim() : '';
-  if (text.length < Limits.reviewTextMin || text.length > Limits.reviewTextMax) {
-    return { ok: false, error: { status: 400, message: 'Review text must be 10-2000 characters' } };
+  const text = normalizeDescription(b.text, Limits.reviewTextMax);
+  if (text.length < Limits.reviewTextMin) {
+    fields.text = `Отзыв — от ${Limits.reviewTextMin} до ${Limits.reviewTextMax} символов`;
   }
 
-  // rating: целое 1..5. Отсутствует/невалиден → 5 (как раньше), но строгий инт.
+  // rating: целое 1..5. Отсутствует/пусто → 5 (совместимость с прежним клиентом).
   let rating = 5;
-  if (b.rating !== undefined && b.rating !== null) {
+  if (b.rating !== undefined && b.rating !== null && String(b.rating) !== '') {
     const n = Number(b.rating);
-    if (!Number.isInteger(n) || n < 1 || n > 5) {
-      return { ok: false, error: { status: 400, message: 'Rating must be an integer 1-5' } };
+    if (!Number.isInteger(n) || n < Limits.reviewRatingMin || n > Limits.reviewRatingMax) {
+      fields.rating = `Оценка — целое число от ${Limits.reviewRatingMin} до ${Limits.reviewRatingMax}`;
+    } else {
+      rating = n;
     }
-    rating = n;
+  }
+
+  if (Object.keys(fields).length > 0) {
+    return { ok: false, error: { status: 400, message: 'Проверьте поля формы', fields } };
   }
 
   return { ok: true, data: { name, text, rating } };

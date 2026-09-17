@@ -90,6 +90,16 @@ function makeFakeDO() {
 
 const noopKV = { get: async () => null, put: async () => {}, delete: async () => {} };
 
+/** KV, который реально считает запросы — для проверки rate limit'а отзывов. */
+function makeCountingKV() {
+  const m = new Map();
+  return {
+    get: async (k) => (m.has(k) ? m.get(k) : null),
+    put: async (k, v) => { m.set(k, v); },
+    delete: async (k) => { m.delete(k); },
+  };
+}
+
 const telegram = {
   calls: [],
   sendMessage: 'ok',   // 'ok' | 'fail' | 'throw'
@@ -158,6 +168,23 @@ function jsonRequest(body) {
     body: JSON.stringify(body),
   });
 }
+
+const URL_REVIEW = 'https://tg-proxy.metalkor91.workers.dev/api/review';
+
+function reviewRequest(body) {
+  return new Request(URL_REVIEW, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+const goodReview = (over) => Object.assign({
+  name: 'Алексей',
+  text: 'Заказывал кронштейн для регистратора — встал как родной.',
+  rating: 5,
+  request_id: UUID(),
+}, over || {});
 
 const goodFields = () => ({
   name: 'Иван',
@@ -400,7 +427,153 @@ async function main() {
   eq('после finalize claim отдаёт результат', c3Data.claimed, false);
   eq('replay возвращает сохранённый результат', c3Data.result && c3Data.result.order, '260917-1');
 
-  // ══ 10. роутер ══
+  // ══ 10. review: валидаторы ══
+  section('validators.validateReview');
+
+  const rv = V.validateReview(goodReview());
+  check('валидный отзыв принимается', rv.ok === true, rv);
+  if (rv.ok) {
+    eq('rating остаётся целым', rv.data.rating, 5);
+    eq('текст тримится', rv.data.text.indexOf('  ') === -1, true);
+  }
+
+  const rvShort = V.validateReview(goodReview({ name: 'А' }));
+  check('короткое имя → ошибка поля name', rvShort.ok === false && !!rvShort.error.fields.name, rvShort);
+
+  const rvText = V.validateReview(goodReview({ text: 'коротко' }));
+  check('короткий текст → ошибка поля text', rvText.ok === false && !!rvText.error.fields.text, rvText);
+
+  const rvRate0 = V.validateReview(goodReview({ rating: 0 }));
+  check('rating=0 отклоняется', rvRate0.ok === false && !!rvRate0.error.fields.rating, rvRate0);
+  const rvRate6 = V.validateReview(goodReview({ rating: 6 }));
+  check('rating=6 отклоняется', rvRate6.ok === false && !!rvRate6.error.fields.rating, rvRate6);
+  const rvRateNa = V.validateReview(goodReview({ rating: 'abc' }));
+  check('rating=abc отклоняется', rvRateNa.ok === false && !!rvRateNa.error.fields.rating, rvRateNa);
+  const rvRateAbsent = V.validateReview(goodReview({ rating: undefined }));
+  check('rating отсутствует → 5', rvRateAbsent.ok === true && rvRateAbsent.data.rating === 5, rvRateAbsent);
+
+  const rvInject = V.validateReview(goodReview({ name: 'Алексей\n⭐ 5\n📝 Подделка' }));
+  check('перевод строки в имени схлопывается', rvInject.ok === true && rvInject.data.name.indexOf('\n') === -1, rvInject);
+
+  // ══ 11. POST /api/review — success и UX-04 (символы как есть) ══
+  section('POST /api/review — success');
+
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  const revFields = goodReview({ rating: 4 });
+  let revRes = await worker(reviewRequest(revFields));
+  let revData = await revRes.json();
+  eq('review: HTTP 200', revRes.status, 200);
+  eq('review: status=success', revData.status, 'success');
+  eq('review: ok=true', revData.ok, true);
+  eq('review: одно сообщение в Telegram', messageCount(), 1);
+  check('review: звёзды по оценке (4 из 5)', (lastMessage() || '').indexOf('(⭐⭐⭐⭐)\n') !== -1, lastMessage());
+
+  // UX-04: символы & < > доходят до Telegram БЕЗ HTML-сущностей.
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  const symReview = goodReview({
+    name: 'Пётр & Co',
+    text: 'Деталь 5x5 <важно> & крепления — всё ок.',
+  });
+  revRes = await worker(reviewRequest(symReview));
+  revData = await revRes.json();
+  const revText = lastMessage() || '';
+  eq('review: HTTP 200 (символы)', revRes.status, 200);
+  check('символы & < > ушли как есть', revText.indexOf('Пётр & Co') !== -1 && revText.indexOf('<важно> & крепления') !== -1, revText);
+  check('HTML-сущностей в тексте нет', revText.indexOf('&amp;') === -1 && revText.indexOf('&lt;') === -1, revText);
+
+  // replay того же request_id → тот же результат, без повторной отправки
+  const revReplay = await worker(reviewRequest(symReview));
+  const revReplayData = await revReplay.json();
+  eq('review replay: HTTP 200', revReplay.status, 200);
+  eq('review replay: статус тот же', revReplayData.status, 'success');
+  eq('review replay: Telegram не вызван повторно', messageCount(), 1);
+
+  // ══ 12. POST /api/review — отказы валидации, honeypot, request_id ══
+  section('POST /api/review — invalid / honeypot / request_id');
+
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+
+  const revEmpty = await worker(reviewRequest({ request_id: UUID() }));
+  const revEmptyData = await revEmpty.json();
+  eq('пустой отзыв: HTTP 400', revEmpty.status, 400);
+  eq('пустой отзыв: status=invalid', revEmptyData.status, 'invalid');
+  check('пустой отзыв: ошибки по полям', !!(revEmptyData.fields && revEmptyData.fields.name && revEmptyData.fields.text), revEmptyData.fields);
+  eq('пустой отзыв: Telegram не вызван', messageCount(), 0);
+
+  const revBadId = await worker(reviewRequest(goodReview({ request_id: 'review-1' })));
+  eq('не-UUID request_id: HTTP 400', revBadId.status, 400);
+  const revNoId = await worker(reviewRequest(goodReview({ request_id: undefined })));
+  eq('отсутствующий request_id: HTTP 400', revNoId.status, 400);
+
+  const revHoney = await worker(reviewRequest({ request_id: UUID(), honeypot: 'spam-bot' }));
+  const revHoneyData = await revHoney.json();
+  eq('honeypot: HTTP 200', revHoney.status, 200);
+  eq('honeypot: silent', revHoneyData.silent, true);
+  eq('honeypot: Telegram не вызван', messageCount(), 0);
+
+  // ══ 13. POST /api/review — rejected / unknown ══
+  section('POST /api/review — rejected / unknown');
+
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  telegram.sendMessage = 'fail';
+  const revRej = await worker(reviewRequest(goodReview()));
+  const revRejData = await revRej.json();
+  eq('review rejected: HTTP 502', revRej.status, 502);
+  eq('review rejected: status=rejected', revRejData.status, 'rejected');
+
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  telegram.sendMessage = 'throw';
+  const revRidUnknown = UUID();
+  const revUnk = await worker(reviewRequest(goodReview({ request_id: revRidUnknown })));
+  const revUnkData = await revUnk.json();
+  eq('review unknown: HTTP 502', revUnk.status, 502);
+  eq('review unknown: status=unknown', revUnkData.status, 'unknown');
+  eq('review unknown: одна попытка отправки', messageCount(), 1);
+
+  telegram.sendMessage = 'ok';
+  const revUnkReplay = await worker(reviewRequest(goodReview({ request_id: revRidUnknown })));
+  const revUnkReplayData = await revUnkReplay.json();
+  eq('review unknown replay: тот же статус', revUnkReplayData.status, 'unknown');
+  eq('review unknown replay: повторной отправки нет', messageCount(), 1);
+
+  // ══ 14. POST /api/review — rate limit (3/ч → 429) ══
+  section('POST /api/review — rate limit');
+
+  resetTelegram();
+  env = makeEnv();
+  env.CATALOG_KV = makeCountingKV();
+  worker = makeWorker(env, '10.0.0.7');
+
+  const rl1 = await worker(reviewRequest(goodReview()));
+  const rl2 = await worker(reviewRequest(goodReview()));
+  const rl3 = await worker(reviewRequest(goodReview()));
+  eq('rate limit: 1-й отзыв 200', rl1.status, 200);
+  eq('rate limit: 2-й отзыв 200', rl2.status, 200);
+  eq('rate limit: 3-й отзыв 200', rl3.status, 200);
+  eq('rate limit: в Telegram ушло 3 отзыва', messageCount(), 3);
+
+  const rl4 = await worker(reviewRequest(goodReview()));
+  const rl4Data = await rl4.json();
+  eq('rate limit: 4-й отзыв 429', rl4.status, 429);
+  eq('rate limit: status=ratelimited', rl4Data.status, 'ratelimited');
+  eq('rate limit: 4-й отзыв в Telegram не ушёл', messageCount(), 3);
+
+  // другой IP не заблокирован
+  const workerOtherIp = makeWorker(env, '10.0.0.8');
+  const rlOther = await workerOtherIp(reviewRequest(goodReview()));
+  eq('rate limit: другой IP проходит', rlOther.status, 200);
+
+  // ══ 15. роутер ══
   section('Роутер и каталог');
 
   resetTelegram();
@@ -417,6 +590,8 @@ async function main() {
   eq('POST / → 404', root.status, 404);
   const badMethod = await worker(new Request(URL_ORDER));
   eq('GET /api/order → 405', badMethod.status, 405);
+  const badReviewMethod = await worker(new Request(URL_REVIEW));
+  eq('GET /api/review → 405', badReviewMethod.status, 405);
 
   // ── итог ──
   console.log('\n' + '─'.repeat(60));

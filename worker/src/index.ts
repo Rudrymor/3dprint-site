@@ -124,7 +124,7 @@ async function enforceRateLimit(request: Request, env: Env, kind: 'order' | 'rev
     const count = raw ? parseInt(raw, 10) : 0;
     if (count >= max) {
       log('warn', 'rate-limit exceeded', { kind, ip: sanitizeIp(ip), bucket, count, max });
-      return json({ error: 'Слишком много запросов. Подождите час.' }, 429);
+      return json({ ok: false, status: 'ratelimited', error: 'Слишком много запросов. Подождите час.' }, 429);
     }
     await env.CATALOG_KV.put(key, String(count + 1), { expirationTtl: RATE_KV_TTL });
     return null;
@@ -485,33 +485,74 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
   // Honeypot
   if (isHoneypot(body.honeypot)) {
     log('info', 'review: honeypot triggered', { requestId });
-    return json({ ok: true, silent: true }, 200);
+    return json({ ok: true, status: 'success', silent: true }, 200);
   }
 
   // request_id — обязательный UUID v4
   const rid = validateRequestIdResponse(body.request_id);
   if (!rid.ok) return rid.response;
 
-  // Валидация содержимого отзыва
+  // Валидация содержимого отзыва: ошибки — картой по полям (как в order).
   const v = validateReview(body);
-  if (!v.ok) return json({ error: v.error.message }, v.error.status);
+  if (!v.ok) {
+    log('warn', 'review: validation failed', {
+      requestId,
+      fields: Object.keys(v.error.fields || {}).join(','),
+    });
+    return json(
+      { ok: false, status: 'invalid', error: v.error.message, fields: v.error.fields },
+      v.error.status,
+    );
+  }
 
   // Idempotency — атомарный claim через Durable Object (этап 3).
   const claim = await claimIdempotency(env.IDEMPOTENCY, rid.id, Limits.idempotencyTtl);
   if (!claim.ok) {
     // 409 = в обработке параллельным, 200 + result = replay (уже завершено).
-    return json(claim.result ?? { error: 'Отзыв уже обрабатывается. Подождите.' }, claim.status);
+    return json(
+      claim.result ?? { ok: false, status: 'pending', error: 'Отзыв уже обрабатывается. Подождите.' },
+      claim.status,
+    );
   }
 
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Текст уходит в Telegram КАК ЕСТЬ: sendMessage вызывается без parse_mode,
+  // поэтому HTML не разбирается и экранирование не нужно (иначе в чате видны
+  // буквальные «&amp;»). Поведение совпадает с handleOrder (UX-04).
   const stars = '⭐'.repeat(v.data.rating);
-  const fullText = `📝 Отзыв\n\n${esc(v.data.name)} (${stars})\n\n${esc(v.data.text)}`;
+  const fullText = `📝 Отзыв\n\n${v.data.name} (${stars})\n\n${v.data.text}`;
 
-  const res = await sendMessage(env, fullText);
-  const result = { ok: res.ok, description: res.description };
+  let res: TelegramResult;
+  try {
+    res = await sendMessage(env, fullText);
+  } catch (err) {
+    // Результат upstream неизвестен: автоматически не повторяем, фиксируем
+    // терминальное состояние, чтобы ретрай с тем же request_id не дал дубль.
+    const result = {
+      ok: false,
+      status: 'unknown',
+      message: 'Ответ Telegram не получен. Отзыв может быть доставлен — не отправляйте его повторно.',
+    };
+    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
+    log('error', 'review: telegram send unknown', { requestId, error: String(err) });
+    return json(result, 502);
+  }
+
+  if (!res.ok) {
+    const result = {
+      ok: false,
+      status: 'rejected',
+      description: res.description,
+      message: 'Telegram отклонил отзыв. Попробуйте ещё раз или напишите во ВКонтакте.',
+    };
+    await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
+    log('error', 'review: telegram rejected', { requestId, desc: res.description });
+    return json(result, 502);
+  }
+
+  const result = { ok: true, status: 'success' };
   await finalizeIdempotency(env.IDEMPOTENCY, rid.id, result, Limits.idempotencyTtl);
-  log(res.ok ? 'info' : 'error', 'review: telegram result', { requestId, ok: res.ok });
-  return json(result, res.ok ? 200 : 502);
+  log('info', 'review: complete', { requestId });
+  return json(result, 200);
 }
 
 // ── Router ──
