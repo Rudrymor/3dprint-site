@@ -4,10 +4,10 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-16 12:58 RTZ.
+- Дата обновления: 2026-09-17 12:30 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: `7b1e5cb` (`origin/fix/security-and-ux` синхронизирован).
+- Текущий HEAD: `eb89760` (`origin/fix/security-and-ux` синхронизирован).
 - Рабочее дерево: чистое.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
@@ -21,12 +21,35 @@
 |---|---|---|---|
 | 0 — Baseline | `5be0aeb` | ✅ | Ветка `fix/security-and-ux`, ревью-документ как reference |
 | 0 — Восстановление | `7b1e5cb` | ✅ | Восстановлен `code-review-2026-09-15.md` из baseline |
-| 1 (часть 1) — Worker security | `442c73e` | ✅ | Удалены legacy routes, parseJsonObject, checkOrigin, structured logging, Content-Length до formData |
+| 1 (часть 1) — Worker security | `442c73e` | ✅ | Удалены legacy routes `/api/proxy` и `POST /`; добавлены structured logging, `checkOrigin()` (доп. слой, не авторизация), `Content-Length` до `formData()` |
 | 1 (часть 2) — Turnstile | `2626cb0` | ✅ | `enforceTurnstile()` на воркере + виджет на фронтенде. **Требует: реальные site/secret keys от владельца** |
 | 1 (часть 3) — Rate limit | `2626cb0` | ✅ | KV-based per-IP лимитер (order 5/ч, review 3/ч → 429) |
 | 1 (часть 4) — CHAT_ID в secret | — | ⏳ | `CHAT_ID` в `wrangler.toml` `[vars]`; вынос в secret требует `wrangler secret put` (владелец) |
 | 2 — единый input contract | `33abe5f` | ✅ | `worker/src/validators.ts`: order/review/catalog/request_id/files, обязательный UUID v4 request_id, MIME/расширение синхронизированы, лимиты field-count |
-| 3 — атомарная idempotency |  | ✅ | Durable Object `IdempotencyObject` (SQLite storage): атомарный claim → pending → sent/partial/failed; параллельный дубликат ID → 409; replay возвращает прежний результат; бывший KV-путь удалён |
+| 3 — атомарная idempotency | `ccd33e8` | ✅ | Durable Object `IdempotencyObject` (SQLite storage): атомарный claim → pending → sent/partial/failed; параллельный дубликат ID → 409; replay возвращает прежний результат; бывший KV-путь удалён |
+| 4 — order form (BUG-01, BUG-02) | `eb89760` | ✅ | Структурированные поля заявки + серверная сборка текста для Telegram; `scripts/order.js` (state, валидация полей, request_id, retry 409, aria-live); состояния success/partial/rejected/unknown/invalid; файлы валидируются до claim. Тесты `worker/tests/run-tests.js` — 76/76 |
+
+### Этап 4 — что именно проверено (2026-09-17)
+
+| Проверка | Как | Результат |
+|---|---|---|
+| `validateOrder` (юнит) | esbuild + node, `worker/tests/run-tests.js` | ✅ 20 кейсов: пустые/короткие поля, материал вне allowlist, quantity 0 / 1000 / 1.5 / «abc» → ошибки; инъекция переводов строк в имя схлопывается; пустой материал и цвет допустимы |
+| Handler (E2E, mock Telegram + mock DO) | тот же файл | ✅ 56 кейсов: multipart/JSON success, сборка текста сервером, replay без повторной отправки, `.exe` с пустым MIME → 415 и повтор с тем же `request_id` → 200, oversize → 413, partial, rejected, unknown без авто-повтора, honeypot, legacy `text`, роутер/каталог, DO pending-replay. Итого 76/76 |
+| Пустая форма не создаёт POST | браузер (Chromium), стаб `fetch` | ✅ 0 запросов, 3 ошибки у полей, фокус на `#order-name` |
+| Короткое описание | браузер | ✅ 0 запросов, фокус на `#desc-input` |
+| Валидная отправка | браузер | ✅ 1 POST multipart: `name, contact, description, material, color, quantity, request_id, honeypot` (+`files`), URL `/api/order`; успех-блок с номером заявки |
+| partial | браузер | ✅ заголовок «Заявка принята, но без файлов», номер заявки, кнопка «Прислать файлы в VK», вложения не очищаются |
+| rejected / сетевой сбой | браузер | ✅ ложного успеха нет, форма остаётся, сообщение честное |
+| Повтор после сетевой ошибки | браузер | ✅ `request_id` тот же → второй POST не создаёт дубль заявки |
+| 409 pending | браузер | ✅ авто-ретрай с тем же `request_id` (2 попытки × 2 с) → успех |
+| Double-submit | браузер | ✅ 3 клика + программный `submit` = 1 POST |
+| Вложения | браузер | ✅ `.exe` отбит на клиенте с текстом ошибки, `.stl` уходит в `files` |
+| Без JavaScript | браузер, `scripts/order.js` заблокирован | ✅ `novalidate` убран: браузер сам блокирует пустую отправку и ставит фокус на первое невалидное поле |
+| 375px / 1920px | скриншоты + визуальная проверка | ✅ ошибки у полей, partial-блок и сетка корректны; номер заявки в одну строку |
+
+**Отложено (не этап 4):** на 375px плавающая кнопка VK перекрывает нижние поля формы — правка в этапе 7 (safe-area/focus). Оверлей существовал до этапа 4.
+
+**Технический долг этапа 10:** после деплоя Pages поставить `ALLOW_LEGACY_TEXT = false` в `worker/src/index.ts` и удалить легаси-ветку приёма `text` (нужна только на время перехода Worker→Pages).
 
 ### Secret scan по git-истории (87 коммитов)
 
@@ -276,7 +299,9 @@ if (request.method === 'POST' && path === '/') {
 
 ## BUG-01 / P1 — пустая форма заказа отправляется
 
-**Файл:** `order.html:42, 321–373`
+**Статус:** ✅ Исправлено (`eb89760`). `novalidate` убран, добавлена своя валидация полей с сообщением у каждого поля, `aria-invalid`/`aria-describedby`, фокус на первой ошибке. Worker принимает структурированные поля (`validateOrder`) и собирает текст для Telegram сам; пустая форма получает 400 `{ status:'invalid', fields }`.
+
+**Файл:** `order.html`, `scripts/order.js`, `worker/src/validators.ts`, `worker/src/index.ts`
 
 ### Проблема
 
@@ -334,10 +359,10 @@ URL: https://tg-proxy.metalkor91.workers.dev/api/order
 
 ## BUG-02 / P1 — partial file failure несовместим с клиентом
 
-**Статус:** 🔧 Частично исправлено (commit `442c73e`). Worker теперь возвращает `status: 'partial'` / `status: 'success'`. Клиентская обработка — открыта (Этап 4).
+**Статус:** ✅ Исправлено (`eb89760`). Worker отдаёт `status: success | partial | rejected | unknown`, клиент обрабатывает каждое состояние отдельно: partial показывает номер заявки и кнопку «Прислать файлы в VK», вложения не очищаются, авто-retry отсутствует, ложного общего «Ошибка отправки» больше нет.
 
-**Worker:** `worker/src/index.ts` — `handleOrder()` возвращает `status` поле.
-**Client:** `order.html` — пока не обновлён.
+**Worker:** `worker/src/index.ts` — `handleOrder()` возвращает `status`.
+**Client:** `scripts/order.js` — состояния success/partial/rejected/unknown/invalid/pending.
 
 ### Проблема
 
@@ -419,9 +444,11 @@ Frontend должен:
 
 ## SEC-02 / P1 — idempotency неатомарна и необязательна
 
-**Worker:** `worker/src/index.ts:42–50, 124–148, 170–229`.
+**Статус:** ✅ Исправлено (`ccd33e8` — атомарный DO-claim, `eb89760` — клиентская часть). Сетевой timeout больше не приводит к новому `request_id`: клиент хранит ID до терминального состояния, поэтому ручной повтор после ошибки не создаёт вторую заявку. При `409 pending` — авто-ретрай с тем же ID.
 
-**Client:** `order.html:296–301, 371`.
+**Worker:** `worker/src/index.ts` (claim через `IdempotencyObject`).
+
+**Client:** `scripts/order.js` — `state.requestId`.
 
 ### Проблемы
 
@@ -1269,6 +1296,8 @@ legacy routes — removed
 6. Добавлять order ID к каждому документу.
 
 ## Этап 4 — order form
+
+**Статус:** ✅ выполнено (`eb89760`): `scripts/order.js` + структурированные поля на Worker + состояния `success/partial/rejected/unknown/invalid` + тесты `worker/tests/run-tests.js` (76/76).
 
 Вынести inline script из `order.html` в `scripts/order.js`.
 
