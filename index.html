@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090b">
 <meta name="description" content="3D-моделирование и 3D-печать на заказ в Кинешме: детали по чертежу, проектирование по оригиналу, авторские фигурки, векторные рисунки.">
 <meta property="og:title" content="3DArtStudio — 3D-печать на заказ">
 <meta property="og:description" content="3D Моделирование и 3D печать на заказ: проектирование по чертежу или оригиналу детали, авторские 3D фигурки.">
@@ -10,8 +11,10 @@
 <link rel="canonical" href="https://rudrymor.github.io/3dprint-site/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>3DArtStudio — 3D-печать на заказ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=14">
+<link rel="stylesheet" href="styles/main.css?v=16">
 </head>
 <body>
 
@@ -21,11 +24,11 @@
 <!-- NAV -->
 <nav class="nav-home">
   <div class="container nav-inner">
-    <button class="nav-toggle" aria-label="Меню" aria-expanded="false">
-      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <button class="nav-toggle" aria-label="Меню" aria-expanded="false" aria-controls="mobile-nav">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <a href="index.html" class="logo">3DArtStudio</a>
-    <div class="nav-links">
+    <div class="nav-links" id="mobile-nav">
       <a href="#process" class="nav-link nav-link-left">Процесс</a>
       <a href="#services" class="nav-link nav-link-right">Услуги</a>
     </div>
@@ -38,7 +41,7 @@
   <div class="hero-bg-orbs"></div>
   <div class="hero-printer">
         <!-- 3D Printer Animation -->
-        <svg class="printer-svg" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg">
+        <svg class="printer-svg" viewBox="0 0 300 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
           <!-- Frame -->
           <rect class="printer-frame" x="30" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
           <rect class="printer-frame" x="258" y="20" width="12" height="280" fill="url(#frameGrad)" rx="2"/>
@@ -187,12 +190,12 @@
     <p class="section-sub">Ниже представлены различные варианты готовых проектов</p>
     <div class="svc-grid">
       <a href="works.html?cat=techno" class="svc">
-        <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <h3>Инженерные и функциональные детали</h3>
         <p>Проектирование 3D модели по чертежу, эскизу или оригиналу для последующей 3D печати</p>
       </a>
       <a href="works.html?cat=decor" class="svc">
-        <div class="svc-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="svc-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <h3>Авторские 3D фигурки</h3>
         <p>Лимитированная коллекция</p>
       </a>
@@ -256,7 +259,7 @@
     <span class="vk-label-mobile">VK</span>
 </a>
 
-<script src="scripts/common.js?v=4"></script>
+<script src="scripts/common.js?v=5"></script>
 
 </body>
 </html>

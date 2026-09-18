@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090b">
 <meta name="description" content="Отзывы клиентов 3DArtStudio — что говорят те, кто заказывал 3D-печать.">
 <meta property="og:title" content="Книга клиентов — 3DArtStudio">
 <meta property="og:description" content="Как оценивают работу клиенты 3DArtStudio — книга отзывов.">
@@ -10,8 +11,10 @@
 <link rel="canonical" href="https://rudrymor.github.io/3dprint-site/reviews.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Книга клиентов — 3DArtStudio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=14">
+<link rel="stylesheet" href="styles/main.css?v=16">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   /* Warm background */
@@ -31,8 +34,8 @@
   /* ── FLOATING REVIEW FORM BUTTON ── */
   .review-fab {
     position: fixed;
-    bottom: 28px;
-    left: 28px;
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    left: calc(28px + env(safe-area-inset-left));
     z-index: 950;
   }
   .review-fab-btn {
@@ -233,7 +236,7 @@
 
   /* Mobile */
   @media(max-width:768px) {
-    .review-fab { bottom: 20px; left: 20px; }
+    .review-fab { bottom: calc(20px + env(safe-area-inset-bottom)); left: calc(20px + env(safe-area-inset-left)); }
     .review-fab-btn { padding: 14px; border-radius: 50%; font-size: 0; }
     .review-fab-btn svg { font-size: 20px; }
     .review-panel {
@@ -347,7 +350,7 @@
   </div>
 </div>
 
-<script src="scripts/common.js?v=4"></script>
+<script src="scripts/common.js?v=5"></script>
 <script src="scripts/reviews.js?v=5"></script>
 <script src="scripts/review-form.js?v=1"></script>
 </body>

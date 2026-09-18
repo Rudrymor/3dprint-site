@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090b">
 <meta name="description" content="Оформите заявку на 3D-печать. Без предоплаты.">
 <meta property="og:title" content="3DArtStudio — Заказ 3D-печати">
 <meta property="og:description" content="Оформите заявку на 3D-печать. Без предоплаты.">
@@ -10,8 +11,10 @@
 <link rel="canonical" href="https://rudrymor.github.io/3dprint-site/order.html">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Заказать проект — 3DArtStudio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=15">
+<link rel="stylesheet" href="styles/main.css?v=16">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
@@ -56,7 +59,7 @@
           <div class="desc-wrap">
             <textarea id="desc-input" name="description" placeholder="Что нужно напечатать, назначение, особые требования..." required maxlength="2000" minlength="10" aria-describedby="desc-input-error"></textarea>
             <button type="button" class="attach-btn" id="attach-btn" aria-label="Прикрепить файлы с компьютера" title="Прикрепить файлы">
-              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
           </div>
           <p class="field-error is-hidden" id="desc-input-error"></p>
@@ -165,7 +168,7 @@
     <span class="vk-label-mobile">VK</span>
 </a>
 
-<script src="scripts/common.js?v=4"></script>
+<script src="scripts/common.js?v=5"></script>
 <script src="scripts/order.js?v=1"></script>
 </body>
 </html>
