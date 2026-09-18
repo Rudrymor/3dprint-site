@@ -49,6 +49,7 @@
 | 4 — order form (BUG-01, BUG-02) | `eb89760` | ✅ | Структурированные поля заявки + серверная сборка текста для Telegram; `scripts/order.js` (state, валидация полей, request_id, retry 409, aria-live); состояния success/partial/rejected/unknown/invalid; файлы валидируются до claim. Тесты `worker/tests/run-tests.js` — 76/76 |
 | 5 — review form (UX-01, UX-02, UX-04, A11Y-01, A11Y-04) | `e9f7b7f` | ✅ | `scripts/review-form.js` (вынесен из inline-скрипта): «спасибо» только после ответа Worker'а, double-submit защита, request_id/UUID v4, обработка 429 и 409, ошибки полей + aria-live, звёзды как radio с roving tabindex, FAB с aria-expanded и возвратом фокуса. Worker: `handleReview()` без HTML-экранирования, статусы как в order, `validateReview` → карта ошибок по полям. Тесты — 122/122 |
 | 6 — catalog states + lightbox (UX-03, PERF-01, PERF-02, A11Y-02) | `43125e6` | ✅ | `scripts/catalog.js` переписан: состояния loading/empty/error/success, timeout 10 с с самостоятельным завершением (не только по `abort()`), retry с защитой от параллельных запросов, клиентская проверка payload, `width`/`height`/`decoding=async` у картинок, картинка — кнопка (Enter/Space), лайтбокс с `inert` фона и возвратом фокуса. `works.html`: счётчик скрыт до реального числа, стартовый loading, `noscript`. Тесты Worker'а — 122/122 |
+| 7 — a11y/perf (A11Y-03, CSS-01, CSS-03, A11Y-05) | `12ed504` | ✅ | `scripts/common.js`: меню с `aria-controls`/`mobile-nav`, фокус на первую ссылку, ловушка Tab, Escape с возвратом фокуса, `inert` фона. `styles/main.css` + 4 страницы: точечные transitions (без `all`), `theme-color`, `preconnect` Fonts, `safe-area-inset` у плавающих кнопок, `aria-hidden` декоративных SVG, запас 120px у формы заказа на мобильных (VK не перекрывает поля). Попутно CSS-02 (`font-weight: 60` → `600`, `;;`). Тесты Worker'а — 122/122 |
 
 ### Этап 4 — что именно проверено (2026-09-17)
 
@@ -123,6 +124,26 @@
 **Найдено и исправлено в ходе проверки:** «зависший» запрос оставлял страницу в вечном loading — таймаут полагался на то, что `AbortController.abort()` отклонит промис. Теперь таймер завершает загрузку сам (с защитой от двойного завершения), `abort()` остаётся для освобождения соединения. Пойман браузерным сценарием «зависший ответ» до коммита.
 
 **Мелочи, попутно наведённые:** у карточки без фото плейсхолдер переехал с inline-стилей на класс `.catalog-card-img-placeholder`; в `works.html` статичный счётчик `12` заменён на скрытый по умолчанию (число работ теперь всегда приходит из KV, а не из разметки).
+
+### Этап 7 — что именно проверено (2026-09-18)
+
+| Проверка | Как | Результат |
+|---|---|---|
+| Worker-тесты после этапа | `worker/tests/run-tests.js` (этап Worker не трогал) | ✅ 122/122 |
+| Сборка Worker | `wrangler deploy --dry-run` | ✅ бандл + биндинги, без публикации |
+| Синтаксис клиента | `node --check` 4 скриптов + `git diff --check` | ✅ чисто |
+| Меню: открытие и фокус | браузер 375px, клик по гамбургеру | ✅ `aria-expanded=true`, класс `open`, фокус на первой ссылке, `main`/`footer` в `inert` |
+| Меню: ловушка фокуса | Tab с последней ссылки | ✅ фокус вернулся на кнопку (цикл замкнут) |
+| Меню: Escape | реальное key-событие CDP | ✅ закрылось, `aria-expanded=false`, `inert` снят, фокус на кнопке |
+| Transitions без `all` | `getComputedStyle().transitionProperty` в живом браузере (`.svc`, `.btn-hero`, `.btn-submit`, поля, `.vk-float`) + grep по `main.css` | ✅ везде точечные списки; `transition: all` остался только в черновиках `sketches/` |
+| `theme-color` + `preconnect` | замер DOM на 4 страницах | ✅ `content=#09090b`, 2 `preconnect` на каждой |
+| Декоративные SVG | подсчёт `aria-hidden` | ✅ index 4/4, works/order/reviews 1/1 |
+| VK-перекрытие на 375px | скролл в конец `order.html`, пересечение rect VK-кнопки с полями/кнопками | ✅ 0 пересечений (запас 120px у `.order-section` на мобильных) |
+| 375px и 1920px | `scrollWidth` vs `clientWidth` на всех 4 страницах | ✅ переполнения нет; на десктопе гамбургер скрыт |
+
+**Попутно исправлено (CSS-02):** `font-weight: 60` → `600`, `content:"";;` → `content:""`.
+
+**Не делали (осознанно):** скриншоты — проверка шла DOM-замерами; `sketches/` (черновики) не правили.
 
 ### Secret scan по git-истории (87 коммитов)
 
@@ -951,6 +972,8 @@ success
 
 ## A11Y-03 — mobile menu требует полного focus management
 
+**Статус:** ✅ исправлено (этап 7, `12ed504`): кнопка получила `aria-controls="mobile-nav"` (панели присвоен `id="mobile-nav"`), при открытии фокус уходит на первую ссылку, Tab зациклен между кнопкой и ссылками (ловушка), Escape закрывает с возвратом фокуса на кнопку, фон (`main`, `footer`, плавающие кнопки) уходит в `inert`. Закрытие по ссылке/оверлею фокус не дёргает. Проверено реальными key-событиями на 375px.
+
 **Файл:** `scripts/common.js:27–61`.
 
 Возврат фокуса добавлен, но отсутствуют `aria-controls`, focus trap и управление фоновой частью страницы.
@@ -992,6 +1015,8 @@ success
 ---
 
 ## A11Y-05 — декоративные SVG
+
+**Статус:** ✅ исправлено (этап 7, `12ed504`): всем декоративным SVG добавлены `aria-hidden="true" focusable="false"` — иконка гамбургера, принтер в hero, иконки услуг (index 4/4), иконка отзывов (works), скрепка (order); на reviews уже было. Проверено подсчётом в браузере.
 
 **Файлы:** `index.html:41`, `works.html:73` и другие SVG.
 
@@ -1039,6 +1064,8 @@ aria-hidden="true"
 
 ## CSS-01 — `transition: all`
 
+**Статус:** ✅ исправлено (этап 7, `12ed504`): все `transition: all` в `styles/main.css` заменены на точечные списки (карточки — `border-color, transform, box-shadow`; кнопки — `transform, box-shadow` + цвета; поля форм — `border-color, box-shadow, background-color`; `.lb-btn` — `background-color, border-color`). Inline-CSS `reviews.html` уже был точечным. Проверено вычисленными стилями в живом браузере + grep; `all` остался только в черновиках `sketches/`.
+
 **Файлы:** `styles/main.css` и inline CSS `reviews.html`.
 
 Заменить `transition: all` на конкретные свойства:
@@ -1078,6 +1105,8 @@ transition:
 ---
 
 ## CSS-03 — mobile safe areas и theme color
+
+**Статус:** ✅ исправлено (этап 7, `12ed504`): `theme-color #09090b` добавлен во все 4 страницы, `preconnect` к `fonts.googleapis.com` и `fonts.gstatic.com` тоже; плавающие кнопки (`.vk-float`, `.reviews-float`, `.review-fab` + мобильные правила) используют `calc(… + env(safe-area-inset-*))` по нужной стороне, добавлен `:focus-visible`.
 
 Добавить на страницы:
 
@@ -1463,14 +1492,16 @@ legacy routes — removed
 
 ## Этап 7 — accessibility и performance
 
-1. Убрать `transition: all`.
-2. Добавить `theme-color`.
-3. Добавить Google Fonts preconnect.
-4. Добавить safe area insets.
-5. Исправить stars radio semantics.
-6. Исправить drawer ARIA/focus.
-7. Добавить `aria-hidden` декоративным SVG.
-8. Проверить 375/1920 и keyboard-only сценарий.
+**Статус:** ✅ выполнено (`12ed504`): меню с `aria-controls`/фокусом/`inert` (A11Y-03), точечные transitions (CSS-01), `theme-color`/`preconnect`/`safe-area` (CSS-03), `aria-hidden` декоративных SVG (A11Y-05), устранено перекрытие формы заказа плавающей VK-кнопкой на 375px. Попутно CSS-02 (`font-weight`/`;;`). Worker-тесты 122/122. Таблица проверок — «Этап 7 — что именно проверено (2026-09-18)».
+
+1. Убрать `transition: all`. ✅
+2. Добавить `theme-color`. ✅
+3. Добавить Google Fonts preconnect. ✅
+4. Добавить safe area insets. ✅
+5. Исправить stars radio semantics. ✅ (этап 5, `e9f7b7f`)
+6. Исправить drawer ARIA/focus. ✅ (этап 7 — mobile nav; review panel ещё этап 5)
+7. Добавить `aria-hidden` декоративным SVG. ✅
+8. Проверить 375/1920 и keyboard-only сценарий. ✅
 
 ## Этап 8 — Python tools
 
