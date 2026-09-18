@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
 <title>Мои работы — 3DArtStudio</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles/main.css?v=14">
+<link rel="stylesheet" href="styles/main.css?v=15">
 </head>
 <body>
 
@@ -34,11 +34,11 @@
   </div>
 </section>
 
-<!-- COUNTER -->
-<section class="counter-section">
+<!-- COUNTER — число работ знает только JS; до загрузки каталога счётчик скрыт -->
+<section class="counter-section is-hidden">
   <div class="container">
     <div class="counter">
-      <div class="counter-num" id="work-count">12</div>
+      <div class="counter-num" id="work-count">0</div>
       <div class="counter-label" id="work-count-label">работ в каталоге</div>
     </div>
   </div>
@@ -47,7 +47,16 @@
 <!-- CATALOG -->
 <section class="catalog-section" style="padding-bottom:100px">
   <div class="container">
-    <div class="catalog-grid" id="catalog-root"></div>
+    <!-- Состояния loading/empty/error рисует scripts/catalog.js (UX-03) -->
+    <div class="catalog-state" id="catalog-root" role="status" aria-busy="true">
+      <p class="catalog-state-text">Загружаем работы…</p>
+    </div>
+    <noscript>
+      <div class="catalog-state">
+        <p class="catalog-state-text">Каталог загружается скриптом — похоже, JavaScript отключён. Работы можно посмотреть в группе ВКонтакте.</p>
+        <a href="https://vk.ru/club240742418" target="_blank" rel="noopener" class="btn-primary">Открыть ВКонтакте</a>
+      </div>
+    </noscript>
   </div>
 </section>
 
@@ -82,6 +91,6 @@
 </a>
 
 <script src="scripts/common.js?v=4"></script>
-<script src="scripts/catalog.js?v=7"></script>
+<script src="scripts/catalog.js?v=8"></script>
 </body>
 </html>
