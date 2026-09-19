@@ -7,9 +7,9 @@
 - Дата обновления: 2026-09-19 15:50 RTZ; независимая проверка результатов — 2026-09-19 16:43 RTZ.
 - Baseline commit: `5a9bb2b` (был `main` до этапа 10).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: `6140221` — **задеплоен** в `main` (fast-forward) и в ветке; `origin` синхронизирован.
+- Текущий HEAD: `b96ba80` — **этап 11 (REL-01) в ветке и в Worker**; сайт (`main`) не менялся (остался `6140221`).
 - Рабочее дерево: чистое (кроме некоммитируемого `SESSION-RESUME.md`).
-- Прод: Pages `main` = `6140221`, Worker `tg-proxy` версия `134e5c82` (точка откатa `96b85b27`). Этапы 0–10 в проде.
+- Прод: Pages `main` = `6140221`; Worker `tg-proxy` версия `8a56ea2f` (этап 11, точка откатa `134e5c82`). Этапы 0–11 в проде.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
 - Production Pages: `https://rudrymor.github.io/3dprint-site/`.
@@ -54,6 +54,7 @@
 | 8 — Python-инструменты (PY-01…PY-04) | `1db5fbb` | ✅ | `tools/tool_common.py` (`ensure_parent_dir`, `int_range`, `float_range`); `figure_from_ai.py` — `check_mask()` до расчёта масштаба (нет `ZeroDivisionError`), отбрасывание вырожденных кандидатов, папки под output/оба превью; `figure_hero.py` — `axis if axis is not None else …` в двух местах + отказ на ось вне силуэта, папки out/`--debug-dir`; `ai_repaint.py` — папка вывода, «файл не найден», диапазоны `--steps/--strength/--guidance/--width/--height/--seed`; `edge_report.py` — argparse `--old/--new/--broken/--review-dir/--height`, без жёсткого `C:\Users\...`, проверка файлов до чтения. Тесты `tools/tests/run-tests.py` — 23/23 |
 | 9 — документация (DOC-01…DOC-04) | `f694527` + docs-коммиты | ✅ | `README.md`: рабочий seed-workflow для wrangler 4 (ключ первым аргументом, обязательный `--remote`, экспорт токена деплоя перед командами), точка отката до правки, проверка `GET /api/catalog` после записи; убрана нерабочая Imgur-инструкция (только относительные `images/` + требования к имени файла); новый `DEPLOYMENT.md` (порядок Worker → Pages, секреты, smoke-таблица «сейчас/после деплоя», откат Worker/KV/Pages, выключение `ALLOW_LEGACY_TEXT`); `.env.example` разделён на локальные переменные Python-инструментов / токен деплоя / секреты Worker'а |
 | 10 — deploy и rollback | `8a337a4`, `2497fa8`, `4f0da28` | ✅ | Worker задеплоен (версия `134e5c82`, точка откатa `96b85b27`), `CHAT_ID` вынесен из `wrangler.toml [vars]` в секрет, легаси-контракт `text` удалён полностью (тесты 123/123), сайт опубликован (`main` = `4f0da28`, fast-forward), прод-смоук по таблице, браузерная проверка 375/1920, `DEPLOYMENT.md` + `.env.example` обновлены. ⏳ Осталось: Turnstile (виджет владельца) и живая проверка заявки в Telegram |
+| 11 — REL-01 + живая проверка | `b96ba80` | ✅ | **REL-01**: у вызовов к Telegram таймаут 15 с (`AbortSignal.timeout`), проверка HTTP-статуса, безопасный разбор JSON (`telegramJson()`), классификация ошибок `timeout`/`network`/`parse`/`rejected`. Зависший апстрим больше не висит до лимита рантайма; таймаут сообщения → `unknown`, файла → `partial`. Worker задеплоен (версия `8a56ea2f`, точка откатa `134e5c82`), прод-смоук штатный, тесты **128/128**. **Живая проверка формы→Telegram выполнена**: две тестовые заявки через форму на проде доставлены боту (`260919-9765` + вторая; номер сервер отдаёт только при подтверждении Telegram). ⏳ Остался единственный пункт — **Turnstile**: создать виджет через API/wrangler нельзя (токен деплоя и AI-токен без права `Turnstile: Edit` → `Authentication error`, OAuth-сессии wrangler нет) — нужен виджет владельца |
 
 ## Проверка результатов (независимая, 2026-09-19 16:43 RTZ)
 
@@ -82,9 +83,9 @@
 
 ### Осталось открытым (осознанно, не регресс)
 
-- **Turnstile** — не включён: нужен виджет владельца (site + secret key). Спам держат лимиты 5/ч (заявки) и 3/ч (отзывы) на IP.
-- **REL-01 (таймаут Telegram)** — `sendMessage`/`sendDocument` без явного timeout/`AbortController`: зависший upstream держит запрос до лимита рантайма. Помечен «частично», остаётся.
-- **Живая проверка доставки заявки в Telegram** — не выполнялась (механика покрыта mock 123/123; `CHAT_ID` в секрете).
+- **Turnstile** — не включён: нужен виджет владельца (site + secret key) или токен с правом `Turnstile: Edit`. Создать через API/wrangler нельзя — токен деплоя и AI-токен дают `Authentication error [code: 10000]`, сохранённой OAuth-сессии wrangler нет. Спам держат лимиты 5/ч (заявки) и 3/ч (отзывы) на IP.
+- ~~REL-01 (таймаут Telegram)~~ — **✅ закрыто на этапе 11** (`b96ba80`): таймаут 15 с, проверка HTTP-статуса, безопасный разбор JSON, классификация ошибок; задеплоено (версия `8a56ea2f`).
+- ~~Живая проверка доставки заявки в Telegram~~ — **✅ выполнена на этапе 11**: две тестовые заявки через форму на проде реально доставлены боту (сервер отдаёт номер заявки только при подтверждении Telegram).
 
 ### Чекпоинт
 
@@ -819,7 +820,7 @@ const form = await request.formData();
 
 ## REL-01 / P1 — Telegram fetch без timeout и безопасного разбора ответа
 
-**Статус:** 🔧 Частично исправлено (commit `442c73e`). Вынесен `sendDocument()` helper, structured logging. Timeout и AbortController — открыты.
+**Статус:** ✅ Исправлено (этап 11, `b96ba80`). Вынесен общий `telegramJson()`: таймаут 15 с (`AbortSignal.timeout`), проверка HTTP-статуса, безопасный разбор JSON, классификация ошибок `timeout`/`network`/`parse`/`rejected` (через `TelegramError`). `sendMessage`/`sendDocument` построены на нём. Зависший апстрим больше не держит запрос до лимита рантайма; таймаут сообщения → статус `unknown` (без авто-повтора, терминальный), файла → `partial`. Задеплоено (Worker версия `8a56ea2f`), тесты в `worker/tests/run-tests.js` — **128/128**.
 
 **Файлы:** `worker/src/index.ts` — `sendDocument()` и `sendMessage()` как отдельные функции.
 
