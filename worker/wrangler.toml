@@ -2,8 +2,9 @@ name = "tg-proxy"
 main = "src/index.ts"
 compatibility_date = "2024-01-26"
 
-[vars]
-CHAT_ID = "2030385539"
+# CHAT_ID вынесен из [vars] в секрет Worker'а (этап 10):
+#   npx wrangler secret put CHAT_ID
+# Значение в репозитории не хранится. Пока секрет не задан, отправка в Telegram не работает.
 
 [[kv_namespaces]]
 binding = "CATALOG_KV"
