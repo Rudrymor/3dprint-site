@@ -4,11 +4,12 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-19 14:20 RTZ.
-- Baseline commit: `5a9bb2b` (ветка `main`).
+- Дата обновления: 2026-09-19 15:50 RTZ.
+- Baseline commit: `5a9bb2b` (был `main` до этапа 10).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: актуальный — `git log -1` в ветке. Последнее обновление документа — этап 9 (документация, `f694527` + docs-коммиты; `origin/fix/security-and-ux` синхронизирован).
+- Текущий HEAD: `4f0da28` — **задеплоен** в `main` (fast-forward) и в ветке; `origin` синхронизирован.
 - Рабочее дерево: чистое (кроме некоммитируемого `SESSION-RESUME.md`).
+- Прод: Pages `main` = `4f0da28`, Worker `tg-proxy` версия `134e5c82` (точка откатa `96b85b27`). Этапы 0–10 в проде.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
 - Production Pages: `https://rudrymor.github.io/3dprint-site/`.
@@ -43,7 +44,7 @@
 | 1 (часть 1) — Worker security | `442c73e` | ✅ | Удалены legacy routes `/api/proxy` и `POST /`; добавлены structured logging, `checkOrigin()` (доп. слой, не авторизация), `Content-Length` до `formData()` |
 | 1 (часть 2) — Turnstile | `2626cb0` | ✅ | `enforceTurnstile()` на воркере + виджет на фронтенде. **Требует: реальные site/secret keys от владельца** |
 | 1 (часть 3) — Rate limit | `2626cb0` | ✅ | KV-based per-IP лимитер (order 5/ч, review 3/ч → 429) |
-| 1 (часть 4) — CHAT_ID в secret | — | ⏳ | `CHAT_ID` в `wrangler.toml` `[vars]`; вынос в secret требует `wrangler secret put` (владелец) |
+| 1 (часть 4) — CHAT_ID в secret | `8a337a4` | ✅ | Вынесен на этапе 10: `CHAT_ID` убран из `wrangler.toml` `[vars]`, поставлен секретом (`secret list` → `BOT_TOKEN` + `CHAT_ID`). Деплой в два шага — переменная и секрет делят имя биндинга |
 | 2 — единый input contract | `33abe5f` | ✅ | `worker/src/validators.ts`: order/review/catalog/request_id/files, обязательный UUID v4 request_id, MIME/расширение синхронизированы, лимиты field-count |
 | 3 — атомарная idempotency | `ccd33e8` | ✅ | Durable Object `IdempotencyObject` (SQLite storage): атомарный claim → pending → sent/partial/failed; параллельный дубликат ID → 409; replay возвращает прежний результат; бывший KV-путь удалён |
 | 4 — order form (BUG-01, BUG-02) | `eb89760` | ✅ | Структурированные поля заявки + серверная сборка текста для Telegram; `scripts/order.js` (state, валидация полей, request_id, retry 409, aria-live); состояния success/partial/rejected/unknown/invalid; файлы валидируются до claim. Тесты `worker/tests/run-tests.js` — 76/76 |
@@ -52,6 +53,7 @@
 | 7 — a11y/perf (A11Y-03, CSS-01, CSS-03, A11Y-05) | `12ed504` | ✅ | `scripts/common.js`: меню с `aria-controls`/`mobile-nav`, фокус на первую ссылку, ловушка Tab, Escape с возвратом фокуса, `inert` фона. `styles/main.css` + 4 страницы: точечные transitions (без `all`), `theme-color`, `preconnect` Fonts, `safe-area-inset` у плавающих кнопок, `aria-hidden` декоративных SVG, запас 120px у формы заказа на мобильных (VK не перекрывает поля). Попутно CSS-02 (`font-weight: 60` → `600`, `;;`). Тесты Worker'а — 122/122 |
 | 8 — Python-инструменты (PY-01…PY-04) | `1db5fbb` | ✅ | `tools/tool_common.py` (`ensure_parent_dir`, `int_range`, `float_range`); `figure_from_ai.py` — `check_mask()` до расчёта масштаба (нет `ZeroDivisionError`), отбрасывание вырожденных кандидатов, папки под output/оба превью; `figure_hero.py` — `axis if axis is not None else …` в двух местах + отказ на ось вне силуэта, папки out/`--debug-dir`; `ai_repaint.py` — папка вывода, «файл не найден», диапазоны `--steps/--strength/--guidance/--width/--height/--seed`; `edge_report.py` — argparse `--old/--new/--broken/--review-dir/--height`, без жёсткого `C:\Users\...`, проверка файлов до чтения. Тесты `tools/tests/run-tests.py` — 23/23 |
 | 9 — документация (DOC-01…DOC-04) | `f694527` + docs-коммиты | ✅ | `README.md`: рабочий seed-workflow для wrangler 4 (ключ первым аргументом, обязательный `--remote`, экспорт токена деплоя перед командами), точка отката до правки, проверка `GET /api/catalog` после записи; убрана нерабочая Imgur-инструкция (только относительные `images/` + требования к имени файла); новый `DEPLOYMENT.md` (порядок Worker → Pages, секреты, smoke-таблица «сейчас/после деплоя», откат Worker/KV/Pages, выключение `ALLOW_LEGACY_TEXT`); `.env.example` разделён на локальные переменные Python-инструментов / токен деплоя / секреты Worker'а |
+| 10 — deploy и rollback | `8a337a4`, `2497fa8`, `4f0da28` | ✅ | Worker задеплоен (версия `134e5c82`, точка откатa `96b85b27`), `CHAT_ID` вынесен из `wrangler.toml [vars]` в секрет, легаси-контракт `text` удалён полностью (тесты 123/123), сайт опубликован (`main` = `4f0da28`, fast-forward), прод-смоук по таблице, браузерная проверка 375/1920, `DEPLOYMENT.md` + `.env.example` обновлены. ⏳ Осталось: Turnstile (виджет владельца) и живая проверка заявки в Telegram |
 
 ### Этап 4 — что именно проверено (2026-09-17)
 
@@ -195,7 +197,7 @@
 | Точка отката + чтение прод-KV | токен деплоя + `npx wrangler kv key get catalog --binding CATALOG_KV --remote > tmp/catalog-backup.json` | ✅ 12 записей, файл-бэкап создан (`tmp/` в `.gitignore`); прод-KV только **читали** |
 | Команда записи в прод-KV | — | ⏸ **не выполнялась**: в прод KV без явного разрешения владельца не писать; форма команды проверена на локальной записи и на чтении прод-KV |
 | Живой каталог | `curl -s https://tg-proxy.metalkor91.workers.dev/api/catalog` | ✅ 12 работ, ответ по контракту |
-| Legacy-роуты в проде | curl по 6 адресам | ⚠️ `POST /api/proxy` → **400** и `POST /` → **400** — прод всё ещё на `main` (`5a9bb2b`), legacy жив; в ветке они отдают 404. Зафиксировано в `DEPLOYMENT.md` таблицей «сейчас / после деплоя» |
+| Legacy-роуты в проде | curl по 6 адресам | ⚠️ на момент проверки: `POST /api/proxy` → **400** и `POST /` → **400** — прод был на `main` (`5a9bb2b`), legacy жив. **Закрыто на этапе 10:** оба отдают **404** (см. таблицу этапа 10) |
 | Тесты инструментов | `python tools/tests/run-tests.py`, `python -m compileall -q tools` | ✅ 23/23, компиляция OK |
 | Тесты Worker'а | `cd worker && node tests/run-tests.js` | ✅ 122/122 (код Worker'а этап не трогал) |
 | Сборка | `cd worker && npx wrangler deploy --dry-run` | ✅ бандл 31.59 KiB, биндинги `IDEMPOTENCY` (DO), `CATALOG_KV`, `CHAT_ID` — без публикации |
@@ -205,7 +207,40 @@
 
 **Найдено и исправлено в ходе проверки:** инструкция записи каталога в `README.md` и в комментарии `worker/seed-catalog.js` была нерабочей для wrangler 4 — команда использовала снятый `--key` (падала) и не указывала `--remote` (без него значение уходит в локальную копию KV, а владелец видел бы «записал, а на сайте пусто»). Обе заменены на проверенный вид, добавлены точка отката, проверка каталога после записи и явное требование экспортировать токен деплоя.
 
-### Secret scan по git-истории (87 коммитов)
+### Этап 10 — что именно проверено (2026-09-19)
+
+| Проверка | Как | Результат |
+|---|---|---|
+| Проверки до деплоя | `run-tests.py`, `node tests/run-tests.js`, `--dry-run`, `node --check`, `git diff --check` | ✅ 23/23, 123/123, бандл 31.04 KiB + биндинги, синтаксис чисто |
+| Токен деплоя | `npx wrangler whoami` | ✅ `Metalkor91@gmail.com's Account`, `a77b82cc49259f75ebfafd5705b48d6a` |
+| Деплой Worker №1 (снять `CHAT_ID` из `[vars]`) | `npx wrangler deploy` | ✅ версия `1fe944aa`, биндинги `IDEMPOTENCY` + `CATALOG_KV` (без `CHAT_ID`) |
+| `secret put CHAT_ID` до правки `[vars]` | — | ⚠️ отказ `Binding name 'CHAT_ID' already in use [code: 10053]` — имя делят переменная и секрет; поэтому деплой в два шага |
+| `secret put CHAT_ID` после правки | `echo "…" \| npx wrangler secret put CHAT_ID` | ✅ `Success! Uploaded secret CHAT_ID`; `secret list` → `BOT_TOKEN` + `CHAT_ID` |
+| Перевод строки в секрете из stdin | чтение `cli.js` (wrangler 4.131.1) | ✅ секрет читается через `trimTrailingWhitespace(...)` — `echo` без `-n` безопасен |
+| Контракт живого клиента | `curl …/scripts/order.js` из прода + grep | ✅ форма шлёт `name/contact/description/material/color/quantity/request_id/honeypot`, `append('text')` **отсутствует** — легаси можно удалять |
+| Удаление легаси-контракта | правка `src/index.ts` (флаг, импорт, ветка, тернарник) | ✅ `ALLOW_LEGACY_TEXT` и `normalizeText` убраны, `fullText` собирается из проверенных полей |
+| Тест на удалённый контракт | `worker/tests/run-tests.js` | ✅ 123/123: `text` → 400 `invalid` + карта полей + 0 обращений к Telegram |
+| Деплой Worker №2 (финальный) | `npx wrangler deploy` | ✅ версия `134e5c82`, бандл 31.04 KiB |
+| Прод-смоук: каталог | curl | ✅ `GET /api/catalog` → 200, 12 работ; `POST /api/catalog` → 405 |
+| Прод-смоук: legacy-роуты | curl | ✅ `POST /api/proxy` → **404** (было 400), `POST /` → **404** (было 400) |
+| Прод-смоук: методы и тело | curl | ✅ `GET /api/review` → 405, `OPTIONS /api/order` → 200, `body=null` → **400** (было 500) |
+| Прод-смоук: легаси `text` и honeypot | curl | ✅ `text` → 400 `invalid` с картой полей; honeypot → 200 `silent`, Telegram не вызван |
+| Публикация сайта | `git push origin fix/security-and-ux:main` | ✅ fast-forward `5a9bb2b..4f0da28`, без force; ветка тоже запушена |
+| Pages собрался | curl по живому сайту | ✅ 4 страницы 200; ассеты `main.css?v=16`, `common.js?v=5`, `catalog.js?v=8`, `order.js?v=1`, `review-form.js?v=1`, `figure-hero.webp?v=6`; `DEPLOYMENT.md` доступен |
+| Каталог на живом сайте, 375px | браузер, `Emulation.setDeviceMetricsOverride` | ✅ 1 колонка, 12 карточек, `width=1200 height=900 decoding=async loading=lazy`, картинка-кнопка, `scrollWidth == clientWidth == 375` |
+| Каталог на живом сайте, 1920px | там же | ✅ 12 карточек, 1905/1905 без переполнения |
+| Меню и SVG | замер DOM на 4 страницах | ✅ гамбургер виден на 375 и скрыт на 1920; `aria-hidden` 4/4 (index), 1/1 (остальные) |
+| Форма заказа | замер DOM | ✅ `novalidate` отсутствует (без JS работает нативная валидация), 9 полей; **0 перекрытых** полей/кнопок при проходе всей страницы |
+| Отзывы и плавающие кнопки | замер DOM | ✅ 5 кнопок `role=radio`, одна с `tabindex=0`, FAB с `aria-expanded`/`aria-controls`, панель `role=dialog`; `vk-float` (305–355px) и `review-fab` (20–76px) не пересекаются |
+| Точка откатa | `npx wrangler versions list` | ✅ предыдущая версия `96b85b27`; каталог — `tmp/catalog-backup.json` |
+| **Живая заявка в Telegram** | — | ⏸ **не проверялась**: смоук-запросы исчерпали лимит 5 заявок/ч с IP (Worker честно ответил 429, окно сбрасывается на границе часа UTC), отправка тестовой заявки в чат владельца не согласована. Механика покрыта mock-тестами (123/123) |
+| Turnstile | API Cloudflare | ⏸ **не включён**: оба токена в `.env` без права `Turnstile: Edit` → `Authentication error`; нужен виджет из дашборда |
+
+**Найдено и исправлено в ходе проверки:** `secret put CHAT_ID` падал с `Binding name 'CHAT_ID' already in use [code: 10053]`, пока имя было занято переменной `[vars]` — переменная и секрет делят одно имя биндинга. Порядок исправлен и записан в доки: сначала убрать из `[vars]` и задеплоить, потом `secret put`.
+
+**Замечено (не дефект этапа 10, существовало до него):** на 375px плавающая кнопка VK заходит на правый край кнопки «Отправить» (21px из 277px, поверх — `A.vk-float`), если прокрутить страницу так, чтобы кнопка отправки встала точно у нижней кромки экрана. Это не регресс: CSS этапа 10 не менялся, а запас 120px у `.order-section` (этап 7) не пересекает VK-кнопку с **полями** формы; сам факт проверялся отдельно — при проходе всей страницы перехваченных полей/кнопок 0, форма отправляется. Если владелец захочет «идеально», правка — на будущее (например, `scroll-margin-bottom` у `.btn-submit` или сдвиг VK-кнопки выше на странице заказа).
+
+### Secret scan по git-истории (87 коммитов + этапы 1–10)
 
 | Проверка | Результат |
 |---|---|
@@ -214,7 +249,7 @@
 | Private keys / SSH | ✅ Не найдены |
 | Cloudflare API токены | ✅ Только имена переменных в `.env.example` (плейсхолдеры) |
 | Хардкод токенов | ✅ Не найден |
-| CHAT_ID | ⚠️ `2030385539` в `wrangler.toml` `[vars]` — это Telegram chat ID (не токен), но виден в deployed source. Рекомендация: вынести в secret. |
+| CHAT_ID | ✅ **Исправлено на этапе 10** (`8a337a4`): вынесен из `wrangler.toml` `[vars]` в секрет Cloudflare; в репозитории значения нет |
 
 ---
 
@@ -246,7 +281,7 @@
 11. ✅ Python-пайплайн `figure_from_ai.py` падал с `ZeroDivisionError` на пустой маске — **исправлено на этапе 8 (`1db5fbb`)**, вместе с папками вывода, жёсткими путями и валидацией аргументов.
 12. ✅ README и wiki содержали устаревшие инструкции — **исправлено на этапе 9 (`f694527`)**: рабочий seed-workflow для wrangler 4 (ключ позиционно, обязательный `--remote`, экспорт токена деплоя), только относительные `images/`, отдельный `DEPLOYMENT.md`, `.env.example` в трёх разделах; вики синхронизирована с кодом (DOC-01…DOC-04).
 
-**Production blocker:** до исправления пунктов 1–8 нельзя считать публичный Worker безопасным и надёжным.
+**Production blocker:** до исправления пунктов 1–8 нельзя было считать публичный Worker безопасным и надёжным. **Снят на этапе 10** — пункты 1–8 закрыты и задеплоены; остаётся только Turnstile (капча) как дополнительный слой: без него спам держат серверные лимиты 5/ч (заявки) и 3/ч (отзывы) на IP.
 
 ---
 
@@ -373,8 +408,8 @@ npx wrangler deploy --dry-run
 
 ### Что остаётся (требует действий владельца в Cloudflare dashboard)
 
-1. **Turnstile keys** — создать widget, вписать `TURNSTILE_SITE_KEY` в HTML и `TURNSTILE_SECRET` как secret воркера (`wrangler secret put TURNSTILE_SECRET`). Пока не настроено — graceful degradation (пропуск).
-2. **CHAT_ID** в `wrangler.toml` `[vars]` виден в deployed source → вынести в secret (`wrangler secret put CHAT_ID`).
+1. **Turnstile keys** — создать виджет, вписать `TURNSTILE_SITE_KEY` в HTML и `TURNSTILE_SECRET` как secret воркера (`wrangler secret put TURNSTILE_SECRET`). Пока не настроено — graceful degradation (пропуск). **Не сделано на этапе 10:** оба токена в `.env` не имеют права `Turnstile: Edit` (API → `Authentication error`), нужен виджет из дашборда. Turnstile бесплатен — лимита запросов нет.
+2. ✅ **CHAT_ID** вынесен из `wrangler.toml` `[vars]` в секрет на этапе 10 (`8a337a4`) — в репозитории значения нет, `secret list` показывает `BOT_TOKEN` + `CHAT_ID`.
 
 ### Проблема
 
@@ -1379,6 +1414,8 @@ images/...
 
 **Про test/prod namespace (честно):** сейчас namespace **один** — продовый (`CATALOG`, `fe7b04ba504643ce9f085d1213bd5a09`); отдельного test-namespace нет. Роль безопасной песочницы выполняет локальное хранилище wrangler (`--local`, состояние в `worker/.wrangler/`, в git не попадает). Если понадобится полноценный test-контур — `npx wrangler kv namespace create CATALOG_KV --env test` + блок `[env.test]` в `wrangler.toml`, деплой `npx wrangler deploy --env test`, команды с `--env test`. Запись в прод-KV без явного разрешения владельца не выполнялась.
 
+**Лимитер живёт в этом же KV** (этап 10): ключи `rl:order:<ip>:<bucket>` и `rl:review:<ip>:<bucket>`, окно — час UTC, TTL ~1 час. Смоук-запросы к `/api/order` тратят лимит 5/ч с одного IP — после пяти проверок форма отвечает 429 до границы часа. Ключ `order_counter` (нумерация заявок) не удалять.
+
 **Файл:** `README.md:8–18`.
 
 ```bash
@@ -1607,19 +1644,22 @@ legacy routes — removed
 
 ## Этап 10 — deploy и rollback
 
-Порядок:
+**Статус:** ✅ выполнено (`8a337a4`, `2497fa8`, `4f0da28`) — **но не целиком: остались два пункта владельца** (Turnstile, живая проверка заявки). Таблица проверок — «Этап 10 — что именно проверено (2026-09-19)».
 
-1. Worker test namespace.
-2. Worker unit/integration tests.
-3. Test Telegram chat/mock.
-4. Production Worker.
-5. Live safe smoke.
-6. GitHub Pages.
-7. Browser 375/1920.
-8. Cloudflare logs.
-9. README/wiki.
-10. Проверить `git log origin/main -1`.
-11. Сохранить rollback commit и предыдущий Worker version ID.
+Порядок (соблюдён):
+
+1. ✅ Проверки перед деплоем (23/23, 123/123, dry-run, `node --check`, `git diff --check`).
+2. ✅ Секреты: `CHAT_ID` вынесен из `[vars]` в секрет; `BOT_TOKEN` + `CHAT_ID` на месте.
+3. ✅ Production Worker: `npx wrangler deploy` → версия `134e5c82` (точка откатa `96b85b27`).
+4. ✅ Live safe smoke: legacy → 404, каталог → 405, `body=null` → 400, `text` → 400 `invalid`, honeypot → 200 `silent`.
+5. ✅ GitHub Pages: `git push origin fix/security-and-ux:main` (fast-forward) → `main` = `4f0da28`.
+6. ✅ Browser 375/1920 на живом сайте (каталог, меню, формы, плавающие кнопки).
+7. ⏳ Cloudflare logs (`wrangler tail`) — отдельно не гоняли, логи доступны по требованию.
+8. ✅ README/DEPLOYMENT/wiki/SESSION-RESUME обновлены.
+9. ✅ `git log origin/main -1` → `4f0da28`.
+10. ✅ Rollback зафиксирован: Worker `96b85b27`, каталог `tmp/catalog-backup.json`.
+11. ⏳ Turnstile не включён (нет права `Turnstile: Edit` у токенов → виджет из дашборда).
+12. ⏳ Живая заявка в Telegram не отправлялась (лимит 5/ч исчерпан смоуком; тест в чат владельца не согласован).
 
 ---
 
