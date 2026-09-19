@@ -53,13 +53,13 @@ git diff --check                            # нет случайных проб
 cd worker
 npx wrangler secret put BOT_TOKEN
 npx wrangler secret put CHAT_ID
-npx wrangler secret put TURNSTILE_SECRET     # пока не задан — Turnstile пропускается
+npx wrangler secret put TURNSTILE_SECRET     # этап 12 — задан и активен
 npx wrangler secret list                     # проверить, что все три на месте
 ```
 
 Отдельно от секретов: публичный **site key** Turnstile прописывается в `scripts/order.js` и `scripts/review-form.js` (там есть константа `TURNSTILE_SITE_KEY`). Создать виджет и получить ключи можно и из CLI: `npx wrangler turnstile`.
 
-`CHAT_ID` вынесен из `wrangler.toml` в секрет (этап 10, коммит `8a337a4`) — в репозитории значения нет. `BOT_TOKEN` и `CHAT_ID` уже стоят в проде; `TURNSTILE_SECRET` пока не задан.
+`CHAT_ID` вынесен из `wrangler.toml` в секрет (этап 10, коммит `8a337a4`) — в репозитории значения нет. `BOT_TOKEN` и `CHAT_ID` уже стоят в проде; `TURNSTILE_SECRET` задан и активен (этап 12).
 
 **Turnstile (бесплатно, лимитов запросов нет):** виджет создаётся в Cloudflare Dashboard → Turnstile → Add widget (домен `rudrymor.github.io`, режим Managed) либо через API:
 
@@ -129,6 +129,8 @@ curl -s "$W/api/catalog" | head -c 200                                    # ка
 | `POST /api/order` с `body=null` | 500 | 400 |
 | `POST /api/order` с полем `text` | 200 (легаси-контракт) | **400 invalid** — контракт удалён |
 
+**Этап 12 (Turnstile включён):** Worker `ee0be42c` (капча активна), Pages `main` = `a52d604` (site key `0x4AAAA...` в клиенте, фикс рендера `?v=3`), точка отката Worker `134e5c82`. Проверено на проде: `POST /api/order` и `/api/review` с валидным телом и **без** токена → `403 {"error":"Missing Turnstile token"}` (было `400 invalid` до включения). Остальные маршруты не изменились (см. таблицу выше).
+
 ### 4.2 Сайт (браузер)
 
 1. Локальный предпросмотр: `python -m http.server 8080` в корне проекта → http://127.0.0.1:8080/
@@ -184,7 +186,7 @@ KV-каталог и Worker живут отдельно от сайта: отк�
 1. ✅ Легаси-контракт `text` **удалён полностью** (коммит `2497fa8`): флаг `ALLOW_LEGACY_TEXT`, импорт `normalizeText` и сама ветка убраны из `worker/src/index.ts`. Заявка принимается только структурированными полями.
 2. ✅ `cd worker && node tests/run-tests.js` — 123/123 (тест переписан: `text` теперь ожидает 400 `invalid` и ноль обращений к Telegram).
 3. ✅ `npx wrangler deploy` — Worker `134e5c82`; прод-проверка: `POST /api/order` с одним `text` → 400 с картой ошибок по полям.
-4. ⏳ Turnstile: виджет и ключи (владелец) — единственный незакрытый пункт защиты.
+4. ✅ Turnstile **включён (этап 12)**: виджет `3dprint-site` (Managed, домен `rudrymor.github.io`) создан владельцем; secret задан `wrangler secret put TURNSTILE_SECRET`; site key `0x4AAAAAAE9CzwO8srPH97bB` внесён в `order.js`/`review-form.js`. Пойман и исправлен баг рендера: `initTurnstile()` на `DOMContentLoaded` молча выходил, когда `window.turnstile` (async defer) ещё не готов — теперь ждёт появления `render` до ~6 c (фикс `a52d604`, `?v=3`). Проверено: POST без токена → 403 `Missing Turnstile token`; виджет рендерится; отправка без завершённой капчи заблокирована клиентом без исходящего запроса. Выдача реального токена, требующего живого браузера, — единственное, что headless-проверка не затрагивает.
 5. ⏳ Обновить вики `C:\Users\metal\wiki\3D-печать.md` и `SESSION-RESUME.md`.
 
 ---
@@ -193,7 +195,7 @@ KV-каталог и Worker живут отдельно от сайта: отк�
 
 | Что | Кто | Почему важно |
 |---|---|---|
-| Виджет Turnstile (site + secret key) | владелец | Единственный открытый пункт. Сейчас капчи нет: спам держат только лимиты 5/ч (заявки) и 3/ч (отзывы) на IP. Создать виджет через API/wrangler **нельзя** — токен деплоя и AI-токен без права `Turnstile: Edit` (`Authentication error [code: 10000]`), сохранённой OAuth-сессии wrangler нет. Варианты от владельца: (1) создать виджет в дашборде (домен `rudrymor.github.io`, Managed) и отдать site+secret ключи; (2) сделать `wrangler login` (OAuth под супер-админом), тогда виджет создам я. Затем: site key → `TURNSTILE_SITE_KEY` в `order.js`/`review-form.js` (+ `?v=`), secret → `wrangler secret put TURNSTILE_SECRET`, деплой, проверка «без токена → 403/400, с токеном → success» |
+| ~~Виджет Turnstile (site + secret key)~~ | — | ✅ **включён (этап 12)**: виджет создан владельцем, secret задан, site key внесён в клиент (`0x4AAAA...`). Server-side проверка активна (403 без токена); фикс гонки рендера (`a52d604`, `?v=3`). Осталась разовая живая проверка в обычном браузере владельца: отправить реальную заявку через форму — капча пройдётся автоматически (Managed) и заявка дойдёт до Telegram. |
 | ~~Живая проверка заявки в Telegram~~ | — | ✅ **выполнена (этап 11)**: две тестовые заявки через форму на проде доставлены боту (сервер отдал номер `260919-9765` только при подтверждении Telegram) |
 
 **REL-01 закрыт (этап 11, `b96ba80`):** вызовы к Telegram получили таймаут 15 с (`AbortSignal.timeout`), проверку HTTP-статуса и безопасный разбор JSON (`telegramJson()`), классификацию ошибок `timeout`/`network`/`parse`/`rejected`. Зависший апстрим больше не висит до лимита рантайма.
