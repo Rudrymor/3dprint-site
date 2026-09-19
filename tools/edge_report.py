@@ -6,6 +6,9 @@
   python tools/edge_report.py --old tmp/old-asset-s2.webp --new images/figure-hero.webp
   python tools/edge_report.py --new images/figure-hero.webp --review-dir "%LOCALAPPDATA%/Temp/figwork"
 
+Для выдачи файлов владельцу указывай ASCII-путь без пробелов:
+  python tools/edge_report.py --review-dir C:/Users/metal/web-sites/_review-3dprint
+
 Ассеты «было» лежат в tmp/ и в git не попадают (tmp/ исключён из репозитория): после
 чистого клона их просто нет. Скрипт об этом честно скажет и покажет то, что нашёл.
 """
