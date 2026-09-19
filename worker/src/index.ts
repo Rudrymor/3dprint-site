@@ -1,7 +1,6 @@
 import {
   Limits,
   isRequestIdValid,
-  normalizeText,
   validateReview,
   validateOrder,
   validateFiles,
@@ -255,11 +254,10 @@ function isHoneypot(v: unknown): boolean {
 
 // ── Order handler ──
 /**
- * Легаси-путь: старый клиент (до деплоя Pages на этапе 10) слал готовую строку
- * `text`. Пока новый клиент не в проде, Worker принимает оба контракта.
- * После деплоя Pages поставить false и удалить ветку (см. ревью, этап 10).
+ * Легаси-контракт (`text` — готовая строка заявки) удалён на этапе 10, после
+ * публикации Pages: в проде клиент шлёт только структурированные поля.
+ * Текст для Telegram собирает сервер из проверенных полей (BUG-01).
  */
-const ALLOW_LEGACY_TEXT = true;
 
 /** Собирает служебный текст заявки для Telegram из ПРОВЕРЕННЫХ полей. */
 function buildOrderText(
@@ -358,19 +356,12 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     quantity: get('quantity'),
   });
 
-  // Легаси-контракт (только пока в проде старый клиент): готовая строка `text`.
-  const legacyText =
-    ALLOW_LEGACY_TEXT && !structured.ok ? normalizeText(get('text')) : '';
-
-  if (!structured.ok && legacyText.length < Limits.textMin) {
+  if (!structured.ok) {
     log('warn', 'order: validation failed', { requestId, fields: Object.keys(structured.fields).join(',') });
     return json(
       { ok: false, status: 'invalid', error: 'Проверьте поля формы', fields: structured.fields },
       400,
     );
-  }
-  if (!structured.ok) {
-    log('warn', 'order: legacy text payload accepted', { requestId });
   }
 
   // ── Валидация файлов ДО claim: иначе отклонённый файл «съедает» request_id
@@ -402,9 +393,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
 
   const orderNum = getNextOrderNumber();
   const dateStr = formatOrderDate(new Date());
-  const fullText = structured.ok
-    ? buildOrderText(orderNum, dateStr, structured.data, fileNames, files.length)
-    : '🆕 Заявка #' + orderNum + '\n📅 ' + dateStr + '\n\n' + legacyText;
+  const fullText = buildOrderText(orderNum, dateStr, structured.data, fileNames, files.length);
 
   // ── Отправка в Telegram ──
   let msgRes: TelegramResult;

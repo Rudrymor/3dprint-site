@@ -388,8 +388,8 @@ async function main() {
   eq('unknown replay: тот же статус', unkReplayData.status, 'unknown');
   eq('unknown replay: повторной отправки нет', messageCount(), 1);
 
-  // ══ 8. honeypot и legacy-контракт ══
-  section('POST /api/order — honeypot и legacy text');
+  // ══ 8. honeypot и удалённый legacy-контракт ══
+  section('POST /api/order — honeypot и удалённый legacy text');
 
   resetTelegram();
   env = makeEnv();
@@ -400,11 +400,13 @@ async function main() {
   eq('honeypot: silent', honeyData.silent, true);
   eq('honeypot: Telegram не вызван', messageCount(), 0);
 
+  // Легаси-контракт `text` удалён (этап 10): готовая строка больше не принимается.
   const legacyRes = await worker(jsonRequest({ request_id: UUID(), text: '👤 Имя: Пётр\n📝 Описание: старая схема клиента' }));
   const legacyData = await legacyRes.json();
-  eq('legacy text: HTTP 200', legacyRes.status, 200);
-  eq('legacy text: status=success', legacyData.status, 'success');
-  check('legacy text: строка ушла как есть', !!lastMessage() && lastMessage().indexOf('старая схема клиента') !== -1, lastMessage());
+  eq('legacy text: HTTP 400', legacyRes.status, 400);
+  eq('legacy text: status=invalid', legacyData.status, 'invalid');
+  check('legacy text: Telegram не вызван', messageCount() === 0, 'messages=' + messageCount());
+  check('legacy text: карта ошибок по полям', !!legacyData.fields && Object.keys(legacyData.fields).length > 0, JSON.stringify(legacyData.fields));
 
   // ══ 9. Durable Object: pending-конкурент ══
   section('IdempotencyObject — параллельный дубликат');
