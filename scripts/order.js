@@ -40,9 +40,9 @@
     'zip', 'rar', 'pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'gif'
   ];
 
-  // Turnstile site key. Пусто → виджет не рендерится и проверка не требуется
-  // (на Worker TURNSTILE_SECRET тоже должен быть не задан).
-  var TURNSTILE_SITE_KEY = '';
+  // Turnstile site key (public — безопасно лежит в статике). Задано → капча
+  // рендерится и требуется; на Worker TURNSTILE_SECRET тоже задан. Этап 12.
+  var TURNSTILE_SITE_KEY = '0x4AAAAAAE9CzwO8srPH97bB';
 
   var PENDING_RETRIES = 2;   // сколько раз ждать «заявка уже обрабатывается»
   var PENDING_DELAY = 2000;  // мс между попытками
