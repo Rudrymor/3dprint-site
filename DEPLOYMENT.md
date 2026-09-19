@@ -59,7 +59,19 @@ npx wrangler secret list                     # проверить, что все
 
 Отдельно от секретов: публичный **site key** Turnstile прописывается в `scripts/order.js` и `scripts/review-form.js` (там есть константа `TURNSTILE_SITE_KEY`). Создать виджет и получить ключи можно и из CLI: `npx wrangler turnstile`.
 
-`CHAT_ID` сейчас лежит в `wrangler.toml` → `[vars]` (`2030385539`) и виден в опубликованном коде. После `secret put CHAT_ID` строку из `[vars]` убрать и задеплоить заново — на этапе 10.
+`CHAT_ID` вынесен из `wrangler.toml` в секрет (этап 10, коммит `8a337a4`) — в репозитории значения нет. `BOT_TOKEN` и `CHAT_ID` уже стоят в проде; `TURNSTILE_SECRET` пока не задан.
+
+**Turnstile (бесплатно, лимитов запросов нет):** виджет создаётся в Cloudflare Dashboard → Turnstile → Add widget (домен `rudrymor.github.io`, режим Managed) либо через API:
+
+```bash
+A=$(grep -E '^CLOUDFLARE_ACCOUNT_ID=' ../.env | sed 's/^[^=]*=//')
+T=$(grep -E '^CLOUDFLARE_DEPLOY_TOKEN=' ../.env | sed 's/^[^=]*=//')
+curl -s -X POST "https://api.cloudflare.com/client/v4/accounts/$A/challenges/widgets" \
+  -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
+  -d '{"name":"3dprint-site","domains":["rudrymor.github.io"],"mode":"managed"}'
+```
+
+⚠️ Токену нужны права **Turnstile: Edit** — с токеном только на Workers Scripts/KV API отвечает `Authentication error`. Проще создать виджет руками в дашборде: он вернёт site key и secret key сразу.
 
 ---
 
@@ -104,18 +116,18 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST "$W/api/order" \
 curl -s "$W/api/catalog" | head -c 200                                    # каталог из KV
 ```
 
-**Состояние прода на 2026-09-19 (ветка ещё не задеплоена, прод на `main` = `5a9bb2b`):**
+**Состояние прода на 2026-09-19 (этап 10 выполнен: Worker `134e5c82`, Pages `main` = `2497fa8`):**
 
-| Проверка | Сейчас в проде | Должно быть после деплоя |
+| Проверка | Было до деплоя | Сейчас в проде |
 |---|---|---|
 | `GET /api/catalog` | 200 | 200 |
 | `POST /api/catalog` | 405 | 405 |
-| `POST /api/proxy` | **400 — legacy жив** | 404 |
-| `POST /` | **400 — legacy жив** | 404 |
+| `POST /api/proxy` | **400 — legacy жив** | **404 — удалён** |
+| `POST /` | **400 — legacy жив** | **404 — удалён** |
 | `GET /api/review` | 404 | 405 |
 | `OPTIONS /api/order` | 200 | 200 |
-
-То есть до выкатки ветки публичный Telegram-прокси всё ещё без серверных лимитов — это и есть причина деплоя.
+| `POST /api/order` с `body=null` | 500 | 400 |
+| `POST /api/order` с полем `text` | 200 (легаси-контракт) | **400 invalid** — контракт удалён |
 
 ### 4.2 Сайт (браузер)
 
@@ -167,12 +179,22 @@ KV-каталог и Worker живут отдельно от сайта: отк�
 
 ---
 
-## 6. После публикации Pages
+## 6. После публикации Pages (выполнено на этапе 10)
 
-1. В `worker/src/index.ts` поставить `ALLOW_LEGACY_TEXT = false` — легаси-ветка приёма готовой строки `text` нужна была только на время перехода, пока в проде старый клиент. После выключения удалить и саму ветку.
-2. `cd worker && node tests/run-tests.js` (тесты на легаси-контракт завязаны на флаг) и `npx wrangler deploy`.
-3. Проверить, что новая форма заказа работает без фолбэка на `text` — то есть заявка уходит структурированными полями.
-4. Обновить вики `C:\Users\metal\wiki\3D-печать.md` и `SESSION-RESUME.md`.
+1. ✅ Легаси-контракт `text` **удалён полностью** (коммит `2497fa8`): флаг `ALLOW_LEGACY_TEXT`, импорт `normalizeText` и сама ветка убраны из `worker/src/index.ts`. Заявка принимается только структурированными полями.
+2. ✅ `cd worker && node tests/run-tests.js` — 123/123 (тест переписан: `text` теперь ожидает 400 `invalid` и ноль обращений к Telegram).
+3. ✅ `npx wrangler deploy` — Worker `134e5c82`; прод-проверка: `POST /api/order` с одним `text` → 400 с картой ошибок по полям.
+4. ⏳ Turnstile: виджет и ключи (владелец) — единственный незакрытый пункт защиты.
+5. ⏳ Обновить вики `C:\Users\metal\wiki\3D-печать.md` и `SESSION-RESUME.md`.
+
+---
+
+## 6.1 Осталось после деплоя
+
+| Что | Кто | Почему важно |
+|---|---|---|
+| Виджет Turnstile (site + secret key) | владелец | Сейчас капчи нет: спам держат только лимиты 5/ч (заявки) и 3/ч (отзывы) на IP |
+| Живая проверка заявки в Telegram | владелец | Проверить доставку после переноса `CHAT_ID` в секрет (тестовая заявка в прод-чате намеренно не отправлялась) |
 
 ---
 
