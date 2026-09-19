@@ -4,11 +4,11 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-19 13:55 RTZ.
+- Дата обновления: 2026-09-19 14:20 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: актуальный — `git log -1` в ветке. Последнее обновление документа — этап 8 (`1db5fbb`, `origin/fix/security-and-ux` синхронизирован).
-- Рабочее дерево: чистое.
+- Текущий HEAD: актуальный — `git log -1` в ветке. Последнее обновление документа — этап 9 (документация, `f694527` + docs-коммиты; `origin/fix/security-and-ux` синхронизирован).
+- Рабочее дерево: чистое (кроме некоммитируемого `SESSION-RESUME.md`).
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
 - Production Pages: `https://rudrymor.github.io/3dprint-site/`.
@@ -51,6 +51,7 @@
 | 6 — catalog states + lightbox (UX-03, PERF-01, PERF-02, A11Y-02) | `43125e6` | ✅ | `scripts/catalog.js` переписан: состояния loading/empty/error/success, timeout 10 с с самостоятельным завершением (не только по `abort()`), retry с защитой от параллельных запросов, клиентская проверка payload, `width`/`height`/`decoding=async` у картинок, картинка — кнопка (Enter/Space), лайтбокс с `inert` фона и возвратом фокуса. `works.html`: счётчик скрыт до реального числа, стартовый loading, `noscript`. Тесты Worker'а — 122/122 |
 | 7 — a11y/perf (A11Y-03, CSS-01, CSS-03, A11Y-05) | `12ed504` | ✅ | `scripts/common.js`: меню с `aria-controls`/`mobile-nav`, фокус на первую ссылку, ловушка Tab, Escape с возвратом фокуса, `inert` фона. `styles/main.css` + 4 страницы: точечные transitions (без `all`), `theme-color`, `preconnect` Fonts, `safe-area-inset` у плавающих кнопок, `aria-hidden` декоративных SVG, запас 120px у формы заказа на мобильных (VK не перекрывает поля). Попутно CSS-02 (`font-weight: 60` → `600`, `;;`). Тесты Worker'а — 122/122 |
 | 8 — Python-инструменты (PY-01…PY-04) | `1db5fbb` | ✅ | `tools/tool_common.py` (`ensure_parent_dir`, `int_range`, `float_range`); `figure_from_ai.py` — `check_mask()` до расчёта масштаба (нет `ZeroDivisionError`), отбрасывание вырожденных кандидатов, папки под output/оба превью; `figure_hero.py` — `axis if axis is not None else …` в двух местах + отказ на ось вне силуэта, папки out/`--debug-dir`; `ai_repaint.py` — папка вывода, «файл не найден», диапазоны `--steps/--strength/--guidance/--width/--height/--seed`; `edge_report.py` — argparse `--old/--new/--broken/--review-dir/--height`, без жёсткого `C:\Users\...`, проверка файлов до чтения. Тесты `tools/tests/run-tests.py` — 23/23 |
+| 9 — документация (DOC-01…DOC-04) | `f694527` + docs-коммиты | ✅ | `README.md`: рабочий seed-workflow для wrangler 4 (ключ первым аргументом, обязательный `--remote`, экспорт токена деплоя перед командами), точка отката до правки, проверка `GET /api/catalog` после записи; убрана нерабочая Imgur-инструкция (только относительные `images/` + требования к имени файла); новый `DEPLOYMENT.md` (порядок Worker → Pages, секреты, smoke-таблица «сейчас/после деплоя», откат Worker/KV/Pages, выключение `ALLOW_LEGACY_TEXT`); `.env.example` разделён на локальные переменные Python-инструментов / токен деплоя / секреты Worker'а |
 
 ### Этап 4 — что именно проверено (2026-09-17)
 
@@ -183,6 +184,27 @@
 
 **Наблюдение (не относится к этапу 8, требует решения владельца):** пересборка `images/figure-hero.webp` из `игрушка.jpg` **текущим** кодом даёт 302×593, а файл на сайте — 289×593. Старый код из `HEAD` даёт ровно тот же результат, что новый, то есть расхождение накопилось до этапа 8 (ассет на сайте собран более ранним состоянием пайплайна и/или другой версией OpenCV). Файл на сайте **не меняли**; если владелец захочет «освежить» hero, это отдельная задача с пересборкой и проверкой `figure_check.py`.
 
+### Этап 9 — что именно проверено (2026-09-19)
+
+| Проверка | Как | Результат |
+|---|---|---|
+| Seed-скрипт печатает валидный JSON | `node seed-catalog.js` + разбор вывода в node | ✅ 12 записей, `id` уникальны, поле `updated` заполняется; скрипт **ничего не пишет** сам (как и описано в доке) |
+| Синтаксис команд wrangler 4 | `npx wrangler --version`, `npx wrangler kv key put --help`, `npx wrangler --help` | ✅ 4.131.1: `key` — **позиционный** аргумент (старый `--key catalog` падает с «Missing required option»), без `--remote` KV-команды работают с **локальным** хранилищем, `deployments`/`rollback`/`secret`/`tail` существуют |
+| Требование токена в non-interactive | `npx wrangler kv key get catalog --binding CATALOG_KV --remote` без переменной | ✅ отказ «necessary to set a CLOUDFLARE_API_TOKEN» — поэтому в доке описан `export CLOUDFLARE_API_TOKEN="$(grep -E '^CLOUDFLARE_DEPLOY_TOKEN=' .env …)"` |
+| Локальная запись (прод не тронут) | `npx wrangler kv key put catalog --binding CATALOG_KV --local "$(node seed-catalog.js)"` | ✅ «Resource location: local» — значение ушло в локальную копию KV, живой каталог не изменён |
+| Точка отката + чтение прод-KV | токен деплоя + `npx wrangler kv key get catalog --binding CATALOG_KV --remote > tmp/catalog-backup.json` | ✅ 12 записей, файл-бэкап создан (`tmp/` в `.gitignore`); прод-KV только **читали** |
+| Команда записи в прод-KV | — | ⏸ **не выполнялась**: в прод KV без явного разрешения владельца не писать; форма команды проверена на локальной записи и на чтении прод-KV |
+| Живой каталог | `curl -s https://tg-proxy.metalkor91.workers.dev/api/catalog` | ✅ 12 работ, ответ по контракту |
+| Legacy-роуты в проде | curl по 6 адресам | ⚠️ `POST /api/proxy` → **400** и `POST /` → **400** — прод всё ещё на `main` (`5a9bb2b`), legacy жив; в ветке они отдают 404. Зафиксировано в `DEPLOYMENT.md` таблицей «сейчас / после деплоя» |
+| Тесты инструментов | `python tools/tests/run-tests.py`, `python -m compileall -q tools` | ✅ 23/23, компиляция OK |
+| Тесты Worker'а | `cd worker && node tests/run-tests.js` | ✅ 122/122 (код Worker'а этап не трогал) |
+| Сборка | `cd worker && npx wrangler deploy --dry-run` | ✅ бандл 31.59 KiB, биндинги `IDEMPOTENCY` (DO), `CATALOG_KV`, `CHAT_ID` — без публикации |
+| Синтаксис клиента | `node --check scripts/*.js` (5 файлов) | ✅ чисто |
+| Пробелы и маркеры | `git diff --check` | ✅ чисто (единственное сообщение git — предупреждение про LF→CRLF) |
+| Команды из README вживую | seed (локально), чтение KV, `curl /api/catalog`, `export` токена деплоя | ✅ воспроизводятся; запись в прод-KV сознательно не запускалась |
+
+**Найдено и исправлено в ходе проверки:** инструкция записи каталога в `README.md` и в комментарии `worker/seed-catalog.js` была нерабочей для wrangler 4 — команда использовала снятый `--key` (падала) и не указывала `--remote` (без него значение уходит в локальную копию KV, а владелец видел бы «записал, а на сайте пусто»). Обе заменены на проверенный вид, добавлены точка отката, проверка каталога после записи и явное требование экспортировать токен деплоя.
+
 ### Secret scan по git-истории (87 коммитов)
 
 | Проверка | Результат |
@@ -222,7 +244,7 @@
 9. Форма отзывов показывает успех при HTTP/network-ошибке и допускает двойную отправку.
 10. Runtime-валидация каталога на Worker фактически отсутствует.
 11. ✅ Python-пайплайн `figure_from_ai.py` падал с `ZeroDivisionError` на пустой маске — **исправлено на этапе 8 (`1db5fbb`)**, вместе с папками вывода, жёсткими путями и валидацией аргументов.
-12. README и wiki содержат устаревшие инструкции.
+12. ✅ README и wiki содержали устаревшие инструкции — **исправлено на этапе 9 (`f694527`)**: рабочий seed-workflow для wrangler 4 (ключ позиционно, обязательный `--remote`, экспорт токена деплоя), только относительные `images/`, отдельный `DEPLOYMENT.md`, `.env.example` в трёх разделах; вики синхронизирована с кодом (DOC-01…DOC-04).
 
 **Production blocker:** до исправления пунктов 1–8 нельзя считать публичный Worker безопасным и надёжным.
 
@@ -325,8 +347,8 @@ npx wrangler deploy --dry-run
 | P2-8: лимиты файлов | ⚠️ | Размеры синхронизированы, но MIME и расширения расходятся |
 | P2-9: логирование | ✅ | Structured JSON logging с request ID, timestamps, level classification (info/warn/error) |
 | Accessibility | ⚠️ | Базовые улучшения есть, но формы, stars, lightbox и drawer требуют доработки |
-| README | ⚠️ | Основная архитектура обновлена, но seed и image-инструкции противоречат коду |
-| Wiki | ❌ | Остались инструкции про старый POST catalog и старую архитектуру |
+| README | ✅ | Обновлён на этапе 9 (`f694527`): рабочий seed-workflow для wrangler 4 (ключ позиционно, `--remote`, токен деплоя), только относительные `images/`, отдельный `DEPLOYMENT.md` |
+| Wiki | ✅ | Синхронизирована на этапе 9: каталог только на чтение, запись через wrangler/Dashboard, схема imgbb удалена, статус «этапы 0–9 пока только в ветке» |
 
 ---
 
@@ -1324,6 +1346,8 @@ tmp/old-asset-v1.webp
 
 ## DOC-01 — README предлагает запрещённый внешний image URL
 
+**Статус:** ✅ исправлено (этап 9, `f694527`). Раздел «Как добавить фото» переписан: только файл в `images/` + коммит + относительный путь в записи каталога. Явно сказано, что внешние ссылки (imgur и любые другие) **не работают** — Worker пропускает лишь относительные пути `images/`, это защита от подмены картинки; добавлены требования к имени файла (латиница/цифры/`-`/`_`, без пробелов и кириллицы) и список разрешённых расширений, а также порядок «положить → закоммитить → вписать в каталог → обновить KV → проверить `GET /api/catalog`». CDN не документируется до появления allowlist доменов и тестов.
+
 **Файл:** `README.md:43–48`.
 
 README предлагает загрузить изображение на Imgur и вставить Direct link.
@@ -1350,6 +1374,10 @@ images/...
 ---
 
 ## DOC-02 — README содержит нерабочую seed-команду
+
+**Статус:** ✅ исправлено (этап 9, `f694527`). Команда проверена вживую и переписана под wrangler 4.131.1: `seed-catalog.js` описан как «только печатает JSON», рабочая запись — `npx wrangler kv key put catalog --binding CATALOG_KV --remote "$(node seed-catalog.js)"` (**ключ — позиционный аргумент**: старый `--key catalog` падает с «Missing required option»; **`--remote` обязателен**: без него значение уходит в локальную копию KV и на сайте ничего не меняется). Добавлены: точка отката до правки (`kv key get … --remote > tmp/catalog-backup.json`), команда откатa, проверка `GET /api/catalog` после записи, требование экспортировать токен деплоя (`export CLOUDFLARE_API_TOKEN="$(grep -E '^CLOUDFLARE_DEPLOY_TOKEN=' .env …)"`), безопасная локальная проба через `--local` и таблица «что нужно, чтобы команда сработала». Такой же нерабочий комментарий исправлен в `worker/seed-catalog.js`.
+
+**Про test/prod namespace (честно):** сейчас namespace **один** — продовый (`CATALOG`, `fe7b04ba504643ce9f085d1213bd5a09`); отдельного test-namespace нет. Роль безопасной песочницы выполняет локальное хранилище wrangler (`--local`, состояние в `worker/.wrangler/`, в git не попадает). Если понадобится полноценный test-контур — `npx wrangler kv namespace create CATALOG_KV --env test` + блок `[env.test]` в `wrangler.toml`, деплой `npx wrangler deploy --env test`, команды с `--env test`. Запись в прод-KV без явного разрешения владельца не выполнялась.
 
 **Файл:** `README.md:8–18`.
 
@@ -1383,6 +1411,8 @@ npx wrangler kv key put \
 
 ## DOC-03 — `.env.example` устарел
 
+**Статус:** ✅ исправлено (этап 9, `f694527`). Файл разделён на три смысловые части и переписан: (1) локальные переменные Python-инструментов — `CLOUDFLARE_API_TOKEN` для Cloudflare Workers AI и `CLOUDFLARE_ACCOUNT_ID`; (2) отдельный токен деплоя `CLOUDFLARE_DEPLOY_TOKEN` с правами `Workers Scripts: Edit` + `Workers KV: Edit`, предупреждением не затирать AI-токен и готовой строкой экспорта под именем, которое понимает wrangler; (3) секреты Worker'а (`BOT_TOKEN`, `CHAT_ID`, `TURNSTILE_SECRET`) — они в `.env` не хранятся, а ставятся через `npx wrangler secret put`; отмечено, что без `TURNSTILE_SECRET` Turnstile пропускается. Google Sheets и Tally убраны как не относящиеся к архитектуре. Реальных секретов в репозитории нет (проверено secret-сканом ранее).
+
 **Файл:** `.env.example`.
 
 В нём остались Google Sheets и Tally, которые не соответствуют текущей архитектуре. Отсутствуют актуальные переменные локального AI-пайплайна:
@@ -1406,7 +1436,9 @@ CLOUDFLARE_ACCOUNT_ID
 
 ## DOC-04 — wiki не соответствует текущему Worker
 
-**Файл:** `C:\Users\metal\wiki\3D-печать.md:267–307, 379–383, 530–556`.
+**Статус:** ✅ синхронизирована (этап 9). Обновлено: `GET /api/catalog` — публичный, **только чтение** (запись каталога — wrangler/Dashboard, `POST /api/catalog` → 405); `POST /api/order` и `POST /api/review` — публичные формы с защитой (лимиты, origin, Turnstile за секретом, идемпотентность); `POST /api/proxy` и `POST /` в ветке удалены (в проде пока возвращают 400 — помечено честно, до деплоя этапа 10). Удалена схема «Telegram → imgbb → GitHub» из раздела про каталог и строка imgbb из таблицы интеграций, убраны инструкции «друг пишет боту» (добавление/правка работ идёт через KV); раздел про каталог теперь описывает реальный workflow wrangler (позиционный ключ, `--remote`, экспорт токена) и лимиты записи. Обновлены статус («правки этапов 0–9 только в ветке, прод на `5a9bb2b`»), счётчик коммитов, версии ассетов (`main.css?v=16`, `common.js?v=5`), добавлены строки истории по этапам 6–9 и честная пометка к checklist ревью от 15.09 (он завышал готовность — фактические статусы в ревью-документе 2026-09-16).
+
+**Файл:** `C:\Users\metal\wiki\3D-печать.md`.
 
 Остались противоречия:
 
@@ -1564,12 +1596,14 @@ legacy routes — removed
 
 ## Этап 9 — документация
 
-1. Исправить README seed workflow.
-2. Убрать неправильную Imgur-инструкцию.
-3. Обновить `.env.example`.
-4. Обновить deployment guide.
-5. Синхронизировать wiki.
-6. В предыдущем отчёте пометить partial/open findings честно.
+**Статус:** ✅ выполнено (`f694527` + docs-коммиты). README переписан под фактическую архитектуру, добавлен `DEPLOYMENT.md`, `.env.example` разделён на три части, вики синхронизирована. Проверки — таблица «Этап 9 — что именно проверено (2026-09-19)».
+
+1. ✅ Исправить README seed workflow — команда проверена и переписана под wrangler 4 (DOC-02).
+2. ✅ Убрать неправильную Imgur-инструкцию — только относительные `images/` (DOC-01).
+3. ✅ Обновить `.env.example` — локальные переменные / токен деплоя / секреты Worker'а (DOC-03).
+4. ✅ Обновить deployment guide — новый `DEPLOYMENT.md` (порядок Worker → Pages, секреты, smoke, откат).
+5. ✅ Синхронизировать wiki — каталог read-only, imgbb-схема удалена, статус ветки (DOC-04).
+6. ✅ В предыдущем отчёте пометить partial/open findings честно — матрица §3 и статусы DOC-01…DOC-04 обновлены; `POST /api/proxy`/`POST /` в проде пока живы (⚠️ зафиксировано).
 
 ## Этап 10 — deploy и rollback
 
@@ -1672,16 +1706,16 @@ legacy routes — removed
 
 ## 9.6 Static quality gates
 
-- [ ] `node --check` для всех JS;
-- [ ] TypeScript typecheck Worker;
-- [ ] `wrangler deploy --dry-run`;
-- [ ] HTML validation;
-- [ ] CSS validation;
-- [ ] secret scan;
-- [ ] dependency audit;
-- [ ] `git diff --check`;
-- [ ] browser console без новых ошибок;
-- [ ] live commit/asset versions проверены.
+- [x] `node --check` для всех JS (этапы 7 и 9 — 5 клиентских файлов);
+- [ ] TypeScript typecheck Worker (отдельный `tsc` не настроен; типы проверяются сборкой);
+- [x] `wrangler deploy --dry-run` (этапы 7–9; бандл + биндинги без публикации);
+- [ ] HTML validation (внешним валидатором не гоняли);
+- [ ] CSS validation (внешним валидатором не гоняли; опечатки CSS-02 найдены grep-ом на этапе 7);
+- [x] secret scan (87 коммитов на этапе 0, свежих секретов с тех пор не появилось);
+- [ ] dependency audit (у клиента зависимостей нет; в воркере только toolchain — wrangler/esbuild, ставятся локально);
+- [x] `git diff --check` (этапы 7–9 — чисто);
+- [x] browser console без новых ошибок (проверки этапов 4–6);
+- [x] live commit/asset versions проверены (этапы 6–9).
 
 ---
 
@@ -1742,7 +1776,7 @@ git status --short --branch
 10. Review success показывается только после подтверждённого успеха.
 11. Lightbox, stars и mobile menu доступны с клавиатуры.
 12. Python tools не падают на пустых/повреждённых входах.
-13. README и wiki соответствуют фактической архитектуре.
+13. ✅ README и wiki соответствуют фактической архитектуре (этап 9, `f694527`): рабочий seed-workflow, только `images/`, `DEPLOYMENT.md`, три части `.env.example`, вики синхронизирована с кодом.
 14. Тесты проходят без использования production Telegram chat.
 15. Production smoke и browser checks выполнены на 375 и 1920 px.
 16. Worker и Pages задеплоены в правильном порядке.
