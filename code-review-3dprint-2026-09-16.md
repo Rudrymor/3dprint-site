@@ -4,10 +4,10 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-18 12:15 RTZ.
+- Дата обновления: 2026-09-19 13:55 RTZ.
 - Baseline commit: `5a9bb2b` (ветка `main`).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: актуальный — `git log -1` в ветке. Последнее обновление документа — этап 6 (`43125e6`, `origin/fix/security-and-ux` синхронизирован).
+- Текущий HEAD: актуальный — `git log -1` в ветке. Последнее обновление документа — этап 8 (`1db5fbb`, `origin/fix/security-and-ux` синхронизирован).
 - Рабочее дерево: чистое.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
@@ -50,6 +50,7 @@
 | 5 — review form (UX-01, UX-02, UX-04, A11Y-01, A11Y-04) | `e9f7b7f` | ✅ | `scripts/review-form.js` (вынесен из inline-скрипта): «спасибо» только после ответа Worker'а, double-submit защита, request_id/UUID v4, обработка 429 и 409, ошибки полей + aria-live, звёзды как radio с roving tabindex, FAB с aria-expanded и возвратом фокуса. Worker: `handleReview()` без HTML-экранирования, статусы как в order, `validateReview` → карта ошибок по полям. Тесты — 122/122 |
 | 6 — catalog states + lightbox (UX-03, PERF-01, PERF-02, A11Y-02) | `43125e6` | ✅ | `scripts/catalog.js` переписан: состояния loading/empty/error/success, timeout 10 с с самостоятельным завершением (не только по `abort()`), retry с защитой от параллельных запросов, клиентская проверка payload, `width`/`height`/`decoding=async` у картинок, картинка — кнопка (Enter/Space), лайтбокс с `inert` фона и возвратом фокуса. `works.html`: счётчик скрыт до реального числа, стартовый loading, `noscript`. Тесты Worker'а — 122/122 |
 | 7 — a11y/perf (A11Y-03, CSS-01, CSS-03, A11Y-05) | `12ed504` | ✅ | `scripts/common.js`: меню с `aria-controls`/`mobile-nav`, фокус на первую ссылку, ловушка Tab, Escape с возвратом фокуса, `inert` фона. `styles/main.css` + 4 страницы: точечные transitions (без `all`), `theme-color`, `preconnect` Fonts, `safe-area-inset` у плавающих кнопок, `aria-hidden` декоративных SVG, запас 120px у формы заказа на мобильных (VK не перекрывает поля). Попутно CSS-02 (`font-weight: 60` → `600`, `;;`). Тесты Worker'а — 122/122 |
+| 8 — Python-инструменты (PY-01…PY-04) | `1db5fbb` | ✅ | `tools/tool_common.py` (`ensure_parent_dir`, `int_range`, `float_range`); `figure_from_ai.py` — `check_mask()` до расчёта масштаба (нет `ZeroDivisionError`), отбрасывание вырожденных кандидатов, папки под output/оба превью; `figure_hero.py` — `axis if axis is not None else …` в двух местах + отказ на ось вне силуэта, папки out/`--debug-dir`; `ai_repaint.py` — папка вывода, «файл не найден», диапазоны `--steps/--strength/--guidance/--width/--height/--seed`; `edge_report.py` — argparse `--old/--new/--broken/--review-dir/--height`, без жёсткого `C:\Users\...`, проверка файлов до чтения. Тесты `tools/tests/run-tests.py` — 23/23 |
 
 ### Этап 4 — что именно проверено (2026-09-17)
 
@@ -145,6 +146,43 @@
 
 **Не делали (осознанно):** скриншоты — проверка шла DOM-замерами; `sketches/` (черновики) не правили.
 
+### Этап 8 — что именно проверено (2026-09-19)
+
+| Проверка | Как | Результат |
+|---|---|---|
+| Компиляция всех инструментов | `python -m compileall -q tools` | ✅ код 0 (входит и в тесты, отдельным кейсом) |
+| Тесты инструментов | `python tools/tests/run-tests.py` | ✅ **23/23** — фикстуры генерируются на месте, сеть не используется, токен Cloudflare не нужен |
+| PY-01: чёрная картинка (авто-метод) | фикстура 200×120, все пиксели 0 | ✅ код ≠ 0, «не удалось отделить фигурку от фона», трейсбека и `ZeroDivisionError` в выводе нет |
+| PY-01: чёрная картинка, `--method otsu` | тот же вход, принудительный метод | ✅ «фигурка не найдена: маска пустая» — сработала `check_mask()`, а не деление на ноль |
+| PY-01: белая картинка | фикстура 200×120, все пиксели 255 | ✅ понятный отказ, без трейсбека |
+| PY-01: одна белая точка | фикстура «чёрный фон + 1 px» | ✅ понятный отказ (вырожденный кандидат отброшен), без трейсбека |
+| PY-01: пятно 8×8 | фикстура «чёрный фон + квадрат 8×8» | ✅ «слишком маленькое пятно (8x8px, 64 px площади)» — проверка минимальной площади |
+| PY-01: повреждённый файл | 30 байт мусора вместо png | ✅ «не удалось прочитать: …», без трейсбека |
+| PY-01/PY-02: `--height 0` | CLI | ✅ argparse отбивает («допустимо 16..8000») до любой обработки, код 2 |
+| PY-02: вложенные папки вывода | `--out <новое>/a/b/asset.webp --preview <новое>/p/… --preview-light <новое>/p/…` | ✅ все три файла созданы, папки появились сами |
+| PY-02: RGBA-вход | фикстура с альфой | ✅ обрабатывается, ассет записан |
+| PY-02: кириллица | вход `<tmp>/фигурки/игрушка тест.png`, выход `<tmp>/фигурки/вывод/ассет.webp` | ✅ читает и пишет |
+| PY-02: `ai_repaint` без токена | `--env <несуществующий>`, `CLOUDFLARE_*` вычищены из окружения | ✅ «Нет CLOUDFLARE_API_TOKEN», код ≠ 0, **файл не создан**, сеть не трогали |
+| PY-02: `ai_repaint --check` | тот же пустой env | ✅ работает, печатает «CLOUDFLARE_API_TOKEN: НЕТ», код 0 |
+| PY-02: диапазоны `ai_repaint` | `--steps 0`, `--strength 2`, `--width 100` | ✅ все три отбиты argparse («допустимо …») |
+| PY-03: `--axis 0` | `figure_hero.py --no-paint --axis 0` на фикстуре | ✅ код 0, в выводе «ось симметрии x=0» — авто-расчёт больше не подменяет явный ноль |
+| PY-03: ось вне силуэта | `--axis 99999` | ✅ понятный отказ «за пределами фигурки (ширина …px)» с пояснением про обрезанный силуэт |
+| PY-03: полный прогон без `--axis` | `figure_hero.py --in … --out …` (фикстура) | ✅ код 0, на выходе webp с альфой, папка создалась |
+| PY-03: `--quality 0` | CLI | ✅ отбито argparse |
+| PY-03: `--debug-dir` во вложенной папке | `--debug-dir <новое>/dbg/inner` | ✅ папка и `paint_preview.png` появились |
+| PY-04: оба ассета на месте | `--old tmp-фикстура --new фикстура --review-dir <новое>` | ✅ метрики печатаются, карточка собрана, отсутствующий третий ассет помечен «пропущено» |
+| PY-04: файла «было» нет | `--old <несуществующий>` (случай чистого клона) | ✅ код 0, честная строка «пропущено», карточка собрана из того, что нашлось |
+| PY-04: нет основного ассета | `--new <несуществующий>` | ✅ «основной ассет не найден», код ≠ 0, без трейсбека |
+| PY-04: жёсткие пути | чтение всех `tools/*.py` | ✅ строк `C:\Users` и `C:/Users` не осталось |
+| **Неизменность результата** | `git archive HEAD tools` (старый код) vs новый на одних картинках: `figure_from_ai` (auto/border/otsu, изменённые параметры), `figure_cutout`, `figure_hero` (без `--axis`, `--axis` в диапазоне, `--no-paint --no-head`) | ✅ 8 из 9 сценариев — **побайтово одинаковый** `sha256`; единственное расхождение намеренное: `--axis` вне силуэта раньше молча давал мусор, теперь отказ |
+| Живой ассет | `figure_hero.py --in "игрушка.jpg" --out tmp/regen/…` + `sha256sum` против того же, что дал код из `HEAD` | ✅ оба дали один файл (`f68998f4…`, 302×593, 20 КБ) — правки обработку не задели |
+| `figure_check.py` на живом ассете сайта | `python tools/figure_check.py --in images/figure-hero.webp` | ✅ ВЕРДИКТ OK — альфа, поля, аспект и две ноги в норме |
+| `edge_report.py` на живых ассетах | `--review-dir tmp/edgereport` | ✅ три метрики и карточка (857×578) на месте |
+| Worker-тесты после этапа | `worker/tests/run-tests.js` (worker не трогали) | ✅ 122/122 |
+| Синтаксис клиента | `node --check scripts/*.js`, `git diff --check` | ✅ чисто |
+
+**Наблюдение (не относится к этапу 8, требует решения владельца):** пересборка `images/figure-hero.webp` из `игрушка.jpg` **текущим** кодом даёт 302×593, а файл на сайте — 289×593. Старый код из `HEAD` даёт ровно тот же результат, что новый, то есть расхождение накопилось до этапа 8 (ассет на сайте собран более ранним состоянием пайплайна и/или другой версией OpenCV). Файл на сайте **не меняли**; если владелец захочет «освежить» hero, это отдельная задача с пересборкой и проверкой `figure_check.py`.
+
 ### Secret scan по git-истории (87 коммитов)
 
 | Проверка | Результат |
@@ -183,7 +221,7 @@
 8. Multipart body разбирается до проверки общего размера запроса.
 9. Форма отзывов показывает успех при HTTP/network-ошибке и допускает двойную отправку.
 10. Runtime-валидация каталога на Worker фактически отсутствует.
-11. Python-пайплайн `figure_from_ai.py` падает с `ZeroDivisionError` на пустой маске.
+11. ✅ Python-пайплайн `figure_from_ai.py` падал с `ZeroDivisionError` на пустой маске — **исправлено на этапе 8 (`1db5fbb`)**, вместе с папками вывода, жёсткими путями и валидацией аргументов.
 12. README и wiki содержат устаревшие инструкции.
 
 **Production blocker:** до исправления пунктов 1–8 нельзя считать публичный Worker безопасным и надёжным.
@@ -206,6 +244,8 @@
 - `reviews.html`
 - `styles/main.css`
 - `tools/*.py`
+- `tools/tool_common.py` (этап 8: папки вывода + диапазоны для argparse)
+- `tools/tests/run-tests.py` (этап 8: 23 теста инструментов)
 - `README.md`
 - предыдущий отчёт `code-review-3dprint-2026-09-15.md`
 - wiki `C:\Users\metal\wiki\3D-печать.md`
@@ -1157,6 +1197,8 @@ padding-right: calc(20px + env(safe-area-inset-right));
 
 ## PY-01 / P2 — `figure_from_ai.py` падает на пустой маске
 
+**Статус:** ✅ исправлено (этап 8, `1db5fbb`). Добавлена `check_mask()`: до расчёта масштаба проверяются пустота маски, площадь (≥400 px), минимальная сторона (≥12 px) и пропорции (0.08–12) — при провале `SystemExit` с объяснением и подсказкой (`--method border|otsu`, `--thr`, `--blur`), без трейсбека. Дополнительно: в авто-методе вырожденные кандидаты (`mm.sum() == 0`, нулевой bbox) больше не участвуют в выборе — на полностью чёрной/белой картинке выводится «не удалось отделить фигурку от фона», а не деление на ноль. Проверено фикстурами: чёрная картинка, чёрная + `--method otsu`, белая, точка в 1 px, пятно 8×8, битый файл.
+
 **Файл:** `tools/figure_from_ai.py:205–221`.
 
 Безопасный тест на полностью чёрной картинке дал:
@@ -1199,6 +1241,8 @@ scale = args.height / h
 
 ## PY-02 / P2 — output directories создаются не всеми tools
 
+**Статус:** ✅ исправлено (этап 8, `1db5fbb`). Появился общий модуль `tools/tool_common.py`: `ensure_parent_dir(path)` (вызывается **до** `tofile()`), `int_range()`/`float_range()` для argparse. Используется для output, preview, preview-light и debug-файлов в `figure_from_ai.py`, `ai_repaint.py`, `figure_cutout.py`, `figure_hero.py`. Диапазоны аргументов: `--height` 16–8000, `--quality` 1–100, `--blur` 0–200, `--pad` 0–500, `--erode` 0–50, `--defringe` 0–50, `--hole-tol` 0–255, `--steps` 1–100, `--strength` 0–1, `--guidance` 0–30, `--width`/`--height` (ai_repaint) 256–1920, `--seed` 0…2³¹−1. Проверено: запись в несуществующие вложенные папки (output + оба превью + `--debug-dir`), кириллические пути, отказ на `--quality 0`/`--height 0`/`--steps 0`/`--strength 2`/`--width 100`.
+
 **Файлы:**
 
 - `tools/figure_from_ai.py:40–47, 242–248`;
@@ -1228,6 +1272,8 @@ def ensure_parent_dir(path):
 
 ## PY-03 / P3 — falsy trap в `figure_hero.py`
 
+**Статус:** ✅ исправлено (этап 8, `1db5fbb`). Обе точки (`fix_head` и расчёт стыка уха) переведены на `axis if axis is not None else find_axis(...)` — при `--axis 0` авто-расчёт больше не подменяет явное значение (проверено: в выводе «ось симметрии x=0»). Добавлена диапазонная проверка: ось вне силуэта (после обрезки) — понятный отказ с пояснением, что ось считается по обрезанной фигурке. Это единственное намеренное изменение поведения пайплайна: раньше `--axis` за пределами фигурки молча давал мусор. В допустимом диапазоне результат побайтово совпадает со старым кодом.
+
 **Файл:** `tools/figure_hero.py:336, 355`.
 
 Сейчас используется:
@@ -1251,6 +1297,8 @@ axis if axis is not None else find_axis(...)
 ---
 
 ## PY-04 / P3 — `edge_report.py` зависит от отсутствующих tmp-файлов
+
+**Статус:** ✅ исправлено (этап 8, `1db5fbb`). Скрипт переписан на argparse: `--old` (default `tmp/old-asset-s2.webp`), `--new` (default `images/figure-hero.webp`), `--broken`, `--review-dir` (default — папка `_review` рядом с репозиторием), `--height`. Жёсткий путь `C:\Users\metal\web-sites\_review-3dprint` удалён (проверяется тестом «в `tools/*.py` нет строк `C:\Users`»); существование файлов проверяется до чтения — нет «было» → честная строка «пропущено» и карточка из того, что нашлось; нет основного ассета → понятный отказ с ненулевым кодом. Добавлена проверка входного формата («нужен png/webp с альфой») и понятное сообщение при отсутствии Pillow. Для выдачи файлов владельцу в docstring и `--help` указан ASCII-путь: `--review-dir C:/Users/metal/web-sites/_review-3dprint`.
 
 **Файл:** `tools/edge_report.py:44–48`.
 
@@ -1505,12 +1553,14 @@ legacy routes — removed
 
 ## Этап 8 — Python tools
 
-1. Обработать пустые маски.
-2. Создавать output directories.
-3. Добавить validation CLI arguments.
-4. Исправить `axis if axis is not None`.
-5. Убрать жёсткие пути.
-6. Добавить fixtures и тесты.
+**Статус:** ✅ выполнено (`1db5fbb`): `tools/tool_common.py` + правки в `figure_from_ai.py`, `figure_hero.py`, `ai_repaint.py`, `figure_cutout.py`, `edge_report.py`; тесты `tools/tests/run-tests.py` — 23/23. Таблица проверок — «Этап 8 — что именно проверено (2026-09-19)».
+
+1. Обработать пустые маски. ✅ (`check_mask()` до расчёта масштаба + отбрасывание вырожденных кандидатов)
+2. Создавать output directories. ✅ (`ensure_parent_dir()` для output/preview/preview-light/debug, вызывается до `tofile()`)
+3. Добавить validation CLI arguments. ✅ (диапазоны для 13 ключей в четырёх инструментах)
+4. Исправить `axis if axis is not None`. ✅ (две точки в `figure_hero.py` + отказ на ось вне силуэта)
+5. Убрать жёсткие пути. ✅ (`edge_report.py`: `--old/--new/--broken/--review-dir`; тест на отсутствие `C:\Users` в `tools/*.py`)
+6. Добавить fixtures и тесты. ✅ (`tools/tests/run-tests.py`: фикстуры генерируются на месте, сеть не используется)
 
 ## Этап 9 — документация
 
@@ -1608,15 +1658,17 @@ legacy routes — removed
 
 ## 9.5 Python
 
-- [ ] `python -m compileall -q tools`;
-- [ ] empty image → понятная ошибка, не ZeroDivisionError;
-- [ ] corrupted image → понятная ошибка;
-- [ ] missing output directory создаётся;
-- [ ] Unicode input path работает;
-- [ ] `--axis 0` сохраняет значение 0;
-- [ ] invalid dimensions rejected;
-- [ ] `figure_check.py` PASS для production asset;
-- [ ] bad asset → exit code != 0.
+- [x] `python -m compileall -q tools`;
+- [x] empty image → понятная ошибка, не ZeroDivisionError (чёрная, белая, точка, пятно 8×8 — четыре фикстуры);
+- [x] corrupted image → понятная ошибка;
+- [x] missing output directory создаётся (output + превью + `--debug-dir`);
+- [x] Unicode input path работает;
+- [x] `--axis 0` сохраняет значение 0;
+- [x] invalid dimensions rejected (`--height 0`, `--quality 0`, `--steps 0`, `--strength 2`, `--width 100`);
+- [x] `figure_check.py` PASS для production asset (ВЕРДИКТ OK на `images/figure-hero.webp`);
+- [x] bad asset → exit code != 0;
+- [x] (доп.) `tools/tests/run-tests.py` — 23/23, фикстуры на месте, сеть не используется;
+- [x] (доп.) контроль неизменности: старый код из `HEAD` и новый дают побайтово одинаковый результат на 8 из 9 сценариев (9-й — намеренное изменение: `--axis` вне силуэта).
 
 ## 9.6 Static quality gates
 
