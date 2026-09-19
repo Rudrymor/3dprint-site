@@ -1,22 +1,45 @@
 # -*- coding: utf-8 -*-
 """Числовая проверка кромки (кайма/ореол) + карточка «было → стало» для владельца.
 
-Запуск: python tools/edge_report.py
+Примеры:
+  python tools/edge_report.py
+  python tools/edge_report.py --old tmp/old-asset-s2.webp --new images/figure-hero.webp
+  python tools/edge_report.py --new images/figure-hero.webp --review-dir "%LOCALAPPDATA%/Temp/figwork"
+
+Ассеты «было» лежат в tmp/ и в git не попадают (tmp/ исключён из репозитория): после
+чистого клона их просто нет. Скрипт об этом честно скажет и покажет то, что нашёл.
 """
+import argparse
 import os
 import shutil
+import sys
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tool_common import ensure_parent_dir, int_range
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:                      # понятное сообщение вместо трейсбека
+    raise SystemExit("нужен Pillow: pip install pillow")
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REVIEW = r"C:\Users\metal\web-sites\_review-3dprint"
 SITE_BG = (9, 9, 11)
+LIGHT_BG = (245, 245, 245)
 
 
 def read(path):
-    return cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    """Читает png/webp с альфой; о проблеме сообщает понятной строкой."""
+    if not os.path.exists(path):
+        raise SystemExit(f"файл не найден: {path}")
+    img = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    if img is None:
+        raise SystemExit(f"не удалось прочитать: {path}")
+    if img.ndim != 3 or img.shape[2] != 4:
+        raise SystemExit(f"нужен png/webp с альфой, получено shape={img.shape}: {path}")
+    return img
 
 
 def fringe_metric(path):
@@ -42,38 +65,59 @@ def compose(path, h, bg=SITE_BG):
 
 
 def main():
-    for name, rel in [("было (s2, 291x593)", "tmp/old-asset-s2.webp"),
-                      ("стало (C, 289x593)", "images/figure-hero.webp"),
-                      ("битый V1, ушёл с сайта", "tmp/old-asset-v1.webp")]:
-        d, b, i = fringe_metric(os.path.join(REPO, rel))
-        print("%-26s яркость кромки − тело = %+.2f  (кромка %.0f, тело %.0f)" % (name, d, b, i))
+    ap = argparse.ArgumentParser(description="Проверка кромки ассетов + карточка «было → стало»")
+    ap.add_argument("--old", default=os.path.join(REPO, "tmp", "old-asset-s2.webp"),
+                    help="ассет «было» (по умолчанию tmp/old-asset-s2.webp)")
+    ap.add_argument("--new", default=os.path.join(REPO, "images", "figure-hero.webp"),
+                    help="ассет «стало», он же текущий на сайте (по умолчанию images/figure-hero.webp)")
+    ap.add_argument("--broken", default=os.path.join(REPO, "tmp", "old-asset-v1.webp"),
+                    help="третий ассет для сравнения, необязательный (по умолчанию tmp/old-asset-v1.webp)")
+    ap.add_argument("--review-dir", default=os.path.join(os.path.dirname(REPO), "_review"),
+                    help="куда положить карточку (по умолчанию — папка _review рядом с репозиторием)")
+    ap.add_argument("--height", type=int_range(64, 2000, "--height"), default=520,
+                    help="высота превью в карточке, px")
+    args = ap.parse_args()
 
-    h = 520
-    old = compose(os.path.join(REPO, "tmp/old-asset-s2.webp"), h)
-    new = compose(os.path.join(REPO, "images/figure-hero.webp"), h)
-    light = compose(os.path.join(REPO, "images/figure-hero.webp"), h, bg=(245, 245, 245))
+    if not os.path.exists(args.new):
+        raise SystemExit(f"основной ассет не найден: {args.new}\n  положи файл на место или укажи --new ПУТЬ")
+
+    print("ЯРКОСТЬ КРОМКИ (кромка минус тело; больше ~5 — светлый ореол от старого фона):")
+    for title, path in (("стало", args.new), ("было (s2)", args.old), ("битый V1", args.broken)):
+        if not os.path.exists(path):
+            print(f"  {title:<12} пропущено: файла нет ({path})")
+            continue
+        diff, band, body = fringe_metric(path)
+        print(f"  {title:<12} {diff:+6.2f}  (кромка {band:.0f}, тело {body:.0f})  {os.path.basename(path)}")
+
+    h = args.height
+    tiles = []
+    if os.path.exists(args.old):
+        tiles.append(("БЫЛО: s2 (без референса)", compose(args.old, h)))
+    tiles.append(("СТАЛО: текущий ассет (на сайте)", compose(args.new, h)))
+    tiles.append(("то же на светлом фоне — проверка каймы", compose(args.new, h, bg=LIGHT_BG)))
+
     pad, top = 24, 34
-    w = old.size[0] + new.size[0] + light.size[0] + pad * 4
+    w = sum(t.size[0] for _, t in tiles) + pad * (len(tiles) + 1)
     canvas = Image.new("RGB", (w, h + top + pad), (24, 24, 27))
     draw = ImageDraw.Draw(canvas)
     try:
         font = ImageFont.load_default(size=17)
-    except TypeError:
+    except TypeError:                    # старый Pillow: размер у шрифта не задаётся
         font = ImageFont.load_default()
     x = pad
-    for im, label in [(old, "БЫЛО: s2 (без референса)"),
-                      (new, "СТАЛО: вариант C (на сайте)"),
-                      (light, "C на светлом фоне — проверка каймы")]:
+    for label, im in tiles:
         canvas.paste(im, (x, top))
         draw.text((x, 8), label, font=font, fill=(240, 240, 245))
         x += im.size[0] + pad
-    os.makedirs(REVIEW, exist_ok=True)
-    card = os.path.join(REVIEW, "C-before-after-and-halo.png")
+
+    card = os.path.join(args.review_dir, "C-before-after-and-halo.png")
+    ensure_parent_dir(card)
     canvas.save(card)
-    shutil.copy(os.path.join(REPO, "images/figure-hero.webp"),
-                os.path.join(REVIEW, "asset-C-289x593.webp"))
-    print("карточка:", card, canvas.size)
-    print("ассет C скопирован в", REVIEW)
+    print(f"карточка: {card} {canvas.size}")
+
+    asset_copy = os.path.join(args.review_dir, os.path.basename(args.new))
+    shutil.copy(args.new, asset_copy)
+    print(f"ассет скопирован в {asset_copy}")
 
 
 if __name__ == "__main__":

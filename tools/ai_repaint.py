@@ -36,6 +36,9 @@ import uuid
 import cv2
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tool_common import ensure_parent_dir, float_range, int_range
+
 API = "https://api.cloudflare.com/client/v4"
 MODELS = {
     "img2img": "@cf/runwayml/stable-diffusion-v1-5-img2img",
@@ -65,6 +68,8 @@ def load_env(paths):
 
 def read_img(path):
     """cv2.imread не понимает кириллицу в пути — читаем байтами."""
+    if not os.path.exists(path):
+        raise SystemExit(f"файл не найден: {path}")
     buf = np.fromfile(path, dtype=np.uint8)
     img = cv2.imdecode(buf, cv2.IMREAD_UNCHANGED)
     if img is None:
@@ -77,6 +82,7 @@ def write_img(path, img, is_bgr=True):
     ok, buf = cv2.imencode(ext, img)
     if not ok:
         raise SystemExit(f"не удалось закодировать: {path}")
+    ensure_parent_dir(path)          # новый путь вывода не должен падать на записи
     buf.tofile(path)
     return len(buf)
 
@@ -187,12 +193,15 @@ def main():
     ap.add_argument("--mode", choices=list(MODELS), default="img2img")
     ap.add_argument("--prompt", default="painted 3d printed collectible figurine, clean paint job, product photo")
     ap.add_argument("--negative", default="blurry, distorted, extra limbs, text, watermark, low quality")
-    ap.add_argument("--strength", type=float, default=0.5, help="img2img: 0=не трогать, 1=перерисовать целиком")
-    ap.add_argument("--steps", type=int, default=20)
-    ap.add_argument("--guidance", type=float, default=7.5)
-    ap.add_argument("--seed", type=int, default=None)
-    ap.add_argument("--width", type=int, default=768, help="klein: ширина результата (256-1920)")
-    ap.add_argument("--height", type=int, default=1408, help="klein: высота результата (256-1920)")
+    ap.add_argument("--strength", type=float_range(0, 1, "--strength"), default=0.5,
+                    help="img2img: 0=не трогать, 1=перерисовать целиком")
+    ap.add_argument("--steps", type=int_range(1, 100, "--steps"), default=20)
+    ap.add_argument("--guidance", type=float_range(0, 30, "--guidance"), default=7.5)
+    ap.add_argument("--seed", type=int_range(0, 2 ** 31 - 1, "--seed"), default=None)
+    ap.add_argument("--width", type=int_range(256, 1920, "--width"), default=768,
+                    help="klein: ширина результата (256-1920)")
+    ap.add_argument("--height", type=int_range(256, 1920, "--height"), default=1408,
+                    help="klein: высота результата (256-1920)")
     ap.add_argument("--ref", action="append", default=[], help="klein: доп. референс (можно несколько, до 3)")
     ap.add_argument("--env", default=None, help="путь к .env (по умолчанию — корень проекта)")
     args = ap.parse_args()

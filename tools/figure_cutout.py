@@ -23,6 +23,9 @@ import cv2
 import numpy as np
 from scipy import ndimage
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tool_common import ensure_parent_dir
+
 
 def imread_unicode(path):
     """OpenCV на Windows не читает кириллические пути — читаем через numpy."""
@@ -87,7 +90,7 @@ def main():
     rgba = cv2.cvtColor(img[y0:y1, x0:x1], cv2.COLOR_BGR2BGRA)
     rgba[:, :, 3] = mask[y0:y1, x0:x1]
 
-    os.makedirs(os.path.dirname(os.path.abspath(args.dst)), exist_ok=True)
+    ensure_parent_dir(args.dst)
     ok, buf = cv2.imencode(".webp", rgba, [int(cv2.IMWRITE_WEBP_QUALITY), args.quality])
     if not ok:
         raise SystemExit("Не удалось закодировать webp")

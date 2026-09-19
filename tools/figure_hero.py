@@ -30,6 +30,7 @@ from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from figure_cutout import imread_unicode, largest_component, strip_thin_lower
+from tool_common import ensure_parent_dir, int_range
 
 # ───────────────────────────── параметры ─────────────────────────────
 PALETTE = {
@@ -329,11 +330,16 @@ def process(src, dst=None, axis=None, do_head=True, do_paint=True, quality=88, d
     img = img0[y0:y1, x0:x1].copy()
     mask = mask0[y0:y1, x0:x1].copy()
     H, W = mask.shape
+    if axis is not None and not (0 <= axis < W):
+        raise SystemExit(
+            f"--axis {axis} за пределами фигурки (ширина {W}px, допустимо 0..{W - 1}).\n"
+            f"  ось считается по обрезанному силуэту; без --axis она подбирается автоматически."
+        )
     inside = mask > 127
     print(f"фигурка {W}x{H}")
 
     if do_head:
-        ax = axis or find_axis(mask, 0.34 * H, 0.72 * H)
+        ax = axis if axis is not None else find_axis(mask, 0.34 * H, 0.72 * H)
         img, mask, patch = fix_head(img, mask, ax, int(0.34 * H))
         inside = mask > 127
         print(f"ось симметрии x={ax}, заплатка {int(patch.sum())} px")
@@ -352,7 +358,7 @@ def process(src, dst=None, axis=None, do_head=True, do_paint=True, quality=88, d
                   f"разброс {v.max()-v.min()}px")
 
         # стык уха и кепки: слева x(y), справа — зеркало
-        ax = axis or find_axis(mask, 0.34 * H, 0.72 * H)
+        ax = axis if axis is not None else find_axis(mask, 0.34 * H, 0.72 * H)
         ym = int(EAR_YMAX * H)
         guess = EAR_X0 - EAR_SLOPE * np.arange(H)
         ear_l = vpath(E, inside, guess, EAR_HALF, 0, ym)
@@ -405,7 +411,7 @@ def process(src, dst=None, axis=None, do_head=True, do_paint=True, quality=88, d
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     if debug_dir:
-        os.makedirs(debug_dir, exist_ok=True)
+        ensure_parent_dir(os.path.join(debug_dir, "paint_preview.png"))
         dark = np.zeros_like(rgb)
         dark[:] = (11, 9, 9)
         al = mask[..., None].astype(np.float32) / 255.0
@@ -436,7 +442,7 @@ def process(src, dst=None, axis=None, do_head=True, do_paint=True, quality=88, d
     rgba = cv2.cvtColor(rgb[by0:by1, bx0:bx1], cv2.COLOR_RGB2BGRA)
     rgba[:, :, 3] = alpha[by0:by1, bx0:bx1]
     if dst:
-        os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
+        ensure_parent_dir(dst)
         ok, buf = cv2.imencode(".webp", rgba, [int(cv2.IMWRITE_WEBP_QUALITY), quality])
         if not ok:
             raise SystemExit("не удалось закодировать webp")
@@ -452,7 +458,7 @@ def main():
     ap.add_argument("--axis", type=int, default=None)
     ap.add_argument("--no-head", action="store_true")
     ap.add_argument("--no-paint", action="store_true")
-    ap.add_argument("--quality", type=int, default=88)
+    ap.add_argument("--quality", type=int_range(1, 100, "--quality"), default=88)
     ap.add_argument("--debug-dir", default=None)
     a = ap.parse_args()
     process(a.src, a.dst, a.axis, not a.no_head, not a.no_paint, a.quality, a.debug_dir)

@@ -22,9 +22,13 @@
 """
 import argparse
 import os
+import sys
 
 import cv2
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from tool_common import ensure_parent_dir, float_range, int_range
 
 BG = 15  # #0f0f0f — фон hero на сайте
 
@@ -43,6 +47,7 @@ def write_img(path, img, quality=92):
     ok, buf = cv2.imencode(ext, img, params)
     if not ok:
         raise SystemExit(f"не удалось закодировать: {path}")
+    ensure_parent_dir(path)          # новый путь вывода не должен падать на записи
     buf.tofile(path)
     return len(buf)
 
@@ -69,7 +74,11 @@ def segment(img_bgr, thr=None, blur=6, method="auto", tol=None):
                 mm, _, tthr = segment(img_bgr, thr, blur, mth, tol)
             except SystemExit:
                 continue
+            if int(mm.sum()) == 0:             # этот метод не нашёл ничего — не кандидат
+                continue
             x, y, ww, hh = cv2.boundingRect(mm)
+            if ww <= 0 or hh <= 0:             # вырожденный силуэт: пропорции считать не из чего
+                continue
             ratio = ww / max(1, hh)
             area = float(mm.mean())
             edges = sum([y <= 1, y + hh >= h - 1, x <= 1, x + ww >= w - 1])
@@ -83,7 +92,10 @@ def segment(img_bgr, thr=None, blur=6, method="auto", tol=None):
             score = bad * 10 + abs(ratio - 0.50) + edges * 0.2
             cands.append((score, mm, tthr, mth, ratio, area, edges))
         if not cands:
-            raise SystemExit("не удалось отделить фигурку от фона — проверь картинку")
+            raise SystemExit(
+                "не удалось отделить фигурку от фона — проверь картинку\n"
+                "  подсказка: --method border|otsu, --thr вручную, меньший --blur"
+            )
         cands.sort(key=lambda c: c[0])
         _, m, tthr, used, ratio, area, edges = cands[0]
         print(f"  метод: {used}, ratio {ratio:.2f}, площадь {area * 100:.1f}%, краёв кадра {edges}")
@@ -128,6 +140,36 @@ def segment(img_bgr, thr=None, blur=6, method="auto", tol=None):
         idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
         m = (lab == idx).astype(np.uint8)
     return m, bg, (tthr if tthr is not None else 0.0)
+
+
+def check_mask(mask, min_area=400, min_side=12, aspect=(0.08, 12.0)):
+    """Есть ли на маске фигурка. Возвращает bbox (x, y, w, h).
+
+    Раньше на пустой маске (полностью чёрная или белая картинка) cv2.boundingRect
+    отдавал 0x0, и масштаб делился на h = 0 — ZeroDivisionError с трейсбеком.
+    Теперь отказ понятный и происходит до расчёта масштаба.
+    """
+    x, y, w, h = cv2.boundingRect(mask)
+    area = int((mask > 0).sum())
+    if area == 0 or w <= 0 or h <= 0:
+        raise SystemExit(
+            "фигурка не найдена: маска пустая.\n"
+            "  проверь, что фигурка отличается от фона;\n"
+            "  попробуй --method border или --thr вручную."
+        )
+    if area < min_area or min(w, h) < min_side:
+        raise SystemExit(
+            f"фигурка не найдена: слишком маленькое пятно ({w}x{h}px, {area} px площади).\n"
+            f"  похоже, маска поймала мусор, а не фигурку; нужен силуэт от {min_side}px "
+            f"и от {min_area} px площади."
+        )
+    what = w / h
+    if not aspect[0] <= what <= aspect[1]:
+        raise SystemExit(
+            f"фигурка не найдена: неправдоподобные пропорции {w}x{h} "
+            f"(ширина/высота {what:.2f}, ожидается {aspect[0]}..{aspect[1]})."
+        )
+    return x, y, w, h
 
 
 def fill_inner_holes(mask, img_bgr, bg, tol=28):
@@ -183,17 +225,24 @@ def main():
     ap = argparse.ArgumentParser(description="AI-картинка -> готовый ассет фигурки для hero")
     ap.add_argument("--in", dest="src", required=True)
     ap.add_argument("--out", dest="dst", required=True)
-    ap.add_argument("--height", type=int, default=593, help="высота итогового ассета, px")
-    ap.add_argument("--thr", type=float, default=None, help="порог отделения от фона (по умолчанию — авто)")
-    ap.add_argument("--blur", type=int, default=6, help="размытие карты расстояний перед порогом, px")
+    ap.add_argument("--height", type=int_range(16, 8000, "--height"), default=593,
+                    help="высота итогового ассета, px")
+    ap.add_argument("--thr", type=float_range(0, 255, "--thr"), default=None,
+                    help="порог отделения от фона (по умолчанию — авто)")
+    ap.add_argument("--blur", type=int_range(0, 200, "--blur"), default=6,
+                    help="размытие карты расстояний перед порогом, px")
     ap.add_argument("--method", choices=["auto", "border", "otsu"], default="auto")
-    ap.add_argument("--pad", type=int, default=0, help="поле вокруг фигурки в итоговом ассете")
-    ap.add_argument("--erode", type=int, default=1, help="сжатие маски, px: убирает кайму от фона")
-    ap.add_argument("--defringe", type=int, default=2, help="ширина полосы снятия каймы, px (0 — выкл.)")
-    ap.add_argument("--hole-tol", type=int, default=28, help="порог «дыра не цвета фона»")
+    ap.add_argument("--pad", type=int_range(0, 500, "--pad"), default=0,
+                    help="поле вокруг фигурки в итоговом ассете")
+    ap.add_argument("--erode", type=int_range(0, 50, "--erode"), default=1,
+                    help="сжатие маски, px: убирает кайму от фона")
+    ap.add_argument("--defringe", type=int_range(0, 50, "--defringe"), default=2,
+                    help="ширина полосы снятия каймы, px (0 — выкл.)")
+    ap.add_argument("--hole-tol", type=int_range(0, 255, "--hole-tol"), default=28,
+                    help="порог «дыра не цвета фона»")
     ap.add_argument("--preview", default=None, help="куда сохранить превью на тёмном фоне")
     ap.add_argument("--preview-light", default=None, help="превью на светлом фоне (проверка каймы)")
-    ap.add_argument("--quality", type=int, default=92)
+    ap.add_argument("--quality", type=int_range(1, 100, "--quality"), default=92)
     args = ap.parse_args()
 
     img = read_img(args.src)
@@ -211,7 +260,7 @@ def main():
             idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
             mask = (lab == idx).astype(np.uint8)
 
-    x, y, w, h = cv2.boundingRect(mask)
+    x, y, w, h = check_mask(mask)
     alpha = soft_matte(mask)
 
     H, W = img.shape[:2]
@@ -244,7 +293,7 @@ def main():
             continue
         a = al.astype(np.float32)[..., None] / 255.0
         flat = (rgb.astype(np.float32) * a + np.array(bgcol, np.float32) * (1 - a)).astype(np.uint8)
-        cv2.imencode(".png", flat)[1].tofile(path)
+        write_img(path, flat)
         print(f"превью на {tag} фоне: {path}")
 
 
