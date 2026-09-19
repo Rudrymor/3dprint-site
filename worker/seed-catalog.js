@@ -1,5 +1,11 @@
-// seed-catalog.js — засеивает KV начальными данными каталога
-// Использовать: cd worker && npx wrangler kv key put --binding CATALOG_KV --key catalog "$(node seed-catalog.js)"
+// seed-catalog.js — печатает готовый JSON каталога (НИЧЕГО не записывает).
+// Запись в облако (wrangler 4; ключ — первым аргументом, иначе ошибка
+// «Missing required option»; без --remote значение уйдёт в локальную копию KV):
+//   cd worker
+//   export CLOUDFLARE_API_TOKEN="$(grep -E '^CLOUDFLARE_DEPLOY_TOKEN=' ../.env | sed 's/^[^=]*=//')"
+//   npx wrangler kv key put catalog --binding CATALOG_KV --remote "$(node seed-catalog.js)"
+// Проверка после записи: curl -s https://tg-proxy.metalkor91.workers.dev/api/catalog | head -c 200
+// Точка отката: npx wrangler kv key get catalog --binding CATALOG_KV --remote > ../tmp/catalog-backup.json
 // Или вручную через Dashboard: KV → catalog → JSON
 
 const catalog = {
