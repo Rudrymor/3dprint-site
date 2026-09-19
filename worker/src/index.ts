@@ -177,40 +177,87 @@ function getNextOrderNumber(): string {
 // ── Telegram ──
 type TelegramResult = { ok: boolean; description?: string };
 
+/** Таймаут одного upstream-запроса к Telegram: зависший апстрим не висит до лимита рантайма (REL-01). */
+const TELEGRAM_TIMEOUT_MS = 15000;
+
+/** Причина «ответ Telegram не получен» — для диагностики и честного статуса unknown. */
+type TelegramErrorKind = 'timeout' | 'network' | 'parse';
+
+class TelegramError extends Error {
+  readonly kind: TelegramErrorKind;
+  constructor(kind: TelegramErrorKind, message: string) {
+    super(message);
+    this.name = 'TelegramError';
+    this.kind = kind;
+  }
+}
+
+/** Классифицирует причину отклонённого fetch: AbortSignal.timeout даёт TimeoutError. */
+function abortErrKind(err: unknown): TelegramErrorKind {
+  return err instanceof Error && err.name === 'TimeoutError' ? 'timeout' : 'network';
+}
+
+/**
+ * Один upstream-вызов к Telegram c таймаутом, проверкой HTTP-статуса и безопасным
+ * разбором JSON (REL-01). Кидает TelegramError на timeout/network/parse — вызывающий
+ * решает, что это «unknown». Возвращает { ok:false, description } при отклонении
+ * самим Telegram (структурированный ответ с ok:false или не-2xx).
+ */
+async function telegramJson(url: string, init: RequestInit): Promise<TelegramResult> {
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, signal: AbortSignal.timeout(TELEGRAM_TIMEOUT_MS) });
+  } catch (err) {
+    throw new TelegramError(abortErrKind(err), `Telegram request failed: ${String(err)}`);
+  }
+  // Не-2xx: либо Telegram достигнут и вернул ошибку, либо upstream-страница.
+  // Пытаемся взять структурированный description; если его нет — HTTP-статус.
+  if (!res.ok) {
+    let description = `HTTP ${res.status}`;
+    try {
+      const j = (await res.json()) as { description?: string };
+      if (j && typeof j.description === 'string') description = j.description;
+    } catch {
+      /* не-JSON upstream-ответ — оставляем HTTP-статус */
+    }
+    return { ok: false, description };
+  }
+  try {
+    const data = (await res.json()) as { ok?: boolean; description?: string };
+    return { ok: data.ok === true, description: data.description };
+  } catch {
+    throw new TelegramError('parse', 'Telegram вернул не-JSON ответ');
+  }
+}
+
 async function sendMessage(env: Env, text: string): Promise<TelegramResult> {
-  const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+  return telegramJson(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: env.CHAT_ID, text }),
   });
-  return (await res.json()) as TelegramResult;
 }
 
 type SendDocumentResult =
   | { ok: true }
   | { ok: false; description?: string }
-  | { ok: false; error: string; kind: 'network' | 'parse' };
+  | { ok: false; error: string; kind: TelegramErrorKind | 'rejected' };
 
 async function sendDocument(env: Env, file: File, name: string): Promise<SendDocumentResult> {
   const fd = new FormData();
   fd.append('chat_id', env.CHAT_ID);
   fd.append('document', file, name || 'file');
-  let res: Response;
   try {
-    res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
+    const r = await telegramJson(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendDocument`, {
+      method: 'POST',
+      body: fd,
+    });
+    if (r.ok) return { ok: true };
+    return { ok: false, description: r.description, kind: 'rejected' };
   } catch (err) {
-    return { ok: false, error: String(err), kind: 'network' };
+    const kind = err instanceof TelegramError ? err.kind : 'network';
+    return { ok: false, error: String(err), kind };
   }
-  if (!res.ok) {
-    return { ok: false, description: `HTTP ${res.status}` };
-  }
-  let data: { ok?: boolean; description?: string } = {};
-  try {
-    data = (await res.json()) as { ok?: boolean; description?: string };
-  } catch (err) {
-    return { ok: false, error: String(err), kind: 'parse' };
-  }
-  return { ok: data.ok === true, description: data.description };
 }
 
 // ── Catalog API ──

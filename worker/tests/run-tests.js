@@ -102,15 +102,22 @@ function makeCountingKV() {
 
 const telegram = {
   calls: [],
-  sendMessage: 'ok',   // 'ok' | 'fail' | 'throw'
-  sendDocument: 'ok',  // 'ok' | 'fail'
+  sendMessage: 'ok',   // 'ok' | 'fail' | 'throw' | 'timeout'
+  sendDocument: 'ok',  // 'ok' | 'fail' | 'throw' | 'timeout'
 };
+
+function timeoutErr(msg) {
+  const e = new Error(msg);
+  e.name = 'TimeoutError'; // так выглядит причина abort от AbortSignal.timeout
+  return e;
+}
 
 globalThis.fetch = async (url, init) => {
   const u = String(url);
   if (u.includes('/sendMessage')) {
     telegram.calls.push({ kind: 'message', body: JSON.parse(init.body) });
     if (telegram.sendMessage === 'throw') throw new Error('network down');
+    if (telegram.sendMessage === 'timeout') throw timeoutErr('AbortError: The operation was aborted due to timeout');
     if (telegram.sendMessage === 'fail') {
       return new Response(JSON.stringify({ ok: false, description: 'chat not found' }), { status: 200 });
     }
@@ -118,6 +125,8 @@ globalThis.fetch = async (url, init) => {
   }
   if (u.includes('/sendDocument')) {
     telegram.calls.push({ kind: 'document' });
+    if (telegram.sendDocument === 'throw') throw new Error('network down');
+    if (telegram.sendDocument === 'timeout') throw timeoutErr('AbortError: The operation was aborted due to timeout');
     if (telegram.sendDocument === 'fail') {
       return new Response(JSON.stringify({ ok: false, description: 'file too big' }), { status: 200 });
     }
@@ -387,6 +396,30 @@ async function main() {
   const unkReplayData = await unkReplay.json();
   eq('unknown replay: тот же статус', unkReplayData.status, 'unknown');
   eq('unknown replay: повторной отправки нет', messageCount(), 1);
+
+  // ══ 7б. timeout (REL-01): зависший Telegram → bounded «unknown», файл timeout → partial ══
+  section('POST /api/order — Telegram timeout (REL-01)');
+
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  telegram.sendMessage = 'timeout';
+  const ridTimeout = UUID();
+  const toRes = await worker(jsonRequest(Object.assign(goodFields(), { request_id: ridTimeout })));
+  const toData = await toRes.json();
+  eq('message timeout: HTTP 502', toRes.status, 502);
+  eq('message timeout: status=unknown', toData.status, 'unknown');
+  check('message timeout: одна попытка', messageCount() === 1, messageCount());
+
+  // файл «завис» (timeout) после успешного текста → partial, а не успех
+  resetTelegram();
+  env = makeEnv();
+  worker = makeWorker(env);
+  telegram.sendDocument = 'timeout';
+  const docTo = await worker(multipartRequest(goodFields(), [{ name: 'a.stl' }, { name: 'b.3mf' }]));
+  const docToData = await docTo.json();
+  eq('document timeout: HTTP 200 (текст доставлен)', docTo.status, 200);
+  eq('document timeout: status=partial', docToData.status, 'partial');
 
   // ══ 8. honeypot и удалённый legacy-контракт ══
   section('POST /api/order — honeypot и удалённый legacy text');
