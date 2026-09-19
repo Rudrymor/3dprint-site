@@ -4,12 +4,12 @@
 
 - Тип: read-only ревью кода, безопасности, багов, accessibility, производительности и Python-инструментов.
 - Дата ревью: 2026-09-16 12:17 RTZ.
-- Дата обновления: 2026-09-19 15:50 RTZ.
+- Дата обновления: 2026-09-19 15:50 RTZ; независимая проверка результатов — 2026-09-19 16:43 RTZ.
 - Baseline commit: `5a9bb2b` (был `main` до этапа 10).
 - Текущая ветка: `fix/security-and-ux`.
-- Текущий HEAD: `4f0da28` — **задеплоен** в `main` (fast-forward) и в ветке; `origin` синхронизирован.
+- Текущий HEAD: `6140221` — **задеплоен** в `main` (fast-forward) и в ветке; `origin` синхронизирован.
 - Рабочее дерево: чистое (кроме некоммитируемого `SESSION-RESUME.md`).
-- Прод: Pages `main` = `4f0da28`, Worker `tg-proxy` версия `134e5c82` (точка откатa `96b85b27`). Этапы 0–10 в проде.
+- Прод: Pages `main` = `6140221`, Worker `tg-proxy` версия `134e5c82` (точка откатa `96b85b27`). Этапы 0–10 в проде.
 - Репозиторий: `C:\Users\metal\Desktop\3D печать\3dprint-site`.
 - GitHub: `https://github.com/Rudrymor/3dprint-site`.
 - Production Pages: `https://rudrymor.github.io/3dprint-site/`.
@@ -54,6 +54,43 @@
 | 8 — Python-инструменты (PY-01…PY-04) | `1db5fbb` | ✅ | `tools/tool_common.py` (`ensure_parent_dir`, `int_range`, `float_range`); `figure_from_ai.py` — `check_mask()` до расчёта масштаба (нет `ZeroDivisionError`), отбрасывание вырожденных кандидатов, папки под output/оба превью; `figure_hero.py` — `axis if axis is not None else …` в двух местах + отказ на ось вне силуэта, папки out/`--debug-dir`; `ai_repaint.py` — папка вывода, «файл не найден», диапазоны `--steps/--strength/--guidance/--width/--height/--seed`; `edge_report.py` — argparse `--old/--new/--broken/--review-dir/--height`, без жёсткого `C:\Users\...`, проверка файлов до чтения. Тесты `tools/tests/run-tests.py` — 23/23 |
 | 9 — документация (DOC-01…DOC-04) | `f694527` + docs-коммиты | ✅ | `README.md`: рабочий seed-workflow для wrangler 4 (ключ первым аргументом, обязательный `--remote`, экспорт токена деплоя перед командами), точка отката до правки, проверка `GET /api/catalog` после записи; убрана нерабочая Imgur-инструкция (только относительные `images/` + требования к имени файла); новый `DEPLOYMENT.md` (порядок Worker → Pages, секреты, smoke-таблица «сейчас/после деплоя», откат Worker/KV/Pages, выключение `ALLOW_LEGACY_TEXT`); `.env.example` разделён на локальные переменные Python-инструментов / токен деплоя / секреты Worker'а |
 | 10 — deploy и rollback | `8a337a4`, `2497fa8`, `4f0da28` | ✅ | Worker задеплоен (версия `134e5c82`, точка откатa `96b85b27`), `CHAT_ID` вынесен из `wrangler.toml [vars]` в секрет, легаси-контракт `text` удалён полностью (тесты 123/123), сайт опубликован (`main` = `4f0da28`, fast-forward), прод-смоук по таблице, браузерная проверка 375/1920, `DEPLOYMENT.md` + `.env.example` обновлены. ⏳ Осталось: Turnstile (виджет владельца) и живая проверка заявки в Telegram |
+
+## Проверка результатов (независимая, 2026-09-19 16:43 RTZ)
+
+Перепроверено «по факту» — не по отчётам, а по коду, git и живому проду. **Вердикт: заявленные исправления этапов 0–10 подтверждаются.** В отличие от ревью от 15.09, этот документ готовность не завышает.
+
+### Подтверждено (перепроверено вживую)
+
+| Проверка | Результат |
+|---|---|
+| Git: ветка / HEAD / origin | ✅ `fix/security-and-ux`, HEAD `6140221`, `origin/main` = `6140221`, ветка синхронизирована; 113 коммитов; baseline `5a9bb2b` на месте |
+| Worker-тесты | ✅ `node tests/run-tests.js` → **123/123** |
+| Инструменты | ✅ `python tools/tests/run-tests.py` → **23/23** + `python -m compileall -q tools` |
+| Живой Worker (curl) | ✅ `GET /api/catalog` 200 (12 работ), `POST /api/catalog` 405, `POST /api/proxy` **404**, `POST /` **404**, `GET /api/review` 405, `GET /api/order` 405, `OPTIONS /api/order` 200 |
+| Живой Pages | ✅ `order.js` без `append('text')` (легаси удалён), `request_id` на месте, `main.css?v=16` → 200 |
+| Worker-код | ✅ legacy-роуты удалены, `validators.ts` (структурированные поля + UUID v4 `request_id`), DO `IdempotencyObject` (SQLite), `CHAT_ID` в секрете (нет в `wrangler.toml [vars]`), без `parse_mode`, rate-limit / checkOrigin / Turnstile-хук |
+| Клиент | ✅ `order.js`/`review-form.js`/`catalog.js`/`common.js`, `novalidate` убран, состояния success/partial/rejected/unknown, звёзды `role=radio`, лайтбокс с `inert`, меню с ловушкой фокуса |
+| CSS | ✅ нет `transition: all`, нет `font-weight: 60`, нет `;;`, `theme-color` на всех 4 страницах |
+| Turnstile | ✅ честно **выключен** (`TURNSTILE_SITE_KEY` пуст, `TURNSTILE_SECRET` не задан) — как и заявлено |
+
+### Найденные несоответствия (правки доков, не кода)
+
+1. **Рабочее дерево не было «чистым».** В шапке написано «чистое (кроме SESSION-RESUME.md)», но `code-review-3dprint-2026-09-16.md` лежал незакоммиченным (правка HEAD `4f0da28` → `6140221`). Закрыто этим чекпоинтом.
+2. **Разнобой «main» в доках.** Деплой-коммит — `4f0da28`, а финальный HEAD `main` — `6140221` (docs-коммит поверх, трогает только этот документ — сайт не менялся). Следы `4f0da28`/`2497fa8` как «main» оставались в `SESSION-RESUME.md:29`, `DEPLOYMENT.md:119` и вики.
+3. **`DEPLOYMENT.md:41` — устаревшее «122/122»** (после удаления легаси-контракта тестов 123).
+4. **`code-review-3dprint-2026-09-15.md` удалён** как полностью вытесненный (его матрица — §3 ниже).
+
+### Осталось открытым (осознанно, не регресс)
+
+- **Turnstile** — не включён: нужен виджет владельца (site + secret key). Спам держат лимиты 5/ч (заявки) и 3/ч (отзывы) на IP.
+- **REL-01 (таймаут Telegram)** — `sendMessage`/`sendDocument` без явного timeout/`AbortController`: зависший upstream держит запрос до лимита рантайма. Помечен «частично», остаётся.
+- **Живая проверка доставки заявки в Telegram** — не выполнялась (механика покрыта mock 123/123; `CHAT_ID` в секрете).
+
+### Чекпоинт
+
+Состояние выше зафиксировано на коммите `6140221`; чекпоинт-коммит ложится поверх. Любые правки по пунктам «Осталось открытым» — отдельными коммитами от этой точки.
+
+---
 
 ### Этап 4 — что именно проверено (2026-09-17)
 
@@ -304,7 +341,7 @@
 - `tools/tool_common.py` (этап 8: папки вывода + диапазоны для argparse)
 - `tools/tests/run-tests.py` (этап 8: 23 теста инструментов)
 - `README.md`
-- предыдущий отчёт `code-review-3dprint-2026-09-15.md`
+- предыдущий отчёт `code-review-3dprint-2026-09-15.md` — **удалён 2026-09-19 как вытесненный** (его матрица — в §3)
 - wiki `C:\Users\metal\wiki\3D-печать.md`
 
 ## 2.2 Выполненные проверки

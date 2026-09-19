@@ -38,7 +38,7 @@ cd "C:/Users/metal/Desktop/3D печать/3dprint-site"
 python tools/tests/run-tests.py             # 23/23 — инструменты, без сети
 python -m compileall -q tools               # синтаксис инструментов
 node --check scripts/*.js                   # синтаксис клиентских скриптов
-cd worker && node tests/run-tests.js        # 122/122 — валидаторы + E2E с mock Telegram/DO
+cd worker && node tests/run-tests.js        # 123/123 — валидаторы + E2E с mock Telegram/DO
 cd worker && npx wrangler deploy --dry-run  # сборка бандла + биндинги, БЕЗ публикации
 git diff --check                            # нет случайных пробелов и конфликтных маркеров
 ```
@@ -116,7 +116,7 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST "$W/api/order" \
 curl -s "$W/api/catalog" | head -c 200                                    # каталог из KV
 ```
 
-**Состояние прода на 2026-09-19 (этап 10 выполнен: Worker `134e5c82`, Pages `main` = `2497fa8`):**
+**Состояние прода на 2026-09-19 (этап 10 выполнен: Worker `134e5c82`, Pages `main` = `6140221`, деплой-коммит `4f0da28`):**
 
 | Проверка | Было до деплоя | Сейчас в проде |
 |---|---|---|
