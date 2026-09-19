@@ -537,18 +537,25 @@
     }
   }
 
-  function initTurnstile() {
-    var el = $('order-turnstile');
-    if (!el) return;
-    if (!TURNSTILE_SITE_KEY) return; // не настроено — проверка пропускается
-    if (!(window.turnstile && window.turnstile.render)) return;
-    state.turnstileWidget = window.turnstile.render(el, {
-      sitekey: TURNSTILE_SITE_KEY,
-      callback: function (token) { state.turnstileToken = token; },
-      'expired-callback': function () { state.turnstileToken = ''; },
-      'error-callback': function () { state.turnstileToken = ''; }
-    });
-  }
+  function initTurnstile(attempt) {
+      var el = $('order-turnstile');
+      if (!el) return;
+      if (!TURNSTILE_SITE_KEY) return; // не настроено — проверка пропускается
+      attempt = attempt || 0;
+      // api.js грузится async defer и может быть готов ПОСЛЕ DOMContentLoaded:
+      // ждём появления render (до ~6 с), иначе виджет просто не появится.
+      if (!(window.turnstile && window.turnstile.render)) {
+        if (attempt < 30) setTimeout(function () { initTurnstile(attempt + 1); }, 200);
+        return;
+      }
+      if (state.turnstileWidget !== null) return; // уже отрисован
+      state.turnstileWidget = window.turnstile.render(el, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: function (token) { state.turnstileToken = token; },
+        'expired-callback': function () { state.turnstileToken = ''; },
+        'error-callback': function () { state.turnstileToken = ''; }
+      });
+    }
 
   function resetTurnstile() {
     state.turnstileToken = '';
