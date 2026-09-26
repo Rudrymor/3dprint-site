@@ -18,7 +18,7 @@ interface Env {
   CHAT_ID: string;
   CATALOG_KV: KVNamespace;
   IDEMPOTENCY: DurableObjectNamespace;
-  /** Set to enable Turnstile verification. When absent, Turnstile is skipped (graceful degradation). */
+  /** Required for public submission endpoints; missing secret blocks submissions. */
   TURNSTILE_SECRET?: string;
 }
 
@@ -87,7 +87,7 @@ const ALLOWED_ORIGINS = [
 function checkOrigin(request: Request): Response | null {
   const origin = request.headers.get('origin');
   if (!origin) return null; // Allow non-browser clients (curl, server-to-server)
-  if (ALLOWED_ORIGINS.some(o => origin.startsWith(o))) return null;
+  if (ALLOWED_ORIGINS.includes(origin)) return null;
   return json({ error: 'Origin not allowed' }, 403);
 }
 
@@ -134,26 +134,27 @@ async function enforceRateLimit(request: Request, env: Env, kind: 'order' | 'rev
   }
 }
 
-// ── Turnstile (optional; skip when TURNSTILE_SECRET not set) ──
+// ── Turnstile (fail closed on missing configuration) ──
 async function enforceTurnstile(request: Request, env: Env, token?: unknown): Promise<Response | null> {
   if (!env.TURNSTILE_SECRET) {
-    return null; // Not configured yet — graceful degradation.
+    log('error', 'turnstile secret missing');
+    return json({ error: 'Verification unavailable' }, 503);
   }
-  const t = String(token || '').trim();
-  if (!t) {
+  if (typeof token !== 'string' || !token.trim() || token.length > 2048) {
     return json({ error: 'Missing Turnstile token' }, 403);
   }
   try {
     const form = new URLSearchParams();
     form.set('secret', env.TURNSTILE_SECRET);
-    form.set('response', t);
+    form.set('response', token.trim());
     form.set('remoteip', clientIp(request));
     const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body: form,
     });
-    const data = (await res.json()) as { success?: boolean; 'error-codes'?: string[] };
-    if (!data.success) {
+    if (!res.ok) return json({ error: 'Turnstile service unavailable' }, 502);
+    const data = (await res.json()) as { success?: boolean; hostname?: string; 'error-codes'?: string[] };
+    if (!data.success || data.hostname !== 'rudrymor.github.io') {
       log('warn', 'turnstile verification failed', { codes: data['error-codes'] });
       return json({ error: 'Turnstile verification failed' }, 403);
     }
@@ -379,7 +380,7 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
     get = (key: string) => body[key];
   }
 
-  // Turnstile (если настроен secret; иначе — no-op)
+  // Turnstile обязателен; отсутствие секрета блокирует отправку.
   const tsErr = await enforceTurnstile(request, env, get('cf-turnstile-response'));
   if (tsErr) return tsErr;
 

@@ -105,6 +105,7 @@ const telegram = {
   sendMessage: 'ok',   // 'ok' | 'fail' | 'throw' | 'timeout'
   sendDocument: 'ok',  // 'ok' | 'fail' | 'throw' | 'timeout'
 };
+let siteverifyReply = { success: true, hostname: 'rudrymor.github.io' };
 
 function timeoutErr(msg) {
   const e = new Error(msg);
@@ -114,6 +115,9 @@ function timeoutErr(msg) {
 
 globalThis.fetch = async (url, init) => {
   const u = String(url);
+  if (u.includes('/turnstile/v0/siteverify')) {
+    return new Response(JSON.stringify(siteverifyReply), { status: 200 });
+  }
   if (u.includes('/sendMessage')) {
     telegram.calls.push({ kind: 'message', body: JSON.parse(init.body) });
     if (telegram.sendMessage === 'throw') throw new Error('network down');
@@ -147,7 +151,7 @@ function makeEnv() {
     CHAT_ID: '1',
     CATALOG_KV: noopKV,
     IDEMPOTENCY: makeFakeDO(),
-    TURNSTILE_SECRET: undefined,
+    TURNSTILE_SECRET: 'test-secret',
   };
 }
 
@@ -163,6 +167,7 @@ const UUID = () => crypto.randomUUID();
 
 function multipartRequest(fields, files) {
   const fd = new FormData();
+  fd.append('cf-turnstile-response', 'test-token');
   Object.keys(fields).forEach((k) => fd.append(k, fields[k]));
   (files || []).forEach((f) => {
     fd.append('files', new File([f.content || 'x'], f.name, { type: f.type === undefined ? 'application/octet-stream' : f.type }), f.name);
@@ -174,7 +179,7 @@ function jsonRequest(body) {
   return new Request(URL_ORDER, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ 'cf-turnstile-response': 'test-token', ...body }),
   });
 }
 
@@ -184,7 +189,7 @@ function reviewRequest(body) {
   return new Request(URL_REVIEW, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ 'cf-turnstile-response': 'test-token', ...body }),
   });
 }
 
@@ -627,6 +632,50 @@ async function main() {
   eq('GET /api/order → 405', badMethod.status, 405);
   const badReviewMethod = await worker(new Request(URL_REVIEW));
   eq('GET /api/review → 405', badReviewMethod.status, 405);
+
+  section('Защита формы: Turnstile и Origin');
+  resetTelegram();
+  env = makeEnv();
+  env.TURNSTILE_SECRET = undefined;
+  worker = makeWorker(env);
+  let guarded = await worker(jsonRequest(goodFields()));
+  eq('без TURNSTILE_SECRET заявка заблокирована', guarded.status, 503);
+  guarded = await worker(reviewRequest(goodReview()));
+  eq('без TURNSTILE_SECRET отзыв заблокирован', guarded.status, 503);
+  eq('без секрета Telegram не вызван', messageCount(), 0);
+
+  env.TURNSTILE_SECRET = 'test-secret';
+  guarded = await worker(jsonRequest({ ...goodFields(), 'cf-turnstile-response': '' }));
+  eq('без токена заявка отклонена', guarded.status, 403);
+  guarded = await worker(reviewRequest({ ...goodReview(), 'cf-turnstile-response': '' }));
+  eq('без токена отзыв отклонён', guarded.status, 403);
+  siteverifyReply = { success: false, hostname: 'rudrymor.github.io' };
+  guarded = await worker(jsonRequest(goodFields()));
+  eq('отклонённый Turnstile-токен не допускает заявку', guarded.status, 403);
+  siteverifyReply = { success: true, hostname: 'rudrymor.github.io' };
+  const legitimate = jsonRequest(goodFields());
+  legitimate.headers.set('Origin', 'https://rudrymor.github.io');
+  guarded = await worker(legitimate);
+  eq('точный Origin и валидный токен допускают заявку', guarded.status, 200);
+
+  resetTelegram();
+  guarded = await worker(jsonRequest({ ...goodFields(), 'cf-turnstile-response': 'token' }));
+  eq('валидный токен на сайте допускает заявку', guarded.status, 200);
+  siteverifyReply = { success: true, hostname: 'attacker.example' };
+  guarded = await worker(jsonRequest({ ...goodFields(), 'cf-turnstile-response': 'token' }));
+  eq('токен с чужого hostname отклонён', guarded.status, 403);
+  eq('чужой hostname не попал в Telegram', messageCount(), 1);
+  siteverifyReply = { success: true, hostname: 'rudrymor.github.io' };
+  const spoofed = jsonRequest({ ...goodFields(), 'cf-turnstile-response': 'token' });
+  spoofed.headers.set('Origin', 'https://rudrymor.github.io.attacker.example');
+  guarded = await worker(spoofed);
+  eq('префикс домена в Origin не принимается', guarded.status, 403);
+  eq('поддельный Origin не попал в Telegram', messageCount(), 1);
+  const spoofedReview = reviewRequest(goodReview());
+  spoofedReview.headers.set('Origin', 'https://rudrymor.github.io.attacker.example');
+  guarded = await worker(spoofedReview);
+  eq('поддельный Origin отзыва не принимается', guarded.status, 403);
+  eq('поддельный отзыв не попал в Telegram', messageCount(), 1);
 
   // ── итог ──
   console.log('\n' + '─'.repeat(60));
